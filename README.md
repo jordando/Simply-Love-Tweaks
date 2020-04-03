@@ -5,7 +5,7 @@ NOTE-The first load will be VERY slow (the more songs you have the slower it'll 
 
 Requirements:
 
-Simply Love 4.8.6 and a version of Stepmania that works with Simply Love
+Simply Love 4.8.7 and a version of Stepmania that works with Simply Love
 
 Installation:
 
