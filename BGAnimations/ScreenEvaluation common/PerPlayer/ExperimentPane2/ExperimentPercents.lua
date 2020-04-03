@@ -21,6 +21,8 @@ local percentT = Def.ActorFrame{
 	InitCommand=function(self)self:zoom(0.8):xy(_screen.cx - 155,_screen.cy-24) end,
 }
 
+local windows = SL.Global.ActiveModifiers.TimingWindows
+
 -- do "regular" TapNotes first
 for i=1,#TapNoteScores.Types do
 	local window = TapNoteScores.Types[i]
@@ -38,8 +40,7 @@ for i=1,#TapNoteScores.Types do
 			-- if some TimingWindows were turned off, the leading 0s should not
 			-- be colored any differently than the (lack of) JudgmentNumber,
 			-- so load a unique Metric group.
-			local gmods = SL.Global.ActiveModifiers
-			if i > gmods.WorstTimingWindow and i ~= #TapNoteScores.Types then
+			if not windows[i] and i ~= #TapNoteScores.Types then
 				self:diffuse(color("#444444"))
 			end
 		end,
@@ -48,7 +49,7 @@ end
 
 local percentLostT = Def.ActorFrame{
 	InitCommand=function(self)self:zoom(0.8):xy(_screen.cx - 155,_screen.cy-40) end,
-	
+
 	LoadFont("_wendy small")..{
 		Text="LOST %",
 		InitCommand=function(self)
@@ -86,8 +87,7 @@ for i=2,#TapNoteScores.Types do
 			-- if some TimingWindows were turned off, the leading 0s should not
 			-- be colored any differently than the (lack of) JudgmentNumber,
 			-- so load a unique Metric group.
-			local gmods = SL.Global.ActiveModifiers
-			if i > gmods.WorstTimingWindow and i ~= #TapNoteScores.Types then
+			if not windows[i] and i ~= #TapNoteScores.Types then
 				self:diffuse(color("#444444"))
 			end
 		end,
@@ -104,8 +104,7 @@ for i=2,#TapNoteScores.Types do
 				-- if some TimingWindows were turned off, the leading 0s should not
 				-- be colored any differently than the (lack of) JudgmentNumber,
 				-- so load a unique Metric group.
-				local gmods = SL.Global.ActiveModifiers
-				if i > gmods.WorstTimingWindow and i ~= #TapNoteScores.Types then
+				if not windows[i] and i ~= #TapNoteScores.Types then
 					self:diffuse(color("#444444"))
 				end
 			end,

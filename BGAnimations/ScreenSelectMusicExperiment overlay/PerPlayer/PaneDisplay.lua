@@ -144,8 +144,8 @@ local af = Def.ActorFrame{
 	end,
 	--TODO part of the pane that gets hidden if two players are joined. i'd like to display this somewhere though
 	PeakNPSUpdatedMessageCommand=function(self)
-		if GAMESTATE:GetCurrentSong() and SL[pn].NoteDensity.Peak and ThemePrefs.Get("ShowExtraSongInfo") and GAMESTATE:GetNumSidesJoined() < 2 then
-			self:GetChild("PeakNPS"):settext( THEME:GetString("ScreenGameplay", "PeakNPS") .. ": " .. round(SL[pn].NoteDensity.Peak * SL.Global.ActiveModifiers.MusicRate,2))
+		if GAMESTATE:GetCurrentSong() and GAMESTATE:Env()[pn.."PeakNPS"] and ThemePrefs.Get("ShowExtraSongInfo") and GAMESTATE:GetNumSidesJoined() < 2 then
+			self:GetChild("PeakNPS"):settext( THEME:GetString("ScreenGameplay", "PeakNPS") .. ": " .. round(GAMESTATE:Env()[pn.."PeakNPS"] * SL.Global.ActiveModifiers.MusicRate,2))
 		else
 			self:GetChild("PeakNPS"):settext( "" )
 		end

@@ -24,7 +24,7 @@ local function AddToHashLookup()
 			stepsType = string.lower(stepsType):gsub("_","-")
 			local difficulty = ToEnumShortString(steps:GetDifficulty())
 			if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
-				local hash = GenerateHash(stepsType,difficulty,song.song)
+				local hash = GenerateHash(steps,stepsType,difficulty)
 				if #hash > 0 then
 					if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
 					SL.Global.HashLookup[dir][difficulty][stepsType] = hash
@@ -92,6 +92,10 @@ function LoadNewFromStats(player)
 			local difficulty = ToEnumShortString(chart:GetDifficulty())
 			local stepsType = ToEnumShortString(chart:GetStepsType()):gsub("_","-"):lower()
 			local hash = GetHash(player,song,chart)
+			--if there's a hash for the song and profile scores but no custom scores that means the
+			--song wasn't loaded when we did the original LoadFromStats. Add them in now. Ideally
+			--we would read stats.xml again to get things like numTimesPlayed but for now just pull
+			--what we can from in game stats
 			if hash and not GetScores(player,hash) and #PROFILEMAN:GetProfile(pn):GetHighScoreList(song,chart):GetHighScores() > 0 then
 				local lastPlayed = "1980-01-01 12:12:00"
 				local bestPass = 0
@@ -162,7 +166,7 @@ local function LoadFromStats(pn)
 					song = songDir[groupSong].song
 					title = songDir[groupSong].title
 					if not hashLookup[groupSong] then hashLookup[groupSong] = {} end
-				else 
+				else
 					title = Split(groupSong,"/")[3]
 					song = nil
 				end
@@ -171,7 +175,8 @@ local function LoadFromStats(pn)
 				Difficulty = iterator()
 				StepsType = iterator()
 				if song then
-					hash = GenerateHash(StepsType,Difficulty,song)
+					local fullStepsType = "StepsType_"..CapitalizeWords(StepsType):gsub("-","_")
+					hash = GenerateHash(song:GetStepsByStepsType(fullStepsType)[1],StepsType,Difficulty)
 					if not statsTable[hash] then statsTable[hash] = {} end
 					if not hashLookup[groupSong][Difficulty] then hashLookup[groupSong][Difficulty] = {} end
 					hashLookup[groupSong][Difficulty][StepsType] = hash
@@ -300,7 +305,7 @@ function LoadScores(pn)
 			end
 		end
 	--if there's no Scores.txt then import all the scores in Stats.xml to get started
-	else 
+	else
 		Scores, hashLookup = LoadFromStats(pn)
 		SL.Global.HashLookup = hashLookup
 	end
@@ -359,7 +364,8 @@ function AddScore(player)
 		local performance = pss:GetRadarActual():GetValue( "RadarCategory_"..RCType )
 		stats[RCType] = performance
 	end
-	local hash = GenerateHash(stepsType,ToEnumShortString(GAMESTATE:GetCurrentSteps(pn):GetDifficulty()))
+	local steps = GAMESTATE:GetCurrentSteps(pn)
+	local hash = GenerateHash(steps,stepsType,ToEnumShortString(steps:GetDifficulty()))
 	if #hash > 0 then
 		if not SL[pn]['Scores'][hash] then SL[pn]['Scores'][hash] = {FirstPass='Never',NumTimesPlayed = 0, BestPass=0} end
 		if not SL[pn]['Scores'][hash]['HighScores'] then SL[pn]['Scores'][hash]['HighScores'] = {} end
@@ -516,7 +522,7 @@ function AddCurrentHash()
 		local stepsType = ToEnumShortString(steps:GetStepsType()):gsub("_","-"):lower()
 		local difficulty = ToEnumShortString(steps:GetDifficulty())
 		if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
-			local hash = GenerateHash(stepsType,difficulty,song)
+			local hash = GenerateHash(steps,stepsType,difficulty)
 			if #hash > 0 then
 				if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
 				SL.Global.HashLookup[dir][difficulty][stepsType] = hash

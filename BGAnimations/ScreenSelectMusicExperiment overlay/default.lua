@@ -91,6 +91,7 @@ local t = Def.ActorFrame {
 		-- set up initial variable states and the players' OptionRows
 		Input:Init()
 		-- It should be safe to enable input for players now
+
 		self:queuecommand("EnableMainInput")
 	end,
 	-- a hackish solution to prevent users from button-spamming and breaking input :O

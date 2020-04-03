@@ -123,9 +123,9 @@ end
 --
 -- stepsType is usually either 'dance-single' or 'dance-double'
 -- difficulty is usually one of {'Beginner', 'Easy', 'Medium', 'Hard', 'Challenge'}
-function GenerateHash(stepsType, difficulty, song)
-	local song = song or GAMESTATE:GetCurrentSong()
-	local msdFile = ParseMsdFile(song:GetSongDir())
+function GenerateHash(steps, stepsType, difficulty)
+
+	local msdFile = ParseMsdFile(steps)
 
 	if #msdFile == 0 then return ''	end
 
@@ -141,7 +141,7 @@ function GenerateHash(stepsType, difficulty, song)
 		elseif value[1] == 'DIFFICULTY' then sscDifficulty = value[2]
 		elseif value[1] == 'NOTES' then
 			--SSC files don't have 7 fields in notes so we just put it all in here
-			if string.find(song:GetSongFilePath(),".ssc$") then
+			if string.find(SONGMAN:GetSongFromSteps(steps):GetSongFilePath(),".ssc$") then
 				local sscTable = {}
 				table.insert(sscTable,"1")
 				table.insert(sscTable, sscSteps)
@@ -159,7 +159,7 @@ function GenerateHash(stepsType, difficulty, song)
 
 	if bpms == '' then return '' end
 
-	for notes in ivalues(allNotes) do			
+	for notes in ivalues(allNotes) do
 		-- StepMania considers NOTES sections with greater than 7 sections valid.
 		-- https://github.com/stepmania/stepmania/blob/master/src/NotesLoaderSM.cpp#L1072-L1079
 		if #notes >= 7 and notes[2] == stepsType and difficulty == notes[4] then

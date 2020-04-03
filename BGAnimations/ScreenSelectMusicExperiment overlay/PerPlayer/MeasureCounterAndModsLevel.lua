@@ -30,9 +30,8 @@ return function(SongNumberInCourse)
 
 				-- if any of these don't match what we're currently looking for...
 				if SL[pn].Streams.SongDir ~= song_dir or SL[pn].Streams.StepsType ~= steps_type or SL[pn].Streams.Difficulty ~= difficulty then
-
 					-- ...then parse the simfile, given the current parameters
-					SL[pn].Streams.Measures = GetStreams(song_dir, steps_type, difficulty, notes_per_measure, threshold_to_be_stream)
+					SL[pn].Streams.Measures = GetStreams(steps, steps_type, difficulty, notes_per_measure, threshold_to_be_stream)
 					-- and set these so we can check again next time.
 					SL[pn].Streams.SongDir = song_dir
 					SL[pn].Streams.StepsType = steps_type

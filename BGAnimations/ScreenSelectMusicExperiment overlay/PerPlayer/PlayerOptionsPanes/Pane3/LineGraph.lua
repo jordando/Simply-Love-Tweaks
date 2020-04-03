@@ -103,8 +103,8 @@ CreateLineGraph = function(_w, _h)
 		Initialize=function(self, actor)
 			local verts = {}
 			for i,song in pairs(SL[ToEnumShortString(player)].Stages.Stats) do
-				if song.difficultyMeter then --if player backs out of a song then Stages.Stats will have an empty table. Ignore that.
-					local diff = max_dif - song.difficultyMeter
+				if song.meter then --if player backs out of a song then Stages.Stats will have an empty table. Ignore that.
+					local diff = max_dif - song.meter
 					if diff < 0 then diff = 0 end --max difficulty to show is 25.
 					local color = Color.Green
 					if song.grade and song.grade == "Grade_Failed" then
@@ -155,13 +155,13 @@ CreateLineGraph = function(_w, _h)
 	af[#af+1]=graphPoints
 	af[#af+1]=legend
 	af.SetOptionPanesMessageCommand=function(self)
-		if #SL.Global.Stages.Stats ~= 0 then 
-			if #SL.Global.Stages.Stats < 5 then num_lines = 5 
+		if #SL.Global.Stages.Stats ~= 0 then
+			if #SL.Global.Stages.Stats < 5 then num_lines = 5
 			else num_lines = #SL.Global.Stages.Stats end
 			for _,song in pairs(SL[ToEnumShortString(player)].Stages.Stats) do
-				if song.difficultyMeter then --if player backs out of a song then Stages.Stats will have an empty table. Ignore that.
-					if max_dif == nil or song.difficultyMeter > max_dif then max_dif = song.difficultyMeter end
-					if min_dif == nil or song.difficultyMeter < min_dif then min_dif = song.difficultyMeter end
+				if song.meter then --if player backs out of a song then Stages.Stats will have an empty table. Ignore that.
+					if max_dif == nil or song.meter > max_dif then max_dif = song.meter end
+					if min_dif == nil or song.meter < min_dif then min_dif = song.meter end
 				end
 			end
 			if max_dif > 25 then max_dif = 25 end --max difficulty to display is 25

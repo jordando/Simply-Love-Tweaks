@@ -48,8 +48,7 @@ for key, item in pairs(PaneItems) do
 			InitCommand=function(self) self:xy(item.data.x,item.data.y):diffuse(Color.White):halign(0) end,
 			OnCommand=function(self) self:playcommand("Set") end,
 			SetOptionPanesMessageCommand=function(self)
-				local song = GAMESTATE:GetCurrentSong()
-				local bpm = song:IsDisplayBpmConstant() and GetDisplayBPMs() or song:GetDisplayBpms()[2]
+				local bpm = GetDisplayBPMs(player)[2]
 				if item.note == 16 then
 					self:settext( math.floor((16 * bpm / 240)*100)/100 .." NPS")
 				else
@@ -65,7 +64,7 @@ end
 			self:xy(labelX_col1, -55):zoom(.5):diffuse(Color.White):halign(0):zoom(.5)
 		end,
 		SetOptionPanesMessageCommand=function(self)
-			self:settext(GetDisplayBPMs().." BPM")
+			self:settext(StringifyDisplayBPMs().." BPM")
 		end,
 	}
 return pane

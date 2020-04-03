@@ -183,8 +183,9 @@ if not GAMESTATE:GetCurrentSong() then
 	local current_song = GetDefaultSong()
 	GAMESTATE:SetCurrentSong(current_song)
 	InitPreloadedGroups()
+	-- if we're using custom scores then load the hash lookup table now
 	if ThemePrefs.Get("UseCustomScores") then LoadHashLookup() end
-	for player in ivalues(GAMESTATE:GetHumanPlayers()) do 
+	for player in ivalues(GAMESTATE:GetHumanPlayers()) do
 		GAMESTATE:SetCurrentSteps(player,GAMESTATE:GetCurrentSong():GetStepsByStepsType(GetStepsType())[1])
 		if ThemePrefs.Get("UseCustomScores") then LoadNewFromStats(player) end
 	end

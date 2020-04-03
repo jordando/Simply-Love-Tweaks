@@ -15,13 +15,10 @@ local function gen_vertices(player, width, height)
 	-- broadcast this for any other actors on the current screen that rely on knowing the peak nps
 	MESSAGEMAN:Broadcast("PeakNPSUpdated", {PeakNPS=PeakNPS})
 
-	-- also, store the PeakNPS in SL[pn] in case both players are joined
+	-- also, store the PeakNPS in GAMESTATE:Env()[pn.."PeakNPS"] in case both players are joined
 	-- their charts may have different peak densities, and if they both want histograms,
 	-- we'll need to be able to compare densities and scale one of the graphs vertically
-	SL[ToEnumShortString(player)].NoteDensity.Peak = PeakNPS
-
-	-- FIXME: come up with a way to do this^ that doesn't rely on the SL table so other
-	-- themes can use this NPS_Histogram function more easily
+	GAMESTATE:Env()[ToEnumShortString(player).."PeakNPS"] = PeakNPS
 
 	local verts = {}
 	local x, y, t
@@ -32,11 +29,22 @@ local function gen_vertices(player, width, height)
 		local FirstSecond = math.min(TimingData:GetElapsedTimeFromBeat(0), 0)
 		local LastSecond = Song:GetLastSecond()
 
-		-- magic numbers obtained from Photoshop's Eyedrop tool
-		local yellow = {0.968, 0.953, 0.2, 1}
-		local orange = {0.863, 0.553, 0.2, 1}
-		local upper
+		-- magic numbers obtained from Photoshop's Eyedrop tool in rgba percentage form (0 to 1)
+		local graphColor = {Blue = {}, Yellow = {}}
+		graphColor.Blue[1]= {0,    0.678, 0.753, 1} --blue
+		graphColor.Blue[2]= {0.51, 0,     0.631, 1} --purple
+		graphColor.Yellow[1]= {0.968, 0.953, 0.2, 1} --yellow
+		graphColor.Yellow[2]= {0.863, 0.353, 0.2, 1} --orange
+		
+		local lowerColor, upperColor, chosenColor
+		chosenColor = ThemePrefs.Get("DensityGraphColor")
 
+		lowerColor=graphColor[chosenColor][1]
+		upperColor=graphColor[chosenColor][2]
+
+
+		local upper
+		
 		for i, nps in ipairs(NPSperMeasure) do
 
 			if nps > 0 then first_step_has_occurred = true end
@@ -59,12 +67,16 @@ local function gen_vertices(player, width, height)
 					verts[#verts][1][1] = x
 					verts[#verts-1][1][1] = x
 				else
-					-- lerp_color() take a float between [0,1], color1, and color2, and returns a color
-					-- that has been linearly interpolated by that percent between the colors provided
-					upper = lerp_color(math.abs(y/height), yellow, orange )
+					-- lerp_color() is a global function defined by the SM engine that takes three arguments:
+					--    a float between [0,1]
+					--    color1
+					--    color2
+					-- and returns a color that has been linearly interpolated by that percent between the two colors provided
+					-- for example, lerp_color(0.5, yellow, orange) will return the color that is halfway between yellow and orange
+					upper = lerp_color(math.abs(y/height), lowerColor, upperColor )
 
-					verts[#verts+1] = {{x, 0, 0}, yellow} -- bottom of graph (yellow)
-					verts[#verts+1] = {{x, y, 0}, upper}  -- top of graph (somewhere between yellow and orange)
+					verts[#verts+1] = {{x, 0, 0}, lowerColor} -- bottom of graph (blue)
+					verts[#verts+1] = {{x, y, 0}, upper}  -- top of graph (somewhere between blue and purple)
 				end
 			end
 		end
@@ -73,8 +85,8 @@ local function gen_vertices(player, width, height)
 	return verts
 end
 
-
-local function interpolate_vert(v1, v2, offset)
+-- FIXME: add inline comments explaining the intent/purpose of this code
+function interpolate_vert(v1, v2, offset)
 	local ratio = (offset - v1[1][1]) / (v2[1][1] - v1[1][1])
 	local y = v1[1][2] * (1 - ratio) + v2[1][2] * ratio
 	local color = lerp_color(ratio, v1[2], v2[2])
@@ -89,12 +101,10 @@ function NPS_Histogram(player, width, height)
 		InitCommand=function(self)
 			self:SetDrawState({Mode="DrawMode_QuadStrip"})
 		end,
-		-- we've reached a new song, so reset the vertices for the density graph
-		-- this will occur at the start of each new song in CourseMode
-		-- and at the start of "normal" gameplay. In Experiment mode we don'table
-		-- need this so just do nothing (not sure why SCREENMAN:GetTopScreen() returns nil
-		-- but it often does so here we are.
 		CurrentSongChangedMessageCommand=function(self)
+			-- we've reached a new song, so reset the vertices for the density graph
+			-- this will occur at the start of each new song in CourseMode
+			-- and at the start of "normal" gameplay
 			if not SL.Global.ExperimentScreen then
 				self:playcommand("SetDensity")
 			end
@@ -105,7 +115,6 @@ function NPS_Histogram(player, width, height)
 			self:SetNumVertices(#verts):SetVertices(verts)
 		end
 	}
-
 	return amv
 end
 

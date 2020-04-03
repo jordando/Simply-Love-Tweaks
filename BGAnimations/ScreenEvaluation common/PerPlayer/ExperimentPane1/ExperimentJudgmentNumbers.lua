@@ -43,6 +43,9 @@ local highScoreT = Def.ActorFrame{
 local deltaT = Def.ActorFrame{
 	InitCommand=function(self)self:zoom(0.8):xy(_screen.cx - 155 - WideScale(25,0),_screen.cy-24) end,
 }
+
+local windows = SL.Global.ActiveModifiers.TimingWindows
+
 if highScore then
 	local PercentDP
 	if ThemePrefs.Get("UseCustomScores") then PercentDP = highScore.score
@@ -71,8 +74,7 @@ if highScore then
 				-- if some TimingWindows were turned off, the leading 0s should not
 				-- be colored any differently than the (lack of) JudgmentNumber,
 				-- so load a unique Metric group.
-				local gmods = SL.Global.ActiveModifiers
-				if i > gmods.WorstTimingWindow and i ~= #TapNoteScores.Types then
+				if not windows[i] and i ~= #TapNoteScores.Types then
 					self:diffuse(color("#444444"))
 				end
 				
@@ -98,8 +100,7 @@ if highScore then
 				-- if some TimingWindows were turned off, the leading 0s should not
 				-- be colored any differently than the (lack of) JudgmentNumber,
 				-- so load a unique Metric group.
-				local gmods = SL.Global.ActiveModifiers
-				if i > gmods.WorstTimingWindow and i ~= #TapNoteScores.Types then
+				if not windows[i] and i ~= #TapNoteScores.Types then
 					self:Load("RollingNumbersEvaluationNoDecentsWayOffs")
 					self:diffuse(color("#444444"))
 
