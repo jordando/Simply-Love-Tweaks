@@ -50,7 +50,7 @@ SelectMusicOrCourse = function()
 		if SL.Global.GameMode == "Casual" then
 			return "ScreenSelectMusicCasual"
 		elseif SL.Global.GameMode == "Experiment" then
-			return "ScreenSelectMusicExperiment"										
+			return "ScreenSelectMusicExperiment"
 		end
 
 		return "ScreenSelectMusic"
@@ -121,9 +121,17 @@ Branch.AfterEvaluationStage = function()
 end
 
 Branch.AfterSelectPlayMode = function()
+	for player in ivalues(GAMESTATE:GetHumanPlayers()) do
+		if SL.Global.GameMode == "Experiment"
+		and ThemePrefs.Get("UseCustomScores")
+		then return "ScreenLoadCustomScores" end
+	end
 	return SelectMusicOrCourse()
 end
 
+Branch.AfterLoadCustomScores = function()
+	return SelectMusicOrCourse()
+end
 
 Branch.AfterGameplay = function()
 	if THEME:GetMetric("ScreenHeartEntry", "HeartEntryEnabled") then

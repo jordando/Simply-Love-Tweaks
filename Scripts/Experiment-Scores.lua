@@ -11,8 +11,9 @@ local function GetSongDirs()
 	return list
 end
 
---Looks through each song currently loaded in Stepmania and checks that we have an entry in the
---hash lookup. If we don't we make a hash and add it to the lookup.
+--- Looks through each song currently loaded in Stepmania and checks that we have an entry in the
+---  hash lookup. If we don't we make a hash and add it to the lookup. On the first run this will be
+--- every song
 local function AddToHashLookup()
 	local songs = GetSongDirs()
 	local newChartsFound = false
@@ -25,10 +26,13 @@ local function AddToHashLookup()
 			local difficulty = ToEnumShortString(steps:GetDifficulty())
 			if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
 				local hash = GenerateHash(steps,stepsType,difficulty)
+				coroutine.yield() --resumed in ScreenLoadCustomScores.lua
 				if #hash > 0 then
 					if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
 					SL.Global.HashLookup[dir][difficulty][stepsType] = hash
 					newChartsFound = true
+				else
+					SM("WARNING: Could not generate hash for "..dir)
 				end
 			end
 		end
@@ -36,10 +40,10 @@ local function AddToHashLookup()
 	if newChartsFound then SaveHashLookup() end
 end
 
---Looks for a file in the "Other" folder of the theme called HashLookup.txt to load from
---The file should be tab delimited and each line should be either a song directory
---or the difficulty, step type, and hash of the next highest song directory
---Creates a table of the form {song directory
+--- Looks for a file in the "Other" folder of the theme called HashLookup.txt to load from.
+--- The file should be tab delimited and each line should be either a song directory
+--- or the difficulty, step type, and hash of the next highest song directory
+-- Creates a table of the form {song directory
 --								-->difficulty
 --									-->step type = hash
 --							  }
@@ -65,7 +69,7 @@ function LoadHashLookup()
 	AddToHashLookup()
 end
 
---Writes the hash lookup to disk.
+--- Writes the hash lookup to disk.
 function SaveHashLookup()
 	if SL.Global.HashLookup then
 		local toWrite = ""
@@ -82,8 +86,8 @@ function SaveHashLookup()
 	end
 end
 
--- Checks to see if any songs that have scores in stats but weren't loaded when we first ran LoadFromStats
--- are now on the machine.
+--- Checks to see if any songs that have scores in stats but weren't loaded when we first ran LoadFromStats
+---  are now on the machine. Does not generate hashes - only adds scores if the hashes are already in the lookup table.
 function LoadNewFromStats(player)
 	local songs = SONGMAN:GetAllSongs()
 	local pn = ToEnumShortString(player)
@@ -144,8 +148,10 @@ function LoadNewFromStats(player)
 	end
 end
 
--- If this is the first time loading a profile in Experiment mode then we won't have a list of song scores.
--- Read in from Stats.xml to start us off.
+--- Crawl through stats.xml and add all scores found to a table with identical structure to SL[pn]['Scores'].
+--- Also returns a list of hashes generated in a table with identical structure to the hash lookup table.
+--- This function is only called when a scores txt file can't be found - usually the first time experiment 
+--- mode runs.
 local function LoadFromStats(pn)
 	local profileDir
 	if pn == 'P1' then profileDir = 'ProfileSlot_Player1' else profileDir = 'ProfileSlot_Player2' end
@@ -162,7 +168,7 @@ local function LoadFromStats(pn)
 			if string.find(line,"<Song Dir=") then
 				groupSong = "/"..string.gsub(line,"<Song Dir='(Songs/[%w%p ]*/)'>","%1"):gsub("&apos;","'"):gsub("&amp;","&")
 				group = Split(groupSong,"/")[2]
-				if songDir[groupSong] then 
+				if songDir[groupSong] then
 					song = songDir[groupSong].song
 					title = songDir[groupSong].title
 					if not hashLookup[groupSong] then hashLookup[groupSong] = {} end
@@ -177,6 +183,7 @@ local function LoadFromStats(pn)
 				if song then
 					local fullStepsType = "StepsType_"..CapitalizeWords(StepsType):gsub("-","_")
 					hash = GenerateHash(song:GetStepsByStepsType(fullStepsType)[1],StepsType,Difficulty)
+					coroutine.yield() --resumed in ScreenLoadCustomScores.lua
 					if not statsTable[hash] then statsTable[hash] = {} end
 					if not hashLookup[groupSong][Difficulty] then hashLookup[groupSong][Difficulty] = {} end
 					hashLookup[groupSong][Difficulty][StepsType] = hash
@@ -255,11 +262,10 @@ local function LoadFromStats(pn)
 			end
 		end
 	end
-
 	return statsTable, hashLookup
 end
 
--- Read scores from disk if they exist. If they don't, then load our initial values with LoadFromStats
+--- Read scores from disk if they exist. If they don't, then load our initial values with LoadFromStats
 function LoadScores(pn)
 	local profileDir
 	if pn == 'P1' then profileDir = 'ProfileSlot_Player1' else profileDir = 'ProfileSlot_Player2' end
@@ -315,7 +321,7 @@ function LoadScores(pn)
 	end
 end
 
--- Write rate scores to disk
+--- Write rate scores to disk
 function SaveScores(pn)
 	if SL[pn]['Scores'] then
 		local toWrite = ""
@@ -339,7 +345,7 @@ function SaveScores(pn)
 	end
 end
 
--- Add a new score to SL[pn][Scores]
+--- Add the latest score from PlayerStageStats to SL[pn][Scores]
 function AddScore(player)
 	local pn = ToEnumShortString(player)
 	local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
@@ -396,7 +402,7 @@ function GetChartStats(player,hash)
 	return nil
 end
 
----Returns a table of scores for a player or nil if there are no high scores
+---Returns a table of scores for a player given a hash or nil if there are no high scores
 ---@param checkRate boolean only returns scores with the same rate as the current song
 ---@param checkFailed boolean only returns passing scores
 --both of these default to false if not explicitly set which will return all scores regardless
@@ -454,7 +460,7 @@ function GetBestPass(player, songParam, chartParam)
 		return award
 	end
 end
---- Returns the grade for a given song and chart or nil if there isn't a high score.
+--- Returns the top grade for a given song and chart or nil if there isn't a high score (respects rate).
 --- @param player Enum
 --- @param songParam Song
 --- @param chartParam Steps
@@ -492,7 +498,7 @@ function GetTopGrade(player, songParam, chartParam, rateParam)
 	return nil
 end
 
---- returns a hash from the lookup table
+--- returns a hash from the lookup table. uses current song/steps if they're not supplied
 ---@param player string
 ---@param inputSong Song
 ---@param inputSteps Steps
@@ -510,7 +516,7 @@ function GetHash(player, inputSong, inputSteps)
 	end
 end
 
--- Overwrite the HashLookup table for the current song.
+--- Overwrite the HashLookup table for the current song.
 -- This is called in ScreenEvaluation Common when GenerateHash doesn't match the HashLookup
 -- (indicates that the chart itself was changed while leaving the name/directory alone)
 function AddCurrentHash()
