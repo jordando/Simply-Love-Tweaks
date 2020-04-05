@@ -48,6 +48,7 @@ local TextEntrySettings = {
 
 -- ----------------------------------------------------
 local invalid_count = 0
+local ready = false
 local t = Def.ActorFrame {
 
 	ShowCustomSongMenuCommand=function(self) self:visible(true) end,
@@ -59,11 +60,22 @@ local t = Def.ActorFrame {
 		self:visible(false)
 		searchMenu_input = LoadActor("./Input.lua", {af=self, Scrollers=scrollers})
 	end,
-	SetSearchWheelMessageCommand=function(self) 
-		self:visible(true):sleep(0.5):queuecommand("CaptureTest")
+	SetSearchWheelMessageCommand=function(self)
+		--self:visible(true):sleep(.5):queuecommand("CaptureTest")
+		--Tentative fix for computers take more than .3 seconds to load search.
+		--Test on slow computer
+		self:visible(true):sleep(.3):queuecommand("WaitForSearch")
 	end,
-	CaptureTestCommand=function(self) 
-		SCREENMAN:GetTopScreen():AddInputCallback( searchMenu_input ) 
+	WaitForSearchCommand = function(self)
+		if ready then self:queuecommand("CaptureTest")
+		else self:sleep(.1):queuecommand("WaitForSearch")
+		end
+	end,
+	CaptureTestCommand=function(self)
+		SCREENMAN:GetTopScreen():AddInputCallback( searchMenu_input )
+	end,
+	SearchCaptureReadyMessageCommand=function()
+		ready = true
 	end,
 	DirectInputToSearchMenuCommand=function(self)
 		SCREENMAN:AddNewScreenToTop("ScreenTextEntry")
