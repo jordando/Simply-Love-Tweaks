@@ -18,7 +18,7 @@ local RadarCategories = {
 --AF for the stats to compare to
 
 local percentT = Def.ActorFrame{
-	InitCommand=function(self)self:zoom(0.8):xy(_screen.cx - 155,_screen.cy-24) end,
+	InitCommand=function(self)self:zoom(0.8):y(_screen.cy-24) end,
 }
 
 local windows = SL.Global.ActiveModifiers.TimingWindows
@@ -48,7 +48,7 @@ for i=1,#TapNoteScores.Types do
 end
 
 local percentLostT = Def.ActorFrame{
-	InitCommand=function(self)self:zoom(0.8):xy(_screen.cx - 155,_screen.cy-40) end,
+	InitCommand=function(self)self:zoom(0.8):y(_screen.cy-40) end,
 
 	LoadFont("_wendy small")..{
 		Text="LOST %",

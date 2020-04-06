@@ -35,9 +35,9 @@ local pane = Def.ActorFrame{
 					firstPass = "Just now"
 				else firstPass = chartStats.FirstPass end
 			end
-			self:GetChild("LastPlayedNumber"):settext("LAST PLAYED: "..lastPlayed)
-			self:GetChild("NumPlayedNumber"):settext("NUMBER OF PLAYS: "..numPlayed)
-			self:GetChild("FirstPass"):settext("FIRST PASS: "..firstPass)
+			self:GetChild("stats"):GetChild("LastPlayedNumber"):settext("LAST PLAYED: "..lastPlayed)
+			self:GetChild("stats"):GetChild("NumPlayedNumber"):settext("NUMBER OF PLAYS: "..numPlayed)
+			self:GetChild("stats"):GetChild("FirstPass"):settext("FIRST PASS: "..firstPass)
 			--determining the highest rate we've passed the song at
 			local rateScores = GetScores(player,GetHash(player),false,true) --ignore rate, check for fail
 			local highestRate, highestScore
@@ -62,10 +62,10 @@ local pane = Def.ActorFrame{
 					highestScore = pss:GetPercentDancePoints()
 				end
 			end
-			if highestScore then self:GetChild("MaxRate"):settext("MAX RATE CLEAR: "..highestRate.." ("..FormatPercentScore(tonumber(highestScore))..")")
-			else self:GetChild("MaxRate"):settext("MAX RATE CLEAR: NONE") end
+			if highestScore then self:GetChild("stats"):GetChild("MaxRate"):settext("MAX RATE CLEAR: "..highestRate.." ("..FormatPercentScore(tonumber(highestScore))..")")
+			else self:GetChild("stats"):GetChild("MaxRate"):settext("MAX RATE CLEAR: NONE") end
 		else
-			self:GetChild("NumPlayedNumber"):settext("Enable custom scores to\nactivate this panel")
+			self:GetChild("stats"):GetChild("NumPlayedNumber"):settext("Enable custom scores to\nactivate this panel")
 		end
 	end,
 }
@@ -82,36 +82,46 @@ else
 	}
 end
 
+local position = player == "PlayerNumber_P1" and (_screen.cx - 250) or (-_screen.cx - WideScale(250,10))
+
+local stats = Def.ActorFrame{
+	Name="stats",
+	InitCommand=function(self)
+		self:x(position)
+	end
+}
 --LastPlayed
-pane[#pane+1] = LoadFont("_wendy small")..{
+stats[#stats+1] = LoadFont("_wendy small")..{
 	Name="LastPlayedNumber",
 	InitCommand=function(self)
-		self:zoom(.4):xy(_screen.cx - 250, 200):halign(0)
+		self:zoom(.4):y(200):halign(0)
 	end,
 }
 
 --NumTimes
-pane[#pane+1] = LoadFont("_wendy small")..{
+stats[#stats+1] = LoadFont("_wendy small")..{
 	Name="NumPlayedNumber",
 	InitCommand=function(self)
-		self:zoom(.4):xy(_screen.cx - 250, 230):halign(0)
+		self:zoom(.4):y(230):halign(0)
 	end,
 }
 
 --MaxRate
-pane[#pane+1] = LoadFont("_wendy small")..{
+stats[#stats+1] = LoadFont("_wendy small")..{
 	Name="MaxRate",
 	InitCommand=function(self)
-		self:zoom(.4):xy(_screen.cx - 250, 260):halign(0)
+		self:zoom(.4):y(260):halign(0)
 	end,
 }
 
 --FirstPass
-pane[#pane+1] = LoadFont("_wendy small")..{
+stats[#stats+1] = LoadFont("_wendy small")..{
 	Name="FirstPass",
 	InitCommand=function(self)
-		self:zoom(.4):xy(_screen.cx - 250, 290):halign(0)
+		self:zoom(.4):y(290):halign(0)
 	end,
 }
+
+pane[#pane+1] = stats
 
 return pane

@@ -9,8 +9,7 @@ local t = Def.ActorFrame{
 	-- add a lua-based InputCalllback to this screen so that we can navigate
 	-- through multiple panes of information; pass a reference to this ActorFrame
 	-- and the number of panes there are to InputHandler.lua
-	OnCommand=function(self)
-										
+	OnCommand=function(self)								
 		SCREENMAN:GetTopScreen():AddInputCallback( LoadActor("./InputHandler.lua", {af=self, num_panes=NumPanes}) )
 	end,
 	OffCommand=function(self)
@@ -75,7 +74,7 @@ for player in ivalues(Players) do
 			if GAMESTATE:GetCurrentStyle():GetStyleType() == "StyleType_OnePlayerTwoSides" and SL.Global.GameMode ~= "Experiment" then
 				self:x(_screen.cx)
 			else
-				self:x(_screen.cx + (player==PLAYER_1 and -155 or GAMESTATE:GetNumSidesJoined()==2 and 155 or -155))
+				self:x(_screen.cx + (player==PLAYER_1 and -155 or 155))--GAMESTATE:GetNumSidesJoined()==2 and 155 or -155))
 			end
 		end,
 
@@ -109,11 +108,23 @@ for player in ivalues(Players) do
 		LoadActor("./PerPlayer/Disqualified.lua", player),
 	}
 	
+	local experimentLower = Def.ActorFrame{
+		OnCommand=function(self)
+			-- if double style, center the gameplay stats
+			if GAMESTATE:GetCurrentStyle():GetStyleType() == "StyleType_OnePlayerTwoSides" and SL.Global.GameMode ~= "Experiment" then
+				self:x(_screen.cx)
+			else
+				self:x(_screen.cx + (player==PLAYER_1 and 155 or -155))--GAMESTATE:GetNumSidesJoined()==2 and 155 or -155))
+			end
+		end,
+	}
+
 	--background quad for additional stats if we're in Experiment mode
 	if SL.Global.GameMode == "Experiment" then
-		lower[#lower+1] = Def.Quad{
+
+		experimentLower[#experimentLower+1] = Def.Quad{
 			InitCommand = function(self)
-				self:x(_screen.cx + WideScale(-10,-120)):diffuse(color("#1E282F")):y(_screen.cy+34):zoomto( 300,180 )
+				self:diffuse(color("#1E282F")):y(_screen.cy+34):zoomto( 300,180 )
 				if GAMESTATE:GetNumSidesJoined() == 2 then self:diffusealpha(0)
 				elseif ThemePrefs.Get("RainbowMode") then
 					self:diffusealpha(0.9)
@@ -121,7 +132,7 @@ for player in ivalues(Players) do
 			end,
 		}
 		if GAMESTATE:GetNumSidesJoined() == 1 then
-			lower[#lower+1] = LoadActor("./PerPlayer/Graphs.lua", {player = player, graph = 'density'})..{InitCommand = function(self) self:x(_screen.cx + WideScale(-10,-120)) end}
+			experimentLower[#experimentLower+1] = LoadActor("./PerPlayer/Graphs.lua", {player = player, graph = 'density'})..{InitCommand = function(self) end}
 		end
 	end
 	-- Generate a hash once here if we're in Experiment mode and use it for any pane that needs it.
@@ -149,6 +160,7 @@ for player in ivalues(Players) do
 		end
 	end
 	-- add lower ActorFrame to the primary ActorFrame
+	t[#t+1] = experimentLower
 	t[#t+1] = lower
 end
 

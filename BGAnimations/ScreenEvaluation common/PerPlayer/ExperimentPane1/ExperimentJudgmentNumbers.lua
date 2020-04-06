@@ -35,13 +35,14 @@ local RadarCategories = {
 
 -----------------------------------------------------------------------------------------------------------------
 --AF for the stats to compare to
-
+local highScorePosition = player == "PlayerNumber_P1" and 0 or WideScale(-100,-115)
+local deltaPosition = player == "PlayerNumber_P1" and 0 or WideScale(200,230)
 local highScoreT = Def.ActorFrame{
-	InitCommand=function(self)self:zoom(0.6):xy(_screen.cx - 155 - WideScale(5,0),_screen.cy+10) end,
+	InitCommand=function(self)self:zoom(0.6):xy(highScorePosition,_screen.cy+10) end,
 }
 
 local deltaT = Def.ActorFrame{
-	InitCommand=function(self)self:zoom(0.8):xy(_screen.cx - 155 - WideScale(25,0),_screen.cy-24) end,
+	InitCommand=function(self)self:zoom(0.8):xy(deltaPosition,_screen.cy-24) end,
 }
 
 local windows = SL.Global.ActiveModifiers.TimingWindows
@@ -170,7 +171,7 @@ if highScore then
 else
 	highScoreT[#highScoreT+1] = LoadFont("_wendy small")..{
 		InitCommand=function(self)
-			self:zoom(.8):xy(55,-45)
+			self:zoom(.8):xy(player=="PlayerNumber_P1" and 70 or 200,-45)
 			self:settext("No previous score\nat Rate "..SL.Global.ActiveModifiers.MusicRate)
 		end,
 	}
