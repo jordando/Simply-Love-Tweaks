@@ -21,18 +21,23 @@ local function AddToHashLookup()
 		if not SL.Global.HashLookup[dir] then SL.Global.HashLookup[dir] = {} end
 		local allSteps = song.song:GetAllSteps()
 		for _,steps in pairs(allSteps) do
-			local stepsType = ToEnumShortString(steps:GetStepsType())
-			stepsType = string.lower(stepsType):gsub("_","-")
-			local difficulty = ToEnumShortString(steps:GetDifficulty())
-			if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
-				local hash = GenerateHash(steps,stepsType,difficulty)
-				coroutine.yield() --resumed in ScreenLoadCustomScores.lua
-				if #hash > 0 then
-					if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
-					SL.Global.HashLookup[dir][difficulty][stepsType] = hash
-					newChartsFound = true
-				else
-					SM("WARNING: Could not generate hash for "..dir)
+			if string.find(SONGMAN:GetSongFromSteps(steps):GetSongFilePath(),".dwi$") then
+				Trace("Hashes can't be generated for .DWI files")
+				Trace("Could not generate hash for "..dir)
+			else
+				local stepsType = ToEnumShortString(steps:GetStepsType())
+				stepsType = string.lower(stepsType):gsub("_","-")
+				local difficulty = ToEnumShortString(steps:GetDifficulty())
+				if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
+					local hash = GenerateHash(steps,stepsType,difficulty)
+					coroutine.yield() --resumed in ScreenLoadCustomScores.lua
+					if #hash > 0 then
+						if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
+						SL.Global.HashLookup[dir][difficulty][stepsType] = hash
+						newChartsFound = true
+					else
+						SM("WARNING: Could not generate hash for "..dir)
+					end
 				end
 			end
 		end
