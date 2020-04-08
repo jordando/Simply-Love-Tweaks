@@ -162,14 +162,14 @@ local t = Def.ActorFrame{
 					
 					-- if only one player is joined, stringify the DisplayBPMs and return early
 					if #GAMESTATE:GetHumanPlayers() == 1 then
+						local player = GAMESTATE:GetMasterPlayerNumber()
 						-- StringifyDisplayBPMs() is defined in ./Scipts/SL-BPMDisplayHelpers.lua
-						self:settext(StringifyDisplayBPMs() or ""):zoom(1)
+						self:settext(StringifyDisplayBPMs(player,GAMESTATE:GetCurrentSteps(player)) or ""):zoom(1)
 						return
 					end
-
 					-- otherwise there is more than one player joined and the possibility of split BPMs
-					local p1bpm = StringifyDisplayBPMs(PLAYER_1)
-					local p2bpm = StringifyDisplayBPMs(PLAYER_2)
+					local p1bpm = StringifyDisplayBPMs(PLAYER_1, GAMESTATE:GetCurrentSteps(PLAYER_1))
+					local p2bpm = StringifyDisplayBPMs(PLAYER_2, GAMESTATE:GetCurrentSteps(PLAYER_2))
 
 					-- it's likely that BPM range is the same for both charts
 					-- no need to show BPM ranges for both players if so
