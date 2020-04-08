@@ -5,6 +5,7 @@ scrollers[PLAYER_2] = setmetatable({disable_wrapping=true}, sick_wheel_mt)
 local mpn = GAMESTATE:GetMasterPlayerNumber()
 -- ----------------------------------------------------
 local invalid_count = 0
+local tagMenu_input
 local t = Def.ActorFrame {
 
 	-- FIXME: stall for 0.5 seconds so that the Lua InputCallback doesn't get immediately added to the screen.

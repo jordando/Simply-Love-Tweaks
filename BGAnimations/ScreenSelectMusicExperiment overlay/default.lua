@@ -57,6 +57,7 @@ local t = Def.ActorFrame {
 	OnCommand=function(self)
 		if PREFSMAN:GetPreference("MenuTimer") then self:queuecommand("Listen") end
 	end,
+
 	ListenCommand=function(self)
 		local topscreen = SCREENMAN:GetTopScreen()
 		local seconds = topscreen:GetChild("Timer"):GetSeconds()
@@ -85,13 +86,11 @@ local t = Def.ActorFrame {
 		end
 	end,
 	CaptureCommand=function(self)
-
 		-- One element of the Input table is an internal function, Handler
 		SCREENMAN:GetTopScreen():AddInputCallback( Input.Handler )
 		-- set up initial variable states and the players' OptionRows
 		Input:Init()
 		-- It should be safe to enable input for players now
-
 		self:queuecommand("EnableMainInput")
 	end,
 	-- a hackish solution to prevent users from button-spamming and breaking input :O

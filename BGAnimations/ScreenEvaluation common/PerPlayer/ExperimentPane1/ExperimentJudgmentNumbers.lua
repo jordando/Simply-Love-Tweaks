@@ -4,14 +4,15 @@ local hash = args.hash
 local pn = ToEnumShortString(player)
 local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
 local highScore
-
+local isCustomScore = false
 local RateScores
-if ThemePrefs.Get("UseCustomScores") then 
-	RateScores = GetScores(player, hash, true) --See /scripts/Experiment-Scores.lua
-	if RateScores then
-		highScore = RateScores[1]
-	end
-else
+
+RateScores = GetScores(player, hash, true) --See /scripts/Experiment-Scores.lua
+if RateScores then
+	highScore = RateScores[1]
+	isCustomScore = true
+end
+if not highScore then
 	local song = GAMESTATE:GetCurrentSong()
 	local steps = GAMESTATE:GetCurrentSteps(player)
 	local highScores = PROFILEMAN:GetProfile(player):GetHighScoreList(song, steps):GetHighScores()
@@ -49,14 +50,14 @@ local windows = SL.Global.ActiveModifiers.TimingWindows
 
 if highScore then
 	local PercentDP
-	if ThemePrefs.Get("UseCustomScores") then PercentDP = highScore.score
+	if isCustomScore then PercentDP = highScore.score
 	else PercentDP = highScore:GetPercentDP() end
 
 	-- do "regular" TapNotes first
 	for i=1,#TapNoteScores.Types do
 		local window = TapNoteScores.Types[i]
 		local number
-		if ThemePrefs.Get("UseCustomScores") then number = highScore[window]
+		if isCustomScore then number = highScore[window]
 		else number = highScore:GetTapNoteScore(window) end
 
 		--delta between current stats and highscore stats
@@ -123,7 +124,7 @@ if highScore then
 	-- then handle holds, mines, hands, rolls
 	for index, RCType in ipairs(RadarCategories.Types) do
 		local performance
-		if ThemePrefs.Get("UseCustomScores") then performance = highScore[RCType]
+		if isCustomScore then performance = highScore[RCType]
 		else performance = highScore:GetRadarValues():GetValue(RCType) end
 		-- player performace value
 		highScoreT[#highScoreT+1] = Def.RollingNumbers{
@@ -165,9 +166,9 @@ if highScore then
 			self:xy(300,-10)
 		end
 	}
-	
+
 	highScoreT[#highScoreT+1] = LoadActor("./ExperimentJudgmentLabels.lua", player)
-	
+
 else
 	highScoreT[#highScoreT+1] = LoadFont("_wendy small")..{
 		InitCommand=function(self)

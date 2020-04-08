@@ -121,11 +121,7 @@ Branch.AfterEvaluationStage = function()
 end
 
 Branch.AfterSelectPlayMode = function()
-	for player in ivalues(GAMESTATE:GetHumanPlayers()) do
-		if SL.Global.GameMode == "Experiment"
-		and ThemePrefs.Get("UseCustomScores")
-		then return "ScreenLoadCustomScores" end
-	end
+	if SL.Global.GameMode == "Experiment" then return "ScreenLoadCustomScores" end
 	return SelectMusicOrCourse()
 end
 

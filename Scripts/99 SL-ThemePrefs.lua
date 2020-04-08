@@ -34,7 +34,7 @@ SL_CustomPrefs.Get = function()
 			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values = { true, false }
 		},
-		UseCustomScores = {
+		LoadCustomScoresUpfront = {
 			Default = false,
 			Choices = {  THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values = { true, false}
@@ -56,6 +56,12 @@ SL_CustomPrefs.Get = function()
 			Default = "Blue",
 			Choices = { THEME:GetString("ThemePrefs","Blue"), THEME:GetString("ThemePrefs", "Yellow") },
 			Values 	= { "Blue", "Yellow" }
+		},
+		OriginalHighScoreList=
+		{
+			Default = true,
+			Choices = { THEME:GetString("ThemePrefs","Original"), THEME:GetString("ThemePrefs", "Alternate") },
+			Values 	= { true, false }
 		},
 		---------------------------------------------------------------------------------
 		AllowFailingOutOfSet =

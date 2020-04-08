@@ -48,7 +48,7 @@ for key, item in pairs(PaneItems) do
 			InitCommand=function(self) self:xy(item.data.x,item.data.y):diffuse(Color.White):halign(0) end,
 			OnCommand=function(self) self:playcommand("Set") end,
 			SetOptionPanesMessageCommand=function(self)
-				local bpm = GetDisplayBPMs(player)[2]
+				local bpm = GetDisplayBPMs(player,GAMESTATE:GetCurrentSteps(player))[2]
 				if item.note == 16 then
 					self:settext( math.floor((16 * bpm / 240)*100)/100 .." NPS")
 				else

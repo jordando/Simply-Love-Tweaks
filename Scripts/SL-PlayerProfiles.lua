@@ -106,14 +106,6 @@ LoadProfileCustom = function(profile, dir)
 				end
 			end
 		end
-		--Load scores from separate txt file (See /scripts/Experiment-Scores.lua)
-		--only if we're in Experiment mode using custom scores with a named profile
-		--(don't bother saving for guests)
-		if SL.Global.GameMode == "Experiment"
-		 and ThemePrefs.Get("UseCustomScores")
-		 and  PROFILEMAN:GetPlayerName(player) ~= ""
-		 then LoadScores(pn) end
-
 	end
 
 
@@ -147,9 +139,7 @@ SaveProfileCustom = function(profile, dir)
 			--Save scores in separate txt file (See /scripts/Experiment-Scores.lua)
 			--only if we're in Experiment mode using custom scores with a named profile
 			--(don't bother saving for guests)
-			if SL.Global.GameMode == "Experiment"
-			and ThemePrefs.Get("UseCustomScores")
-			and  PROFILEMAN:GetPlayerName(player) ~= "" then SaveScores(pn) end
+			if SL.Global.GameMode == "Experiment" and PROFILEMAN:GetPlayerName(player) ~= "" then SaveScores(pn) end
 
 			break
 		end

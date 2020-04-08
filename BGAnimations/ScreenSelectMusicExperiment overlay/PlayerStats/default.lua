@@ -213,27 +213,27 @@ if playerStats then
 	local firstPasses = {}
 	local songs = SONGMAN:GetAllSongs()
 	local maxDiff = 0
-	if ThemePrefs.Get("UseCustomScores") then
-		for song in ivalues(songs) do
-			if song:HasStepsType(GetStepsType()) then
-				for steps in ivalues(song:GetStepsByStepsType(GetStepsType())) do
-					local hash = GetHash(player,song,steps)
-					if hash then
-						local customScore = GetChartStats(player,hash)
-						if customScore and customScore.FirstPass ~= "Never" and customScore.FirstPass ~= "Unknown" then
-							if not firstPasses[steps:GetMeter()] then
-								if steps:GetMeter() > maxDiff then maxDiff = steps:GetMeter() end
+	for song in ivalues(songs) do
+		if song:HasStepsType(GetStepsType()) then
+			for steps in ivalues(song:GetStepsByStepsType(GetStepsType())) do
+				local hash = GetHash(player,song,steps)
+				if hash then
+					local customScore = GetChartStats(player,hash)
+					if customScore and customScore.FirstPass ~= "Never" and customScore.FirstPass ~= "Unknown" then
+						if not firstPasses[steps:GetMeter()] then
+							if steps:GetMeter() > maxDiff then maxDiff = steps:GetMeter() end
+							firstPasses[steps:GetMeter()] = {date = customScore.FirstPass, song = song:GetMainTitle()}
+						else
+							if DateToMinutes(firstPasses[steps:GetMeter()].date) > DateToMinutes(customScore.FirstPass) then
 								firstPasses[steps:GetMeter()] = {date = customScore.FirstPass, song = song:GetMainTitle()}
-							else
-								if DateToMinutes(firstPasses[steps:GetMeter()].date) > DateToMinutes(customScore.FirstPass) then
-									firstPasses[steps:GetMeter()] = {date = customScore.FirstPass, song = song:GetMainTitle()}
-								end
 							end
 						end
 					end
 				end
 			end
 		end
+	end
+	if next(firstPasses) then --don't need to do any of this if we haven't passed anything
 		local sortedFirstPasses = {}
 		for i = 1,maxDiff do
 			if firstPasses[i] then

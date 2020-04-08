@@ -143,10 +143,8 @@ for player in ivalues(Players) do
 		local pn = ToEnumShortString(player)
 		local stepsType = ToEnumShortString(GetStepsType()):gsub("_","-"):lower()
 		local difficulty = ToEnumShortString(GAMESTATE:GetCurrentSteps(pn):GetDifficulty())
-		if ThemePrefs.Get("UseCustomScores") then 
-			hash = GenerateHash(GAMESTATE:GetCurrentSteps(player),stepsType, difficulty)
-			if hash ~= GetHash(player) then AddCurrentHash() end
-		end
+		hash = GenerateHash(GAMESTATE:GetCurrentSteps(player),stepsType, difficulty)
+		if hash ~= GetHash(player) then AddCurrentHash() end
 	end
 	
 	-- add available Panes to the lower ActorFrame via a loop
