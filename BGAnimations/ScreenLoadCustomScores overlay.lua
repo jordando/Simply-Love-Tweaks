@@ -59,25 +59,23 @@ return Def.ActorFrame{
         end,
 
         LoadHashCommand = function(self)
-            if ThemePrefs.Get("UseCustomScores") then
-                co = coroutine.create(LoadHashLookup)
-                text = "Generating new hashes: "
-                self:settext("Creating hash lookup table")
-                self:queuecommand("SetupCoroutine")
-                finish = true
-            else
-                self:queuecommand("Finish")
-            end
+            co = coroutine.create(LoadHashLookup)
+            text = "Generating new hashes: "
+            self:settext("Creating hash lookup table")
+            self:queuecommand("SetupCoroutine")
+            finish = true
         end,
 
         SetupCoroutineCommand = function(self)
+            self:stoptweening()
             if coroutine.status(co) == "suspended" then
-                coroutine.resume(co)
-                self:settext(text..count)
                 count = count + 1
+                self:settext(text..count)
+                Trace("COROUTINE: "..count)
+                coroutine.resume(co)
             end
             if coroutine.status(co) ~= "dead" then
-                self:sleep(.25):queuecommand("SetupCoroutine")
+                self:sleep(.3):queuecommand("SetupCoroutine")
             else
                 self:settext("DONE")
                 if finish then
