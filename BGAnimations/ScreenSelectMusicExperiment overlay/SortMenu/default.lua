@@ -74,6 +74,10 @@ local t = Def.ActorFrame {
 	DirectInputToOrderMenuCommand=function(self) self:playcommand("FinishSort") end,
 	DirectInputToSearchMenuCommand=function(self) self:playcommand("FinishSort") end,
 	DirectInputToPlayerStatsCommand=function(self) self:playcommand("FinishSort") end,
+	DirectInputToPracticeCommand=function(self)
+		--TODO this should probably go back to main music select screen instead of the sort menu
+		SCREENMAN:AddNewScreenToTop("ScreenPractice")
+	end,
 	DirectInputToTestInputCommand=function(self)
 		local screen = SCREENMAN:GetTopScreen()
 		local overlay = self:GetParent()
@@ -123,14 +127,17 @@ local t = Def.ActorFrame {
 
 		if #GAMESTATE:GetHumanPlayers() == 1 then
 			table.insert(wheel_options, {"View", "Player Stats"})
+			-- From source: Edit mode DOES NOT WORK if the master player is not player 1. -Kyz
+			if GAMESTATE:GetMasterPlayerNumber() == "PlayerNumber_P1" then
+				table.insert(wheel_options, {"Song", "Practice"})
+			end
 		end
 		--table.insert(wheel_options, {"SortBy", "Popularity"})
 		--table.insert(wheel_options, {"SortBy", "Recent"})
 
 		-- allow players to switch to a TestInput overlay if the current game has visual assets to support it
-		-- and if we're in EventMode (public arcades probably don't want random players attempting to diagnose the pads...)
 		local game = GAMESTATE:GetCurrentGame():GetName()
-		if (game=="dance" or game=="pump" or game=="techno") and GAMESTATE:IsEventMode() then
+		if (game=="dance" or game=="pump" or game=="techno") then
 			table.insert(wheel_options, {"FeelingSalty", "TestInput"})
 		end
 
