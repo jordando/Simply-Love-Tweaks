@@ -124,18 +124,6 @@ end
 -- stepsType is usually either 'dance-single' or 'dance-double'
 -- difficulty is usually one of {'Beginner', 'Easy', 'Medium', 'Hard', 'Challenge'}
 function GenerateHash(steps, stepsType, difficulty)
-	--Some simfiles use nonstandard difficulties such as Expert or Heavy. This table attempts to account for it
-	local difficultyConversion = {}
-	difficultyConversion.Beginner = "Beginner"
-	difficultyConversion.Novice = difficultyConversion.Beginner
-	difficultyConversion.Easy = "Easy"
-	difficultyConversion.Light = difficultyConversion.Easy
-	difficultyConversion.Medium = "Medium"
-	difficultyConversion.Standard = difficultyConversion.Medium
-	difficultyConversion.Hard = "Hard"
-	difficultyConversion.Heavy = difficultyConversion.Hard
-	difficultyConversion.Challenge = "Challenge"
-	difficultyConversion.Expert = difficultyConversion.Challenge
 
 	local msdFile = ParseMsdFile(steps)
 
@@ -172,7 +160,7 @@ function GenerateHash(steps, stepsType, difficulty)
 	for notes in ivalues(allNotes) do
 		-- StepMania considers NOTES sections with greater than 7 sections valid.
 		-- https://github.com/stepmania/stepmania/blob/master/src/NotesLoaderSM.cpp#L1072-L1079
-		if #notes >= 7 and notes[2] == stepsType and difficulty == difficultyConversion[notes[4]] then
+		if #notes >= 7 and notes[2] == stepsType and difficulty == ToEnumShortString(OldStyleStringToDifficulty(notes[4])) then
 			local minimizedChart = MinimizeChart(notes[7])
 			local chartDataAndBpm = minimizedChart .. bpms
 			local hash = sha256(chartDataAndBpm)

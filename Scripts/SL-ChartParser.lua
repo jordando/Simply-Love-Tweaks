@@ -88,19 +88,6 @@ local function GetSimfileChartString(SimfileString, StepsType, Difficulty, Steps
 	elseif Filetype == "sm" then
 		-- SM FILE
 
-		--Some simfiles use nonstandard difficulties such as Expert or Heavy. This table attempts to account for it
-		local difficultyConversion = {}
-		difficultyConversion.Beginner = "Beginner"
-		difficultyConversion.Novice = difficultyConversion.Beginner
-		difficultyConversion.Easy = "Easy"
-		difficultyConversion.Light = difficultyConversion.Easy
-		difficultyConversion.Medium = "Medium"
-		difficultyConversion.Standard = difficultyConversion.Medium
-		difficultyConversion.Hard = "Hard"
-		difficultyConversion.Heavy = difficultyConversion.Hard
-		difficultyConversion.Challenge = "Challenge"
-		difficultyConversion.Expert = difficultyConversion.Challenge
-
 		-- Loop through each chart in the SM file
 		for chart in SimfileString:gmatch("#NOTES[^;]*") do
 			-- split the entire chart string into pieces on ":"
@@ -121,7 +108,7 @@ local function GetSimfileChartString(SimfileString, StepsType, Difficulty, Steps
 
 			-- if this particular chart's steps_type matches the desired StepsType
 			-- and its difficulty string matches the desired Difficulty
-			if (st == StepsType) and (difficultyConversion[diff] == Difficulty) then
+			if (st == StepsType) and (ToEnumShortString(OldStyleStringToDifficulty(diff)) == Difficulty) then
 				-- then index 7 contains the notedata that we're looking for
 				-- use gsub to remove comments, store the resulting string,
 				-- and break out of the chart loop now
