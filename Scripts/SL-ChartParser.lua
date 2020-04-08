@@ -93,7 +93,9 @@ local function GetSimfileChartString(SimfileString, StepsType, Difficulty, Steps
 		difficultyConversion.Beginner = "Beginner"
 		difficultyConversion.Novice = difficultyConversion.Beginner
 		difficultyConversion.Easy = "Easy"
+		difficultyConversion.Light = difficultyConversion.Easy
 		difficultyConversion.Medium = "Medium"
+		difficultyConversion.Standard = difficultyConversion.Medium
 		difficultyConversion.Hard = "Hard"
 		difficultyConversion.Heavy = difficultyConversion.Hard
 		difficultyConversion.Challenge = "Challenge"
