@@ -90,9 +90,11 @@ local af =  Def.ActorFrame{
 		CreateLineGraph(200,150)..{OnCommand=function(self) self:xy(-20,130) end},
 		LoadFont("_wendy small") ..
 		{
-			Text = "Session",
+			Name = "Session",
 			InitCommand = function(self)
 				self:zoom(1):diffuse(Color.White):zoom(.7):y(-180):halign(.5)
+				local date = MonthOfYear()+1 .. "-" .. DayOfMonth() .. "-" .. Year()
+				self:settext(date)
 			end
 		},
 		LoadFont("Common Normal") ..
