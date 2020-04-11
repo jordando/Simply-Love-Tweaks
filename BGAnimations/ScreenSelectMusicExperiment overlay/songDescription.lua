@@ -53,10 +53,10 @@ local t = Def.ActorFrame{
 	-- ----------------------------------------
 	-- Actorframe for Artist, BPM, and Song length
 	Def.ActorFrame{
-		CurrentSongChangedMessageCommand=function(self) self:playcommand("Set") end,
-		CurrentCourseChangedMessageCommand=function(self) self:playcommand("Set") end,
-		CurrentTrailP2ChangedMessageCommand=function(self) self:playcommand("Set") end,
-		UpdateTagsMessageCommand=function(self) self:playcommand("Set") end, --Called by ./TagMenu/Input when changing the tags.
+		CurrentSongChangedMessageCommand=function(self) self:queuecommand("Set") end,
+		CurrentCourseChangedMessageCommand=function(self) self:queuecommand("Set") end,
+		CurrentTrailP2ChangedMessageCommand=function(self) self:queuecommand("Set") end,
+		UpdateTagsMessageCommand=function(self) self:queuecommand("Set") end, --Called by ./TagMenu/Input when changing the tags.
 		-- Update the tags for the current song
 		SetCommand = function(self)
 			local currentTags = {}
@@ -158,8 +158,9 @@ local t = Def.ActorFrame{
 			-- BPM value
 			LoadFont("Common Normal")..{
 				InitCommand=function(self) self:horizalign(left):xy(5,20 - courseOffset):diffuse(1,1,1,1) end,
+				--if songs have split bpms then they may change as we change the difficulty so redo bpm every time steps change
+				StepsHaveChangedMessageCommand=function(self) self:queuecommand("Set") end,
 				SetCommand=function(self)
-					
 					-- if only one player is joined, stringify the DisplayBPMs and return early
 					if #GAMESTATE:GetHumanPlayers() == 1 then
 						local player = GAMESTATE:GetMasterPlayerNumber()
