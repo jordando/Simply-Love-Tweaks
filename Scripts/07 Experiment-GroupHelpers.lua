@@ -89,18 +89,18 @@ local TaggedSongs = {}
 -- Tagging
 --------------------------------------------------------------------------------------------------------------------------
 
--- Returns nil if the song has no tags or the name of the first tag it finds
--- If given a group parameter it will only return something if the song has that specific tag
--- TODO take out custom song stuff and switch to tagName or something
-function GetTags(song, group)
+--- Returns nil if the song has no tags or the name of the first tag it finds
+--- If given a tagName parameter it will only return something if the song has that specific tag
+--- Since tags are done by song rather than by chart we don't use the hashes. Should tags go by chart instead?
+function GetTags(song, tagName)
 	local current_song = song
 	local tags = {}
-	for customSong in ivalues(TaggedSongs) do
-		if current_song:GetMainTitle() ==  customSong['title'] and current_song:GetGroupName() == customSong['actualGroup'] then
-			if group then
-				if group == customSong['customGroup'] then tags[#tags+1] = customSong['customGroup'] end
+	for taggedSong in ivalues(TaggedSongs) do
+		if current_song:GetMainTitle() ==  taggedSong['title'] and current_song:GetGroupName() == taggedSong['actualGroup'] then
+			if tagName then
+				if tagName == taggedSong['customGroup'] then tags[#tags+1] = taggedSong['customGroup'] end
 			else
-				tags[#tags+1] = customSong['customGroup']
+				tags[#tags+1] = taggedSong['customGroup']
 			end
 		end
 	end
@@ -108,60 +108,68 @@ function GetTags(song, group)
 	else return nil end
 end
 
--- Add whatever tags we find in Tags.txt to the sort groups aka groups we can sort by
--- 'No Tags Set' and 'BPM Changes' are automatically generated
+--- Add any tags we find in Tags.txt to the sort groups
+--- 'No Tags Set' and 'BPM Changes' are automatically generated
 local function LoadTags()
-	SortGroups.Tag = {}
+	local tagTable = {}
 	local path = THEME:GetCurrentThemeDirectory() .. "Other/Tags.txt"
 	for name in ivalues(GetFileContents(path)) do
-		table.insert(SortGroups.Tag, name)
+		table.insert(tagTable, name)
 	end
-	table.insert(SortGroups.Tag, "No Tags Set")
-	table.insert(SortGroups.Tag, "BPM Changes")
+	--if there aren't any tags add a generic "Favorites" tag to get people started
+	if not next(tagTable) then
+		table.insert(tagTable,"Favorites")
+	end
+	table.insert(tagTable, "No Tags Set")
+	table.insert(tagTable, "BPM Changes")
+	return tagTable
 end
 
--- Write whatever is in SortGroups.Tag to Tags.txt
--- Don't add 'No Tags Set' or 'BPM Changes'
+--- Write whatever is in SortGroups.Tag to Tags.txt
+--- Don't add 'No Tags Set' or 'BPM Changes'
 local function SaveTags()
 	local toWrite = ""
-	for k,v in pairs(SortGroups.Tag) do
+	for _,v in pairs(SortGroups.Tag) do
 		if v ~= "No Tags Set" and v~= "BPM Changes" then
 			toWrite = toWrite..v.."\n"
 		end
 	end
 	local path = THEME:GetCurrentThemeDirectory() .. "Other/Tags.txt"
-	WriteFileContents(path,toWrite)
+	WriteFileContents(path,toWrite,true)
 end
 
--- Add whatever tagged songs we find in TaggedSongs.txt. They're needed to populate the tag groups
+--- Add whatever tagged songs we find in TaggedSongs.txt. They're needed to populate the tag groups
 local function LoadTaggedSongs()
-	TaggedSongs = {}
+	local songs = {}
 	local path = THEME:GetCurrentThemeDirectory() .. "Other/TaggedSongs.txt"
 	for line in ivalues(GetFileContents(path)) do
 		local toAdd = Split(line, '\t')
-		table.insert(TaggedSongs, {customGroup=toAdd[1], title=toAdd[2], actualGroup=toAdd[3]})
+		table.insert(songs, {customGroup=toAdd[1], title=toAdd[2], actualGroup=toAdd[3]})
 	end
+	return songs
 end
 
--- Write whatever is in TaggedSongs to TaggedSongs.txt
+--- Write whatever is in TaggedSongs to TaggedSongs.txt
 local function SaveTaggedSongs()
 	-- Overwrite CustomGroups-Songs.txt with the current Custom Songs table
 	local toWrite = ""
-	for k,v in pairs(TaggedSongs) do
+	for _,v in pairs(TaggedSongs) do
 		toWrite = toWrite..v['customGroup'].."\t"..v['title'].."\t"..v['actualGroup'].."\n"
 	end
 	local path = THEME:GetCurrentThemeDirectory() .. "Other/TaggedSongs.txt"
-	WriteFileContents(path,toWrite)
+	WriteFileContents(path,toWrite,true)
 end
 
+--- Adds a tag to the SortGroups table, saves it to disk, and creates loads the group with songs
+-- Called in ScreenSelectMusicExperiment/TagMenu/Input.lua
 function AddTag(toAdd)
 	table.insert(SortGroups.Tag, #SortGroups.Tag-1, toAdd)
 	SaveTags()
 	PreloadedGroups["Tag"][tostring(toAdd)] = CreateSongList(tostring(toAdd), "Tag")
 end
 
--- Called by ScreenSelectMusicExperiment overlay/TagMenu/Input.lua when the player wants to add a tag to a song
--- Adds a line to TaggedSongs, saves it, and then recreates the group so we can sort properly.
+--- Called by ScreenSelectMusicExperiment overlay/TagMenu/Input.lua when the player wants to add a tag to a song.
+--- Adds a line to TaggedSongs, saves it, and then recreates the group so we can sort properly.
 function AddTaggedSong(toAdd, song)
 	-- Add the song to the CustomSong table
 	local add = Split(toAdd, '\t')
@@ -645,5 +653,5 @@ function InitPreloadedGroups()
 end
 
 -- Get custom songs ready --
-LoadTaggedSongs()
-LoadTags()
+TaggedSongs = LoadTaggedSongs()
+SortGroups.Tag = LoadTags()
