@@ -76,18 +76,23 @@ end
 
 --- Writes the hash lookup to disk.
 function SaveHashLookup()
+	local path = THEME:GetCurrentThemeDirectory() .. "Other/HashLookup.txt"
 	if SL.Global.HashLookup then
-		local toWrite = ""
+		-- create a generic RageFile that we'll use to read the contents
+		local file = RageFileUtil.CreateRageFile()
+		-- the second argument here (the 2) signifies
+		-- that we are opening the file in write mode
+		if not file:Open(path, 2) then SM("Could not open HashLookup.txt") return end
 		for dir,charts in pairs(SL.Global.HashLookup) do
-			toWrite = toWrite..dir.."\r\n"
+			file:PutLine(dir)
 			for diff,stepTypes in pairs(charts) do
 				for stepType, hash in pairs(stepTypes) do
-					toWrite = toWrite..diff.."\t"..stepType.."\t"..hash.."\r\n"
+					file:PutLine(diff.."\t"..stepType.."\t"..hash)
 				end
 			end
 		end
-		local path = THEME:GetCurrentThemeDirectory() .. "Other/HashLookup.txt"
-		WriteFileContents(path,toWrite,true)
+		file:Close()
+		file:destroy()
 	end
 end
 
