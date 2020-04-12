@@ -82,8 +82,6 @@ LoadProfileCustom = function(profile, dir)
 				or type(v) ~= "string" then
 					SL[pn].ActiveModifiers[k] = v
 				end
-				if k == "LastSongPlayedName" then SL.Global.LastSongPlayedName = v end
-				if k == "LastSongPlayedGroup" then SL.Global.LastSongPlayedGroup = v end
 				-- special-case PlayerOptionsString for now
 				-- it is saved to and read from profile as a string, but doesn't have a corresponding
 				-- OptionRow in ScreenPlayerOptions, so it will fail validation above
@@ -104,7 +102,8 @@ LoadProfileCustom = function(profile, dir)
 					-- the operator menu's Advanced Options
 					GAMESTATE:GetPlayerState(player):GetPlayerOptions("ModsLevel_Preferred"):FailSetting( GetDefaultFailType() )
 				end
-			end
+			elseif k == "LastSongPlayedName" then SL.Global.LastSongPlayedName = v
+			elseif k == "LastSongPlayedGroup" then SL.Global.LastSongPlayedGroup = v end
 		end
 	end
 
