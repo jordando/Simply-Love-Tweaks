@@ -37,10 +37,6 @@ CreateLineGraph = function(_w, _h)
 				if song.difficultyMeter then --if player backs out of a song then Stages.Stats will have an empty table. Ignore that.
 					local diff = max_dif - song.difficultyMeter
 					if diff < 0 then diff = 0 end --max difficulty to show is 25.
-					local color = Color.Green
-					if song.grade and song.grade == "Grade_Failed" then
-						color = Color.Red
-					end
 					table.insert(verts,{{i*(w/num_lines),diff*(h/num_lines_y),0}, Color.White})
 				end
 			end

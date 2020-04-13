@@ -1,4 +1,5 @@
 local player = ...
+local pn = ToEnumShortString(player)
 
 local pane = Def.ActorFrame{
 	Name="Pane3",
@@ -10,29 +11,24 @@ local pane = Def.ActorFrame{
 		if params.PlayerNumber == player then self:visible(false) end
 	end,
 	SetOptionPanesMessageCommand=function(self)
-		if #SL.Global.Stages.Stats == 0 then
-			self:GetChild("NoSongs"):visible(true)
+		if SL[pn].Streams.TotalStreams == 0 then 
+			self:GetChild("FullBreakdown"):settext("No stream or counter turned off")
 		else
-			self:GetChild("NoSongs"):visible(false)
+			self:GetChild("FullBreakdown"):settext(SL[pn].Streams.Breakdown1)
+			local zoomFactor = 1
+			if string.len(SL[pn].Streams.Breakdown1) > 500 then zoomFactor = .6
+			elseif string.len(SL[pn].Streams.Breakdown1) > 350 then zoomFactor = .75 end
+			self:GetChild("FullBreakdown"):zoom(zoomFactor):wrapwidthpixels(250/zoomFactor)
 		end
 	end
 }
-local LineGraph = LoadActor("./LineGraph.lua", player)
-local initializeLineGraph = CreateLineGraph(200,150)..{
-	OnCommand=function(self)
 
-	end
-}
 
-pane[#pane+1] = LoadFont("_wendy small")..{
-	Name="NoSongs",
+pane[#pane+1] = LoadFont("Common Normal")..{
+	Name="FullBreakdown",
 	InitCommand=function(self)
-		self:zoom(.5):x(WideScale(15,0))
-		self:settext("NO SONGS PLAYED")
+		self:xy(WideScale(15,0),5)
 	end,
 }
-
-
-pane[#pane+1] = initializeLineGraph
 
 return pane
