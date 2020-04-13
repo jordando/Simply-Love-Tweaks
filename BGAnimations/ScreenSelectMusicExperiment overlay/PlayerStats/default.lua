@@ -4,6 +4,7 @@ local player = GAMESTATE:GetMasterPlayerNumber()
 local totalTime = 0
 local songsPlayedThisGame = 0
 local notesHitThisGame = 0
+local LineGraph = LoadActor("LineGraph.lua")
 
 function ConvertSecondsToTimeString(totalTime)
 	local hours = math.floor(totalTime/3600)
