@@ -74,52 +74,17 @@ local af = Def.ActorFrame{
 		if not GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentSteps(player) and song and ThemePrefs.Get("ShowExtraSongInfo") and GAMESTATE:GetNumSidesJoined() < 2 then
 			InitializeMeasureCounterAndModsLevel(player)
 			if SL[pn].Streams.Measures then --used to be working without this... not sure what changed but don't run any of this stuff if measures is not filled in
-				local lastSequence = #SL[pn].Streams.Measures
-				local streamsTable = SL[pn].Streams
-				local measureType = SL[pn].ActiveModifiers.MeasureCounter
-				local totalStreams = 0
-				local previousSequence = 0
-				local streamAmount = 0
-				local breakdown = "" --breakdown tries to display the full streams including rest measures
-				local breakdown2 = "" --breakdown2 tries to display the streams without rest measures
-				local breakdown3 = "" --breakdown3 combines streams that would normally be separated with a -
-				for _, sequence in ipairs(streamsTable.Measures) do
-					if not sequence.isBreak then
-						totalStreams = totalStreams + sequence.streamEnd - sequence.streamStart
-						breakdown = breakdown..sequence.streamEnd - sequence.streamStart.." "
-						if previousSequence < 2 then
-							breakdown2 = breakdown2.."-"..sequence.streamEnd - sequence.streamStart
-						elseif previousSequence >= 2 then
-							breakdown2 = breakdown2.."/"..sequence.streamEnd - sequence.streamStart
-							previousSequence = 0
-						end
-						streamAmount = streamAmount + 1
-					else
-						breakdown = breakdown.."("..sequence.streamEnd - sequence.streamStart..") "
-						previousSequence = previousSequence + sequence.streamEnd - sequence.streamStart
-					end
-				end	
-				if totalStreams == 0 then
+				if SL[pn].Streams.TotalStreams == 0 then
 					self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "NoStream"))
 					self:GetChild("TotalStream"):settext("")
 				else
-					for stream in ivalues(Split(breakdown2,"/")) do
-						local combine = 0
-						local multiple = false
-						for part in ivalues(Split(stream,"-")) do
-							if combine ~= 0 then multiple = true end
-							combine = combine + tonumber(part)
-						end
-						breakdown3 = breakdown3.."/"..combine..(multiple and "*" or "")
-					end
-					local percent = totalStreams / streamsTable.Measures[lastSequence].streamEnd
-					percent = math.floor(percent*100)
 					local toWrite = THEME:GetString("ScreenSelectMusicExperiment", "Total").." :"
-					toWrite = toWrite..totalStreams.." ("..percent.."%) (>="..measureType
+					local measureType = SL[pn].ActiveModifiers.MeasureCounter
+					toWrite = toWrite..SL[pn].Streams.TotalStreams.." ("..SL[pn].Streams.Percent.."%) (>="..measureType
 					toWrite = toWrite.." "..THEME:GetString("ScreenSelectMusicExperiment", "NoteStream")..")"
 					self:GetChild("Measures"):settext(toWrite)
-					if streamAmount > 15 then self:GetChild("TotalStream"):settext(string.sub(breakdown3,2))
-					else self:GetChild("TotalStream"):settext(string.sub(breakdown2,2)) end
+					if SL[pn].Streams.Segments > 15 then self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown3)
+					else self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown2) end
 				end
 				local duration = song:MusicLengthSeconds() / SL.Global.ActiveModifiers.MusicRate
 				local totalSteps = GAMESTATE:GetCurrentSteps(player):GetRadarValues(player):GetValue('RadarCategory_TapsAndHolds')

@@ -37,6 +37,52 @@ return function(SongNumberInCourse)
 					SL[pn].Streams.StepsType = steps_type
 					SL[pn].Streams.Difficulty = difficulty
 				end
+				-- if we have measures (which means the stream was parsed) then we can get breakdowns and stuff
+				if SL[pn].Streams.Measures then
+					local lastSequence = #SL[pn].Streams.Measures
+					local streamsTable = SL[pn].Streams
+					local totalStreams = 0
+					local previousSequence = 0
+					local segments = 0
+					local breakdown = "" --breakdown tries to display the full streams including rest measures
+					local breakdown2 = "" --breakdown2 tries to display the streams without rest measures
+					local breakdown3 = "" --breakdown3 combines streams that would normally be separated with a -
+					for _, sequence in ipairs(streamsTable.Measures) do
+						if not sequence.isBreak then
+							totalStreams = totalStreams + sequence.streamEnd - sequence.streamStart
+							breakdown = breakdown..sequence.streamEnd - sequence.streamStart.." "
+							if previousSequence < 2 then
+								breakdown2 = breakdown2.."-"..sequence.streamEnd - sequence.streamStart
+							elseif previousSequence >= 2 then
+								breakdown2 = breakdown2.."/"..sequence.streamEnd - sequence.streamStart
+								previousSequence = 0
+							end
+							segments = segments + 1
+						else
+							breakdown = breakdown.."("..sequence.streamEnd - sequence.streamStart..") "
+							previousSequence = previousSequence + sequence.streamEnd - sequence.streamStart
+						end
+					end
+					SL[pn].Streams.TotalStreams = totalStreams
+					SL[pn].Streams.Segments = segments
+					SL[pn].Streams.Breakdown1 = breakdown
+					if totalStreams ~= 0 then
+						local percent = totalStreams / streamsTable.Measures[lastSequence].streamEnd
+						percent = math.floor(percent*100)
+						SL[pn].Streams.Percent = percent
+						for stream in ivalues(Split(breakdown2,"/")) do
+							local combine = 0
+							local multiple = false
+							for part in ivalues(Split(stream,"-")) do
+								if combine ~= 0 then multiple = true end
+								combine = combine + tonumber(part)
+							end
+							breakdown3 = breakdown3.."/"..combine..(multiple and "*" or "")
+						end
+						SL[pn].Streams.Breakdown2 = string.sub(breakdown2,2)
+						SL[pn].Streams.Breakdown3 = string.sub(breakdown3,2)
+					end
+				end
 			end
 		end
 	end
