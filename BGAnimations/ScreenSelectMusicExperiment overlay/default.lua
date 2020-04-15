@@ -22,6 +22,7 @@ local TransitionTime = 0.5
 local songwheel_y_offset = -13
 
 local EnteringSong=false
+
 ---------------------------------------------------------------------------
 -- a table of params from this file that we pass into the InputHandler file
 -- so that the code there can work with them easily

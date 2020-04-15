@@ -29,7 +29,7 @@ OptionRows[#OptionRows + 1] = {
 			return {
 				"Song Background",
 				"BPM Helper",
-				"Songs Played Today",
+				"Full Breakdown",
 			}
 		end,
 		Values = function() return {1, 2, 3} end,
