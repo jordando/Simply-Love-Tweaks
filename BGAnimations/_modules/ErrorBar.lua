@@ -2,7 +2,7 @@ local player = ...
 local pn = ToEnumShortString(player)
 local playerString = "Player"..pn.."%sX"
 
---Visual display of deviance values. 
+--Visual display of deviance values-- taken from Etterna and converted to run in SM5
 
 local jcT = {}
 
@@ -29,7 +29,7 @@ end
 -- User Parameters
 --==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--
 local barcount = 30 									-- Number of bars. Older bars will refresh if judgments/barDuration exceeds this value. You don't need more than 40.
-local frameX = CenterX 									-- X Positon (Center of the bar)
+local frameX = CenterX				    		-- X Positon (Center of the bar)
 local frameY = SCREEN_CENTER_Y					        -- Y Positon (Center of the bar)
 local frameHeight = 10 									-- Height of the bar
 local frameWidth = 240                               	-- Width of the bar
@@ -128,6 +128,6 @@ for i=1,barcount do
 end
 
 -- Add the completed errorbar frame to the primary actor frame t if enabled
-if SL[ToEnumShortString(player)].ActiveModifiers.HideErrorBar then
+if not SL[ToEnumShortString(player)].ActiveModifiers.HideErrorBar then
     return e
 end
