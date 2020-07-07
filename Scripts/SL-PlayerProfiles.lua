@@ -24,6 +24,7 @@ local profile_whitelist = {
 	HideDanger = "boolean",
 	HideComboExplosions = "boolean",
 	HideErrorBar = "boolean",
+	ErrorBarInFront = "string",
 
 	LifeMeterType = "string",
 	DataVisualizations = "string",

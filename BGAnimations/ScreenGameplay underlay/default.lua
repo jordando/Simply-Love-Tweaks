@@ -20,7 +20,9 @@ t[#t+1] = LoadActor("./Shared/SongInfoBar.lua") -- song title and progress bar
 -- per-player UI elements
 for player in ivalues(Players) do
 	t[#t+1] = LoadActor("./PerPlayer/UpperNPSGraph.lua", player)
-	t[#t+1] = LoadActor("./PerPlayer/ErrorBar.lua",player)
+	if SL[ToEnumShortString(player)].ActiveModifiers.ErrorBarInFront == "Back" then
+		t[#t+1] = LoadActor(THEME:GetPathB("","_modules/ErrorBar.lua"), player)
+	end
 	t[#t+1] = LoadActor("./PerPlayer/Score.lua", player)
 	t[#t+1] = LoadActor("./PerPlayer/DifficultyMeter.lua", player)
 	t[#t+1] = LoadActor("./PerPlayer/LifeMeter/default.lua", player)

@@ -436,6 +436,10 @@ local Overrides = {
 		Values = { "MeasureCounterLeft", "MeasureCounterUp", "HideRestCounts" },
 	},
 	-------------------------------------------------------------------------
+	ErrorBarInFront = {
+		Values = {"Front","Back"}
+	},
+	-------------------------------------------------------------------------
 	TimingWindows = {
 		Values = function()
 			return {
