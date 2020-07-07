@@ -9,6 +9,7 @@ local highscoreX = WideScale(56, 80)
 local highscorenameX = WideScale(61, 97)
 
 local InitializeMeasureCounterAndModsLevel = LoadActor("./MeasureCounterAndModsLevel.lua")
+local TechParser = LoadActor("TechParser.lua")
 
 --TODO figure out how to change this if a second player joins
 local histogramHeight = 40
@@ -67,7 +68,8 @@ local af = Def.ActorFrame{
 	-- This is set separately because it lags SM if players hold down left or right (to scroll quickly). LessLag will trigger after .15 seconds
 	-- with no new song changes.
 	LessLagMessageCommand=function(self)
-			-- ---------------------Extra Song Information------------------------------------------
+		-- ---------------------Extra Song Information------------------------------------------
+		if not GAMESTATE:IsHumanPlayer(player) then return end
 		--TODO right now we don't show any of this if two players are joined. I'd like to find a way for both to see it
 		self:stoptweening():linear(.3):diffusealpha(1)
 		local song = GAMESTATE:GetCurrentSong()
@@ -90,25 +92,26 @@ local af = Def.ActorFrame{
 				local totalSteps = GAMESTATE:GetCurrentSteps(player):GetRadarValues(player):GetValue('RadarCategory_TapsAndHolds')
 				local finalText = totalSteps / duration
 				finalText = math.floor(finalText*100)/100 --truncate to two decimals
-				self:GetChild("AvgNps"):settext(finalText)
-				self:GetChild("AvgNpsLabel"):settext(THEME:GetString("ScreenSelectMusicExperiment", "AvgNps"))
+				self:GetChild("AvgNps"):settext(THEME:GetString("ScreenSelectMusicExperiment", "AvgNps")..": "..finalText)
 			else
 				self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "StreamCounterOff"))
 				self:GetChild("TotalStream"):settext("")
 				self:GetChild("PeakNPS"):settext("")
-				self:GetChild("AvgNpsLabel"):settext("")
 				self:GetChild("AvgNps"):settext("")
 			end
 		else
 			self:GetChild("Measures"):settext("")
 			self:GetChild("TotalStream"):settext("")
 			self:GetChild("PeakNPS"):settext("")
-			self:GetChild("AvgNpsLabel"):settext("")
 			self:GetChild("AvgNps"):settext("")
 		end
 	end,
 	--TODO part of the pane that gets hidden if two players are joined. i'd like to display this somewhere though
 	PeakNPSUpdatedMessageCommand=function(self)
+		if not GAMESTATE:IsHumanPlayer(player) then return end
+		--make sure we have peaknps set before checking for tech
+		local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
+		self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch)
 		if GAMESTATE:GetCurrentSong() and GAMESTATE:Env()[pn.."PeakNPS"] and ThemePrefs.Get("ShowExtraSongInfo") and GAMESTATE:GetNumSidesJoined() < 2 then
 			self:GetChild("PeakNPS"):settext( THEME:GetString("ScreenGameplay", "PeakNPS") .. ": " .. round(GAMESTATE:Env()[pn.."PeakNPS"] * SL.Global.ActiveModifiers.MusicRate,2))
 		else
@@ -117,22 +120,22 @@ local af = Def.ActorFrame{
 	end,
 }
 
+--Tech
+af[#af+1] = LoadFont("Common Normal")..{
+	Name="Tech",
+	InitCommand=function(self) self:xy(labelX_col1+20, _screen.h/8 + 30):zoom(zoom_factor):diffuse(Color.White):halign(0):maxwidth(315) end,
+}
+
 --PeakNPS
 af[#af+1] = LoadFont("Common Normal")..{
 	Name="PeakNPS",
 	InitCommand=function(self) self:xy(labelX_col1+20, _screen.h/8 - 30):zoom(zoom_factor):diffuse(Color.White):halign(0) end,
 }
 
---AVG NPS label
-af[#af+1] = LoadFont("Common Normal")..{
-	Name="AvgNpsLabel",
-	InitCommand=function(self) self:xy(highscorenameX,_screen.h/8 - 30):zoom(zoom_factor):diffuse(Color.White):halign(0) end,
-}
-
 --AVG NPS
 af[#af+1] = LoadFont("Common Normal")..{
 	Name="AvgNps",
-	InitCommand=function(self) self:xy(highscoreX,_screen.h/8 - 30):zoom(zoom_factor):diffuse(Color.White):halign(1) end,
+	InitCommand=function(self) self:xy(highscoreX,_screen.h/8 - 30):zoom(zoom_factor):diffuse(Color.White):halign(0) end,
 }
 
 --Total Stream
