@@ -1,7 +1,6 @@
 local function gen_vertices(player, width, height)
 	local Song, Steps
 	local first_step_has_occurred = false
-
 	if GAMESTATE:IsCourseMode() then
 		local TrailEntry = GAMESTATE:GetCurrentTrail(player):GetTrailEntry(GAMESTATE:GetCourseSongIndex())
 		Steps = TrailEntry:GetSteps()
@@ -12,14 +11,14 @@ local function gen_vertices(player, width, height)
 	end
 
 	local PeakNPS, NPSperMeasure = GetNPSperMeasure(Song, Steps)
-	-- broadcast this for any other actors on the current screen that rely on knowing the peak nps
-	MESSAGEMAN:Broadcast("PeakNPSUpdated", {PeakNPS=PeakNPS})
-
-	-- also, store the PeakNPS in GAMESTATE:Env()[pn.."PeakNPS"] in case both players are joined
+	
+	-- Store the PeakNPS in GAMESTATE:Env()[pn.."PeakNPS"] in case both players are joined
 	-- their charts may have different peak densities, and if they both want histograms,
 	-- we'll need to be able to compare densities and scale one of the graphs vertically
 	GAMESTATE:Env()[ToEnumShortString(player).."PeakNPS"] = PeakNPS
 
+	-- broadcast this for any other actors on the current screen that rely on knowing the peak nps
+	MESSAGEMAN:Broadcast("PeakNPSUpdated", {PeakNPS=PeakNPS})
 	local verts = {}
 	local x, y, t
 
@@ -109,7 +108,11 @@ function NPS_Histogram(player, width, height)
 				self:playcommand("SetDensity")
 			end
 		end,
-		LessLagMessageCommand=function(self) self:playcommand("SetDensity") end,
+		LessLagMessageCommand=function(self) 
+			if GAMESTATE:IsHumanPlayer(player) then
+				self:playcommand("SetDensity")
+			end
+		end,
 		SetDensityCommand=function(self)
 			local verts = gen_vertices(player, width, height)
 			self:SetNumVertices(#verts):SetVertices(verts)
@@ -144,7 +147,6 @@ function Scrolling_NPS_Histogram(player, width, height)
 			--Don't need to scale or scroll if we're on SelectMusicExperiment
 			if not SL.Global.ExperimentScreen then
 				verts = gen_vertices(player, scaled_width, height)
-
 				left_idx = 1
 				right_idx = 2
 				self:SetScrollOffset(0)

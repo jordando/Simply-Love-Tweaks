@@ -114,7 +114,7 @@ for player in ivalues(Players) do
 			if GAMESTATE:GetCurrentStyle():GetStyleType() == "StyleType_OnePlayerTwoSides" and SL.Global.GameMode ~= "Experiment" then
 				self:x(_screen.cx)
 			else
-				self:x(_screen.cx + (player==PLAYER_1 and 155 or -155))--GAMESTATE:GetNumSidesJoined()==2 and 155 or -155))
+				self:x(_screen.cx + (player==PLAYER_1 and 155 or -155))
 			end
 		end,
 	}

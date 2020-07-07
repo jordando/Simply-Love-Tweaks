@@ -1,9 +1,4 @@
--- helper functions
-local GetDifficulty = function(steps)
-	return {THEME:GetString( "CustomDifficulty", steps:GetDifficulty():gsub("Difficulty_", "") ), steps:GetMeter()}
-end
 
--- ------------------------------------------------------
 local OptionRows = {
 	{
 		Name = "GoToOptions",

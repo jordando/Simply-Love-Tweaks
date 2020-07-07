@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------
--- returns the contents of a txt file as an indexed table, split on newline
+--- returns the contents of a txt file as an indexed table, split on newline
 function GetFileContents(path)
 	local contents = ""
 	if FILEMAN:DoesFileExist(path) then
@@ -21,11 +21,13 @@ function GetFileContents(path)
 	for line in contents:gmatch("[^\r\n]+") do
 		lines[#lines+1] = line
 	end
-
 	return lines
 end
 
+--- Writes contents to path. If createNew is false the function will only write if the file at path already exists.
+--- Returns true if it was able to write something, false otherwise.
 function WriteFileContents(path, contents, createNew)
+	local success = false
 	local contents = contents
 	local createNew = createNew or false
 	if FILEMAN:DoesFileExist(path) or createNew then
@@ -36,13 +38,16 @@ function WriteFileContents(path, contents, createNew)
 		if file:Open(path, 2) then
 			file:Write(contents)
 			file:Close()
+			success = true
 		end
 		-- destroy the generic RageFile now that we have the contents
 		file:destroy()
+		return success
 	end
+	return success
 end
 
--- Splits a string by sep and returns a table
+--- Splits a string by sep and returns a table
 function Split(inputstr, sep)
         if sep == nil then
                 sep = "%s"
@@ -58,20 +63,20 @@ local function tchelper(first, rest)
    return first:upper()..rest:lower()
 end
 
+--- Capitalize the first letter of each word
 function CapitalizeWords(str)
 	return str:gsub("(%a)([%w_']*)", tchelper)
 end
 ---------------------------------------------------------------------------
--- a steps_type like "StepsType_Dance_Single" is needed so we can filter out steps that aren't suitable
--- (there has got to be a better way to do this...)
--- returns a String containing the steps type for the current game mode
+--- a steps_type like "StepsType_Dance_Single" is needed so we can filter out steps that aren't suitable
+--- returns a String containing the steps type for the current game mode
 function GetStepsType()
 	local steps_type = GAMESTATE:GetCurrentStyle():GetStepsType()
 	return steps_type
 end
 
--- Read the profile's Stats.xml and put the general data stuff into a table
--- Song and Course aren't filled in here
+--- Read the profile's Stats.xml and put the general data stuff into a table
+--- Song and Course aren't filled in here
 -- TODO this won't account for Stats prefixes
 function ParseStats(player)
 	local pn = ToEnumShortString(player)
@@ -109,7 +114,7 @@ function ParseStats(player)
 	return nil
 end
 
--- Returns the number of minutes since the start of year 0000
+--- Returns the number of minutes since the start of year 0000
 function DateToMinutes(scoreDate) --scoreDate must be form YYYY-MM-DD HH:MM:SS
 	local monthTable = {} --day of year at start of each month
 	monthTable[#monthTable+1]=0
@@ -133,7 +138,9 @@ function DateToMinutes(scoreDate) --scoreDate must be form YYYY-MM-DD HH:MM:SS
 	return minutes
 end
 
-FormatDate = function(scoredate)
+--- Accepts a string with the date in the form YYYY-MM-DD.
+--- Returns a string with the date in the form MM-DD-YYYY
+function FormatDate(scoredate)
 	if scoredate == "" then
 		return ""
 	else
@@ -146,7 +153,7 @@ FormatDate = function(scoredate)
 	end
 end
 
---returns a string of the current date in the form YYYY-MM-DD HH:MM:00 (seconds are always set to 00)
+--- returns a string of the current date in the form YYYY-MM-DD HH:MM:00 (seconds are always set to 00)
 function GetCurrentDateTime()
 	return string.format("%04d",Year()).."-"..string.format("%02d", MonthOfYear()+1).."-"..string.format("%02d", DayOfMonth())
 			.." "..string.format("%02d", Hour())..":"..string.format("%02d", Minute())..":00"

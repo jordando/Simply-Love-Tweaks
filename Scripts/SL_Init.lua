@@ -50,7 +50,7 @@ local PlayerDefaults = {
 			self.CurrentPlayerOptions = {
 				String = nil
 			}
-			self.Scores = {} --all high scores by hash									 
+			self.Scores = {} --all high scores by hash
 		end
 	}
 }
@@ -102,6 +102,7 @@ local GlobalDefaults = {
 			self.TimeAtSessionStart = nil
 
 			self.GameplayReloadCheck = false
+			----------------------Experiment only values----------------------------------------------
 			self.GoToOptions = false --when two tap to enter options is turned on this is used
 			self.ActivePlayerOptionsPane0 = 0 --for use with the OptionWheel panes
 			self.ActivePlayerOptionsPane1 = 0 --for use with the OptionWheel panes
@@ -114,6 +115,7 @@ local GlobalDefaults = {
 		-- These values outside initialize() won't be reset each game cycle,
 		-- but are rather manipulated as needed by the theme.
 		ActiveColorIndex = ThemePrefs.Get("SimplyLoveColor") or 1,
+		----------------------Experiment only values----------------------------------------------
 		DifficultyGroup = 1, --used when we're in difficulty sort to keep the correct difficulty defaulted
 		GradeGroup = "No_Grade", --used when we're in grade sort to keep the correct grade defaulted
 		LastSeenSong = nil, --set in SongMT transform. used to keep track of the last song when we're on "Close This Folder"
@@ -122,7 +124,7 @@ local GlobalDefaults = {
 		LastSongPlayedGroup = nil,--set by SL-CustomProfiles.lua every time profile is saved
 		ExperimentScreen = false, --keep track of when we're on ScreenSelectMusicExperiment TODO figure out why SCREENMAN:GetTopScreen() returns nil sometimes
 		Scrolling = false, --keep track of when left or right is held down, set by ScreenSelectMusicExperiment/default.lua
-		HashLookup = {} --hashes with corresponding song directories
+		HashLookup = {}, --hashes with corresponding song directories
 	}
 }
 
