@@ -23,6 +23,7 @@ local profile_whitelist = {
 	HideScore = "boolean",
 	HideDanger = "boolean",
 	HideComboExplosions = "boolean",
+	HideErrorBar = "boolean",
 
 	LifeMeterType = "string",
 	DataVisualizations = "string",
