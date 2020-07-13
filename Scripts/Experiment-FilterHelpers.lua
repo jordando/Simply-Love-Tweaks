@@ -244,9 +244,9 @@ end
 
 
 ---------------------------------------------------------------------------
--- Sets each value in SL.Global.ActiveFilters to "OFF" this is called when
--- filters get rid of every single song (leaving none available)
-ResetFilters = function()
+--- Sets each value in SL.Global.ActiveFilters to "OFF" this is called when
+--- filters get rid of every single song (leaving none available)
+function ResetFilters()
 	for k,v in pairs(SL.Global.ActiveFilters) do
 		SL.Global.ActiveFilters[k] = "Off"
 	end
@@ -257,8 +257,8 @@ ResetFilters = function()
 end
 
 
--- returns a table with numbers replacing booleans to make ValidateChart easier to use
-local ConvertFilters = function()
+--- returns a table with numbers replacing booleans to make ValidateChart easier to use
+local function ConvertFilters()
 	local converted = {}
 	converted["minSteps"] = SL.Global.ActiveFilters["MinSteps"] == "Off" and 0 or tonumber(SL.Global.ActiveFilters["MinSteps"])
 	converted["maxSteps"] = SL.Global.ActiveFilters["MaxSteps"] == "Off" and 1000000 or tonumber(SL.Global.ActiveFilters["MaxSteps"])
@@ -269,10 +269,11 @@ local ConvertFilters = function()
 	return converted
 end
 
--- requires a song and chart as input parameters. returns true if the chart passes all filters and false otherwise
-ValidateChart = function(song, chart, player, inputFilters)
+--- requires a song and chart as input parameters. returns true if the chart passes all filters and false otherwise.
+--- if no player is given use MasterPlayer. If no filters are given 
+function ValidateChart(song, chart, player)
 	local mpn = player or GAMESTATE:GetMasterPlayerNumber()
-	local filters = inputFilters or ConvertFilters()
+	local filters = ConvertFilters()
 	local chartMeter = chart:GetMeter()
 	local chartSteps = chart:GetRadarValues(mpn):GetValue('RadarCategory_TapsAndHolds') --TODO this only works for the master player.
 	local chartJumps = chart:GetRadarValues(mpn):GetValue('RadarCategory_Jumps') --TODO this only works for the master player.
@@ -301,8 +302,8 @@ ValidateChart = function(song, chart, player, inputFilters)
 	return true
 end
 
--- returns a table of just the active filters
-GetActiveFilters = function()
+--- returns a table of just the active filters or nil if there are none
+function GetActiveFilters()
 	local filterExists = false
 	local t = {}
 	for k,v in pairs(SL.Global.ActiveFilters) do
@@ -322,9 +323,10 @@ GetActiveFilters = function()
 	if filterExists then return t
 	else return nil end
 end
+
 ------------------------------------------------------
---Formats a string with all the active filters
-GetActiveFiltersString = function()
+---Formats a string with all the active filters
+function GetActiveFiltersString()
 	local activeFilters = GetActiveFilters()
 	if not activeFilters then return "No Filters Set" end
 	local toPrint = "FILTERS:\n"
@@ -351,21 +353,4 @@ GetActiveFiltersString = function()
 		end
 	else toPrint = toPrint.."Hide Tags - Off\n" end
 	return toPrint
-end
-
--------------------------------------------------------------------------------------
---prunes a list of songs using SL.Global.ActiveFilters
-PruneSongList= function(song_list)
-
-	local songs = {}
-
-	for song in ivalues(song_list) do
-		-- this should be guaranteed by this point, but better safe than segfault
-		if song:HasStepsType(GetStepsType()) then
-			for chart in ivalues(song:GetStepsByStepsType(GetStepsType())) do
-				if ValidateChart(song, chart) then songs[#songs+1] = song break end
-			end
-		end
-	end
-	return songs
 end

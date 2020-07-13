@@ -4,14 +4,15 @@ local hash = args.hash
 local pn = ToEnumShortString(player)
 local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
 local highScore
-
+local isCustomScore = false
 local RateScores
-if ThemePrefs.Get("UseCustomScores") then 
-	RateScores = GetScores(player, hash, true) --See /scripts/Experiment-Scores.lua
-	if RateScores then
-		highScore = RateScores[1]
-	end
-else
+
+RateScores = GetScores(player, hash, true) --See /scripts/Experiment-Scores.lua
+if RateScores then
+	highScore = RateScores[1]
+	isCustomScore = true
+end
+if not highScore then
 	local song = GAMESTATE:GetCurrentSong()
 	local steps = GAMESTATE:GetCurrentSteps(player)
 	local highScores = PROFILEMAN:GetProfile(player):GetHighScoreList(song, steps):GetHighScores()
@@ -35,24 +36,28 @@ local RadarCategories = {
 
 -----------------------------------------------------------------------------------------------------------------
 --AF for the stats to compare to
-
+local highScorePosition = player == "PlayerNumber_P1" and 0 or WideScale(-100,-115)
+local deltaPosition = player == "PlayerNumber_P1" and 0 or WideScale(200,230)
 local highScoreT = Def.ActorFrame{
-	InitCommand=function(self)self:zoom(0.6):xy(_screen.cx - 155 - WideScale(5,0),_screen.cy+10) end,
+	InitCommand=function(self)self:zoom(0.6):xy(highScorePosition,_screen.cy+10) end,
 }
 
 local deltaT = Def.ActorFrame{
-	InitCommand=function(self)self:zoom(0.8):xy(_screen.cx - 155 - WideScale(25,0),_screen.cy-24) end,
+	InitCommand=function(self)self:zoom(0.8):xy(deltaPosition,_screen.cy-24) end,
 }
+
+local windows = SL.Global.ActiveModifiers.TimingWindows
+
 if highScore then
 	local PercentDP
-	if ThemePrefs.Get("UseCustomScores") then PercentDP = highScore.score
+	if isCustomScore then PercentDP = highScore.score
 	else PercentDP = highScore:GetPercentDP() end
 
 	-- do "regular" TapNotes first
 	for i=1,#TapNoteScores.Types do
 		local window = TapNoteScores.Types[i]
 		local number
-		if ThemePrefs.Get("UseCustomScores") then number = highScore[window]
+		if isCustomScore then number = highScore[window]
 		else number = highScore:GetTapNoteScore(window) end
 
 		--delta between current stats and highscore stats
@@ -71,8 +76,7 @@ if highScore then
 				-- if some TimingWindows were turned off, the leading 0s should not
 				-- be colored any differently than the (lack of) JudgmentNumber,
 				-- so load a unique Metric group.
-				local gmods = SL.Global.ActiveModifiers
-				if i > gmods.WorstTimingWindow and i ~= #TapNoteScores.Types then
+				if not windows[i] and i ~= #TapNoteScores.Types then
 					self:diffuse(color("#444444"))
 				end
 				
@@ -98,8 +102,7 @@ if highScore then
 				-- if some TimingWindows were turned off, the leading 0s should not
 				-- be colored any differently than the (lack of) JudgmentNumber,
 				-- so load a unique Metric group.
-				local gmods = SL.Global.ActiveModifiers
-				if i > gmods.WorstTimingWindow and i ~= #TapNoteScores.Types then
+				if not windows[i] and i ~= #TapNoteScores.Types then
 					self:Load("RollingNumbersEvaluationNoDecentsWayOffs")
 					self:diffuse(color("#444444"))
 
@@ -121,7 +124,7 @@ if highScore then
 	-- then handle holds, mines, hands, rolls
 	for index, RCType in ipairs(RadarCategories.Types) do
 		local performance
-		if ThemePrefs.Get("UseCustomScores") then performance = highScore[RCType]
+		if isCustomScore then performance = highScore[RCType]
 		else performance = highScore:GetRadarValues():GetValue(RCType) end
 		-- player performace value
 		highScoreT[#highScoreT+1] = Def.RollingNumbers{
@@ -163,13 +166,13 @@ if highScore then
 			self:xy(300,-10)
 		end
 	}
-	
+
 	highScoreT[#highScoreT+1] = LoadActor("./ExperimentJudgmentLabels.lua", player)
-	
+
 else
 	highScoreT[#highScoreT+1] = LoadFont("_wendy small")..{
 		InitCommand=function(self)
-			self:zoom(.8):xy(55,-45)
+			self:zoom(.8):xy(player=="PlayerNumber_P1" and 70 or 200,-45)
 			self:settext("No previous score\nat Rate "..SL.Global.ActiveModifiers.MusicRate)
 		end,
 	}

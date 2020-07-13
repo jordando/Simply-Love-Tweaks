@@ -1,9 +1,4 @@
--- helper functions
-local GetDifficulty = function(steps)
-	return {THEME:GetString( "CustomDifficulty", steps:GetDifficulty():gsub("Difficulty_", "") ), steps:GetMeter()}
-end
 
--- ------------------------------------------------------
 local OptionRows = {
 	{
 		Name = "GoToOptions",
@@ -29,7 +24,7 @@ OptionRows[#OptionRows + 1] = {
 			return {
 				"Song Background",
 				"BPM Helper",
-				"Songs Played Today",
+				"Full Breakdown",
 			}
 		end,
 		Values = function() return {1, 2, 3} end,

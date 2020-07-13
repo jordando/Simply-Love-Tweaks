@@ -135,8 +135,7 @@ local GetGroupInfo = function()
 					if ValidateChart(song, steps, mpn) then
 						--add chart to info[group][difficultyBlock]
 						info[group]['UnsortedLevel'][tostring(steps:GetMeter())] = 1 + (tonumber(info[group]['UnsortedLevel'][tostring(steps:GetMeter())]) or 0)
-						local hash 
-						if ThemePrefs.Get("UseCustomScores") then hash = GetHash(mpn,song,steps) end
+						local hash = GetHash(mpn,song,steps)
 						if hash then
 							local highScore = GetScores(mpn,hash,false,true)
 							if highScore and highScore[1].grade ~= "Failed" then
@@ -183,10 +182,11 @@ if not GAMESTATE:GetCurrentSong() then
 	local current_song = GetDefaultSong()
 	GAMESTATE:SetCurrentSong(current_song)
 	InitPreloadedGroups()
-	if ThemePrefs.Get("UseCustomScores") then LoadHashLookup() end
-	for player in ivalues(GAMESTATE:GetHumanPlayers()) do 
+	for player in ivalues(GAMESTATE:GetHumanPlayers()) do
 		GAMESTATE:SetCurrentSteps(player,GAMESTATE:GetCurrentSong():GetStepsByStepsType(GetStepsType())[1])
-		if ThemePrefs.Get("UseCustomScores") then LoadNewFromStats(player) end
+		-- if we're loading custom scores upfront and there's a non guest profile loaded then load any new
+		-- scores from stats. If we're not loading upfront then don't worry about it until we play each song
+		if ThemePrefs.Get("LoadCustomScoresUpfront") then LoadNewFromStats(player) end
 	end
 else
 -- Otherwise if the player got a new high grade then we need to remake the relevant grade groups

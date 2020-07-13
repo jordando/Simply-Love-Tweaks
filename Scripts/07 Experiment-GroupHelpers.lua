@@ -89,18 +89,18 @@ local TaggedSongs = {}
 -- Tagging
 --------------------------------------------------------------------------------------------------------------------------
 
--- Returns nil if the song has no tags or the name of the first tag it finds
--- If given a group parameter it will only return something if the song has that specific tag
--- TODO take out custom song stuff and switch to tagName or something
-function GetTags(song, group)
+--- Returns nil if the song has no tags or the name of the first tag it finds
+--- If given a tagName parameter it will only return something if the song has that specific tag
+--- Since tags are done by song rather than by chart we don't use the hashes. Should tags go by chart instead?
+function GetTags(song, tagName)
 	local current_song = song
 	local tags = {}
-	for customSong in ivalues(TaggedSongs) do
-		if current_song:GetMainTitle() ==  customSong['title'] and current_song:GetGroupName() == customSong['actualGroup'] then
-			if group then
-				if group == customSong['customGroup'] then tags[#tags+1] = customSong['customGroup'] end
+	for taggedSong in ivalues(TaggedSongs) do
+		if current_song:GetMainTitle() ==  taggedSong['title'] and current_song:GetGroupName() == taggedSong['actualGroup'] then
+			if tagName then
+				if tagName == taggedSong['customGroup'] then tags[#tags+1] = taggedSong['customGroup'] end
 			else
-				tags[#tags+1] = customSong['customGroup']
+				tags[#tags+1] = taggedSong['customGroup']
 			end
 		end
 	end
@@ -108,60 +108,68 @@ function GetTags(song, group)
 	else return nil end
 end
 
--- Add whatever tags we find in Tags.txt to the sort groups aka groups we can sort by
--- 'No Tags Set' and 'BPM Changes' are automatically generated
+--- Add any tags we find in Tags.txt to the sort groups
+--- 'No Tags Set' and 'BPM Changes' are automatically generated
 local function LoadTags()
-	SortGroups.Tag = {}
+	local tagTable = {}
 	local path = THEME:GetCurrentThemeDirectory() .. "Other/Tags.txt"
 	for name in ivalues(GetFileContents(path)) do
-		table.insert(SortGroups.Tag, name)
+		table.insert(tagTable, name)
 	end
-	table.insert(SortGroups.Tag, "No Tags Set")
-	table.insert(SortGroups.Tag, "BPM Changes")
+	--if there aren't any tags add a generic "Favorites" tag to get people started
+	if not next(tagTable) then
+		table.insert(tagTable,"Favorites")
+	end
+	table.insert(tagTable, "No Tags Set")
+	table.insert(tagTable, "BPM Changes")
+	return tagTable
 end
 
--- Write whatever is in SortGroups.Tag to Tags.txt
--- Don't add 'No Tags Set' or 'BPM Changes'
+--- Write whatever is in SortGroups.Tag to Tags.txt
+--- Don't add 'No Tags Set' or 'BPM Changes'
 local function SaveTags()
 	local toWrite = ""
-	for k,v in pairs(SortGroups.Tag) do
+	for _,v in pairs(SortGroups.Tag) do
 		if v ~= "No Tags Set" and v~= "BPM Changes" then
 			toWrite = toWrite..v.."\n"
 		end
 	end
 	local path = THEME:GetCurrentThemeDirectory() .. "Other/Tags.txt"
-	WriteFileContents(path,toWrite)
+	WriteFileContents(path,toWrite,true)
 end
 
--- Add whatever tagged songs we find in TaggedSongs.txt. They're needed to populate the tag groups
+--- Add whatever tagged songs we find in TaggedSongs.txt. They're needed to populate the tag groups
 local function LoadTaggedSongs()
-	TaggedSongs = {}
+	local songs = {}
 	local path = THEME:GetCurrentThemeDirectory() .. "Other/TaggedSongs.txt"
 	for line in ivalues(GetFileContents(path)) do
 		local toAdd = Split(line, '\t')
-		table.insert(TaggedSongs, {customGroup=toAdd[1], title=toAdd[2], actualGroup=toAdd[3]})
+		table.insert(songs, {customGroup=toAdd[1], title=toAdd[2], actualGroup=toAdd[3]})
 	end
+	return songs
 end
 
--- Write whatever is in TaggedSongs to TaggedSongs.txt
+--- Write whatever is in TaggedSongs to TaggedSongs.txt
 local function SaveTaggedSongs()
 	-- Overwrite CustomGroups-Songs.txt with the current Custom Songs table
 	local toWrite = ""
-	for k,v in pairs(TaggedSongs) do
+	for _,v in pairs(TaggedSongs) do
 		toWrite = toWrite..v['customGroup'].."\t"..v['title'].."\t"..v['actualGroup'].."\n"
 	end
 	local path = THEME:GetCurrentThemeDirectory() .. "Other/TaggedSongs.txt"
-	WriteFileContents(path,toWrite)
+	WriteFileContents(path,toWrite,true)
 end
 
+--- Adds a tag to the SortGroups table, saves it to disk, and creates loads the group with songs
+-- Called in ScreenSelectMusicExperiment/TagMenu/Input.lua
 function AddTag(toAdd)
 	table.insert(SortGroups.Tag, #SortGroups.Tag-1, toAdd)
 	SaveTags()
 	PreloadedGroups["Tag"][tostring(toAdd)] = CreateSongList(tostring(toAdd), "Tag")
 end
 
--- Called by ScreenSelectMusicExperiment overlay/TagMenu/Input.lua when the player wants to add a tag to a song
--- Adds a line to TaggedSongs, saves it, and then recreates the group so we can sort properly.
+--- Called by ScreenSelectMusicExperiment overlay/TagMenu/Input.lua when the player wants to add a tag to a song.
+--- Adds a line to TaggedSongs, saves it, and then recreates the group so we can sort properly.
 function AddTaggedSong(toAdd, song)
 	-- Add the song to the CustomSong table
 	local add = Split(toAdd, '\t')
@@ -173,8 +181,8 @@ function AddTaggedSong(toAdd, song)
 	if index then table.remove(PreloadedGroups["Tag"]["No Tags Set"],index) end
 end
 
--- Called by ScreenSelectMusicExperiment overlay/TagMenu/Input.lua when the player wants to remove a tag to a song
--- Adds a line to TaggedSongs, saves it, and then recreates the group so we can sort properly.
+--- Called by ScreenSelectMusicExperiment overlay/TagMenu/Input.lua when the player wants to remove a tag to a song.
+--- Removes a line to TaggedSongs, saves it, and then recreates the group so we can sort properly.
 function RemoveTaggedSong(toRemove, song)
 	local index = 1
 	local remove = Split(toRemove, '\t')
@@ -195,9 +203,9 @@ end
 -- Grouping
 --------------------------------------------------------------------------------------------------------------------------
 
--- To keep load times down we only want to create groups once. However, tag groups and grade groups are not static.
--- This function is called by Setup.lua each time we go back to ScreenSelectMusicExperiment with a song set (aka not the first time)
--- Remove the current song from whatever grade groups it was in and add it to whatever grade groups it should be in now
+--- To keep load times down we only want to create groups once. However, tag groups and grade groups are not static.
+--- This function is called by Setup.lua each time we go back to ScreenSelectMusicExperiment with a song set (aka not the first time).
+--- Remove the current song from whatever grade groups it was in and add it to whatever grade groups it should be in now
 function UpdateGradeGroups(song)
 	local current_song = song
 	--first remove the song from all current grade groups it's in
@@ -230,11 +238,9 @@ function UpdateGradeGroups(song)
 	if not isPlayed then table.insert(PreloadedGroups["Grade"]["No_Grade"],current_song) end
 end
 
----------------------------------------------------------------------------
--- prune out groups that have no valid steps
--- passed an indexed table of strings representing potential group names
--- returns an indexed table of group names as strings
-
+--- prune out groups that have no valid steps.
+--- passed an indexed table of strings representing potential group names.
+--- returns an indexed table of group names as strings.
 function PruneGroups(_groups)
 	local groups = {}
 	local songs
@@ -247,7 +253,23 @@ function PruneGroups(_groups)
 	return groups
 end
 
--- for the groups that are just numbers (Length, BPM) or ugly enums (Grade) we want to make it more descriptive
+--- Prunes a list of songs using SL.Global.ActiveFilters. As long as at least one chart for a song is valid
+--- the song will be added.
+function PruneSongList(song_list)
+	local songs = {}
+	for song in ivalues(song_list) do
+		-- this should be guaranteed by this point, but better safe than segfault
+		if song:HasStepsType(GetStepsType()) then
+			for chart in ivalues(song:GetStepsByStepsType(GetStepsType())) do
+				if ValidateChart(song, chart) then songs[#songs+1] = song break end
+			end
+		end
+	end
+	return songs
+end
+
+--- For the groups that are just numbers (Length, BPM) or ugly enums (Grade) we want to give a more descriptive name.
+--- Right now this affects Length, BPM, Difficulty, and Grade
 -- called by GroupMT.lua
 function GetGroupDisplayName(groupName)
 	local name
@@ -266,9 +288,8 @@ function GetGroupDisplayName(groupName)
 	return name and name or groupName
 end
 
----------------------------------------------------------------------------
--- returns an indexed table of group names as strings
--- uses the input sort type or the current sort type if none is entered
+--- returns an indexed table of group names as strings.
+--- uses the current sort type if no parameter is given.
 function GetGroups(inputGroup)
 	local group = inputGroup or SL.Global.GroupType
 	if group == "Group" then
@@ -276,13 +297,14 @@ function GetGroups(inputGroup)
 	else return SortGroups[group] end
 end
 
----------------------------------------------------------------------------
 -- Called by __index InitCommand in GroupMT.lua (ScreenSelectMusicExperiment overlay)
--- Returns a string containing the group the current song is part of
-function GetCurrentGroup()
+--- Returns a string containing the group a song is part of. If no params are given then it uses the current song
+--- (or the last song seen if we're on "CloseThisFolder" or the groupwheel).
+--- For grade group it uses the MasterPlayer's scores (and completely ignores the other player)
+function GetCurrentGroup(song)
 	local mpn = GAMESTATE:GetMasterPlayerNumber()
 	--no song if we're on Close This Folder so use the last seen song
-	local current_song = GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
+	local current_song = song and song or GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
 	local starting_group = current_song:GetMainTitle()
 	if SL.Global.GroupType == "Title" then 
 		if string.find(starting_group, "^%d") then
@@ -317,8 +339,8 @@ function GetCurrentGroup()
 	return starting_group
 end
 
--------------------------------------------------------------------------------------------------------
--- given a table of all possible groups, return the index of the group that the current song is part of or 1 if it can't find the group
+--- given a table of all possible groups, return the index of the group that the current song is part of or 1 if it can't find the group
+-- Used in setup when creating groups to make sure we stay focused on the correct group.
 function GetGroupIndex(groups)
 	local group_index = 1
 	local current_song = GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
@@ -379,10 +401,6 @@ function GetGroupIndex(groups)
 	end
 	return group_index
 end
-
----------------------------------------------------------------------------
--- functions related to creating groups
------------------------------------------------------------------------------
 
 local CreateGroup = Def.ActorFrame{
 	--------------------------------------------------------------------------------------
@@ -549,10 +567,11 @@ local CreateGroup = Def.ActorFrame{
 }
 
 ----------------------------------------------------------------------------------------------
---Controls the order songs should be displayed from within a group
---Default is alphabetical
+-- Sorting
 ----------------------------------------------------------------------------------------------
 
+--- Controls the order songs should be displayed from within a group.
+--- Default is alphabetical
 function GetSortFunction()
 	if SL.Global.Order == "Alphabetical" then
 		return function(k1,k2)
@@ -587,19 +606,22 @@ function GetSortFunction()
 		end
 	end
 end
+
 -------------------------------------------------------------------------------------
---depending on the group name supplied
---returns an indexed table of song objects
---if groupType isn't given it will use whatever the current sort is
---cycles through every song loaded so can take a while if you have too many songs
+--Song lists
+-------------------------------------------------------------------------------------
+
+--- Returns an indexed table of song objects depending on the group name supplied.
+--- If groupType isn't given it will use whatever the current sort is.
+--- cycles through every song loaded so can take a while if you have too many songs
 function CreateSongList(group_name, groupType)
 	local groupType = groupType or SL.Global.GroupType
 	local songList = CreateGroup[groupType](group_name)
 	return songList
 end
 
--- instead of cycling through every song to create a group uses the preloaded groups
--- that were created when screenselectmusicExperiment first runs
+--- Instead of cycling through every song to create a group uses the preloaded groups
+--- that were created when ScreenSelectMusicExperiment first runs
 function GetSongList(group_name, group_type)
 	local group_type = group_type or SL.Global.GroupType
 	local songList = PreloadedGroups[group_type][tostring(group_name)]
@@ -607,8 +629,8 @@ function GetSongList(group_name, group_type)
 	return songList
 end
 
--- currently only used when we want to order by Difficulty/BPM. This requires splitting songs so each chart gets its own song.
--- after splitting, GetSongList won't match up so we have to do something else. There's also a special table we put this in.
+--- Currently only used when we want to order by Difficulty/BPM. This requires splitting songs so each chart gets its own song.
+--- After splitting, GetSongList won't match up so we have to do something else. There's also a special table we put this in.
 function CreateSpecialSongList(inputSongList)
 	local songList = inputSongList
 	DifficultyBPM = {}
@@ -630,8 +652,8 @@ end
 function GetDifficultyBPM(index)
 	return DifficultyBPM[index]
 end
-----------------------------------------------------------------------------------------
--- Create groups for every item in the SortGroups table
+
+--- Create groups for every possible group in the SortGroups table
 function InitPreloadedGroups()
 	-- Add normal groups to SortGroups. I'd like to do this earlier but I guess the game needs to load for SONGMAN to become available
 	SortGroups["Group"] = SONGMAN:GetSongGroupNames()
@@ -645,5 +667,5 @@ function InitPreloadedGroups()
 end
 
 -- Get custom songs ready --
-LoadTaggedSongs()
-LoadTags()
+TaggedSongs = LoadTaggedSongs()
+SortGroups.Tag = LoadTags()

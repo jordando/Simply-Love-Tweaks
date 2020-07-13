@@ -9,7 +9,7 @@ local t = Def.ActorFrame{
 	-- add a lua-based InputCalllback to this screen so that we can navigate
 	-- through multiple panes of information; pass a reference to this ActorFrame
 	-- and the number of panes there are to InputHandler.lua
-	OnCommand=function(self)
+	OnCommand=function(self)								
 		SCREENMAN:GetTopScreen():AddInputCallback( LoadActor("./InputHandler.lua", {af=self, num_panes=NumPanes}) )
 	end,
 	OffCommand=function(self)
@@ -17,8 +17,6 @@ local t = Def.ActorFrame{
 			if SL.Global.GameMode == "Experiment" then AddScore(player) end
 		end
 	end,
-	-- ./Graphics/Triangles.lua, shows up if we're in StomperZ mode
-	LoadActor( THEME:GetPathB("", "Triangles.lua") ),
 
 	-- code for triggering a screenshot and animating a "screenshot" texture
 	LoadActor("./ScreenshotHandler.lua"),
@@ -28,9 +26,6 @@ local t = Def.ActorFrame{
 
 	-- text to display BPM range (and ratemod if ~= 1.0) immediately under the banner
 	LoadActor("./BPM_RateMod.lua"),
-
-	-- code for handling score vocalization
-	LoadActor("./ScoreVocalization.lua"),
 
 	-- store some attributes of this playthrough of this song in the global SL table
 	-- for later retrieval on ScreenEvaluationSummary
@@ -70,6 +65,7 @@ for player in ivalues(Players) do
 		-- Record Texts (Machine and/or Personal)
 		LoadActor("./PerPlayer/RecordTexts.lua", player)
 	}
+
 	-- the lower half of ScreenEvaluation
 	local lower = Def.ActorFrame{
 		Name=ToEnumShortString(player).."_AF_Lower",
@@ -78,7 +74,7 @@ for player in ivalues(Players) do
 			if GAMESTATE:GetCurrentStyle():GetStyleType() == "StyleType_OnePlayerTwoSides" and SL.Global.GameMode ~= "Experiment" then
 				self:x(_screen.cx)
 			else
-				self:x(_screen.cx + (player==PLAYER_1 and -155 or GAMESTATE:GetNumSidesJoined()==2 and 155 or -155))
+				self:x(_screen.cx + (player==PLAYER_1 and -155 or 155))--GAMESTATE:GetNumSidesJoined()==2 and 155 or -155))
 			end
 		end,
 
@@ -111,11 +107,24 @@ for player in ivalues(Players) do
 		-- was this player disqualified from ranking?
 		LoadActor("./PerPlayer/Disqualified.lua", player),
 	}
+	
+	local experimentLower = Def.ActorFrame{
+		OnCommand=function(self)
+			-- if double style, center the gameplay stats
+			if GAMESTATE:GetCurrentStyle():GetStyleType() == "StyleType_OnePlayerTwoSides" and SL.Global.GameMode ~= "Experiment" then
+				self:x(_screen.cx)
+			else
+				self:x(_screen.cx + (player==PLAYER_1 and 155 or -155))
+			end
+		end,
+	}
+
 	--background quad for additional stats if we're in Experiment mode
 	if SL.Global.GameMode == "Experiment" then
-		lower[#lower+1] = Def.Quad{
+
+		experimentLower[#experimentLower+1] = Def.Quad{
 			InitCommand = function(self)
-				self:x(_screen.cx + WideScale(-10,-120)):diffuse(color("#1E282F")):y(_screen.cy+34):zoomto( 300,180 )
+				self:diffuse(color("#1E282F")):y(_screen.cy+34):zoomto( 300,180 )
 				if GAMESTATE:GetNumSidesJoined() == 2 then self:diffusealpha(0)
 				elseif ThemePrefs.Get("RainbowMode") then
 					self:diffusealpha(0.9)
@@ -123,7 +132,7 @@ for player in ivalues(Players) do
 			end,
 		}
 		if GAMESTATE:GetNumSidesJoined() == 1 then
-			lower[#lower+1] = LoadActor("./PerPlayer/Graphs.lua", {player = player, graph = 'density'})..{InitCommand = function(self) self:x(_screen.cx + WideScale(-10,-120)) end}
+			experimentLower[#experimentLower+1] = LoadActor("./PerPlayer/Graphs.lua", {player = player, graph = 'density'})..{InitCommand = function(self) end}
 		end
 	end
 	-- Generate a hash once here if we're in Experiment mode and use it for any pane that needs it.
@@ -134,11 +143,10 @@ for player in ivalues(Players) do
 		local pn = ToEnumShortString(player)
 		local stepsType = ToEnumShortString(GetStepsType()):gsub("_","-"):lower()
 		local difficulty = ToEnumShortString(GAMESTATE:GetCurrentSteps(pn):GetDifficulty())
-		if ThemePrefs.Get("UseCustomScores") then 
-			hash = GenerateHash(stepsType, difficulty)
-			if hash ~= GetHash(player) then AddCurrentHash() end
-		end
+		hash = GenerateHash(GAMESTATE:GetCurrentSteps(player),stepsType, difficulty)
+		if hash ~= GetHash(player) then AddCurrentHash() end
 	end
+	
 	-- add available Panes to the lower ActorFrame via a loop
 	-- Note(teejusb): Some of these actors may be nil. This is not a bug, but
 	-- a feature for any panes we want to be conditional (e.g. the QR code).
@@ -149,8 +157,8 @@ for player in ivalues(Players) do
 			lower[#lower+1] = LoadActor("./PerPlayer/Pane"..i, player)
 		end
 	end
-
 	-- add lower ActorFrame to the primary ActorFrame
+	t[#t+1] = experimentLower
 	t[#t+1] = lower
 end
 

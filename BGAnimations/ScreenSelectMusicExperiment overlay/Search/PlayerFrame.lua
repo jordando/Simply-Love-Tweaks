@@ -88,8 +88,6 @@ return Def.ActorFrame{
 					end
 					descriptions[#descriptions+1] = toWrite
 				end
-			end
-			for group in ivalues(tempGroups) do
 				for song in ivalues(PruneSongList(GetSongList(group))) do
 					if string.find(string.lower(song:GetDisplayMainTitle()),string.lower(params.searchTerm),1,true) then
 						table.insert(scroller_data,{index=#scroller_data,displayname=song:GetDisplayMainTitle(),type="song",group=group,song=song})
@@ -102,6 +100,7 @@ return Def.ActorFrame{
 			scroller.focus_pos = 5
 			scroller:set_info_set(scroller_data, 0)
 			self:playcommand("Set",{index=5,searchTerm = params.searchTerm})
+			MESSAGEMAN:Broadcast("SearchCaptureReady")
 		end,
 		
 		FrameBackground(PlayerColor(player), player, 2)..{InitCommand = function(self) self:x(50) end},

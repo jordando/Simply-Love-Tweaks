@@ -72,7 +72,7 @@ return Def.ActorFrame{
 			-- see also: https://youtu.be/bXZhTb0eUqA?t=116
 			local scroller_data = {}
 			local index_padding = 3
-			if #GetGroups("Tag") <= 1 then index_padding = 4 end
+			if #GetGroups("Tag") - 2 <= 1 then index_padding = 4 end
 			for i = 1,index_padding do
 				table.insert(scroller_data,{})
 			end

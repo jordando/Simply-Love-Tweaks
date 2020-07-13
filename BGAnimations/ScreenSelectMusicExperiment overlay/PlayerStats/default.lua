@@ -4,6 +4,7 @@ local player = GAMESTATE:GetMasterPlayerNumber()
 local totalTime = 0
 local songsPlayedThisGame = 0
 local notesHitThisGame = 0
+local LineGraph = LoadActor("LineGraph.lua", player)
 
 function ConvertSecondsToTimeString(totalTime)
 	local hours = math.floor(totalTime/3600)
@@ -90,9 +91,11 @@ local af =  Def.ActorFrame{
 		CreateLineGraph(200,150)..{OnCommand=function(self) self:xy(-20,130) end},
 		LoadFont("_wendy small") ..
 		{
-			Text = "Session",
+			Name = "Session",
 			InitCommand = function(self)
 				self:zoom(1):diffuse(Color.White):zoom(.7):y(-180):halign(.5)
+				local date = MonthOfYear()+1 .. "-" .. DayOfMonth() .. "-" .. Year()
+				self:settext(date)
 			end
 		},
 		LoadFont("Common Normal") ..
@@ -213,27 +216,27 @@ if playerStats then
 	local firstPasses = {}
 	local songs = SONGMAN:GetAllSongs()
 	local maxDiff = 0
-	if ThemePrefs.Get("UseCustomScores") then
-		for song in ivalues(songs) do
-			if song:HasStepsType(GetStepsType()) then
-				for steps in ivalues(song:GetStepsByStepsType(GetStepsType())) do
-					local hash = GetHash(player,song,steps)
-					if hash then
-						local customScore = GetChartStats(player,hash)
-						if customScore and customScore.FirstPass ~= "Never" and customScore.FirstPass ~= "Unknown" then
-							if not firstPasses[steps:GetMeter()] then
-								if steps:GetMeter() > maxDiff then maxDiff = steps:GetMeter() end
+	for song in ivalues(songs) do
+		if song:HasStepsType(GetStepsType()) then
+			for steps in ivalues(song:GetStepsByStepsType(GetStepsType())) do
+				local hash = GetHash(player,song,steps)
+				if hash then
+					local customScore = GetChartStats(player,hash)
+					if customScore and customScore.FirstPass ~= "Never" and customScore.FirstPass ~= "Unknown" then
+						if not firstPasses[steps:GetMeter()] then
+							if steps:GetMeter() > maxDiff then maxDiff = steps:GetMeter() end
+							firstPasses[steps:GetMeter()] = {date = customScore.FirstPass, song = song:GetMainTitle()}
+						else
+							if DateToMinutes(firstPasses[steps:GetMeter()].date) > DateToMinutes(customScore.FirstPass) then
 								firstPasses[steps:GetMeter()] = {date = customScore.FirstPass, song = song:GetMainTitle()}
-							else
-								if DateToMinutes(firstPasses[steps:GetMeter()].date) > DateToMinutes(customScore.FirstPass) then
-									firstPasses[steps:GetMeter()] = {date = customScore.FirstPass, song = song:GetMainTitle()}
-								end
 							end
 						end
 					end
 				end
 			end
 		end
+	end
+	if next(firstPasses) then --don't need to do any of this if we haven't passed anything
 		local sortedFirstPasses = {}
 		for i = 1,maxDiff do
 			if firstPasses[i] then

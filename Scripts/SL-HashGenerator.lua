@@ -123,48 +123,62 @@ end
 --
 -- stepsType is usually either 'dance-single' or 'dance-double'
 -- difficulty is usually one of {'Beginner', 'Easy', 'Medium', 'Hard', 'Challenge'}
-function GenerateHash(stepsType, difficulty, song)
-	local song = song or GAMESTATE:GetCurrentSong()
-	local msdFile = ParseMsdFile(song:GetSongDir())
+function GenerateHash(steps, stepsType, difficulty)
+
+	local msdFile = ParseMsdFile(steps)
 
 	if #msdFile == 0 then return ''	end
 
-	local bpms = ''
+	local songBpms = ''
+	local stepBpms
+	local stepData = false --for SSC. until we get to the first 'Notes' anything we find is for the overall song
 	local sscSteps = ''
 	local sscDifficulty = ''
 	local allNotes = {}
-
 	for value in ivalues(msdFile) do
 		if value[1] == 'BPMS' then
-			bpms = NormalizeFloatDigits(value[2])
+			--if we get to BPMS before we see a chart than it's the song bpms
+			--in SM files we expect to only see BPMS once but SSC can have a different
+			--bpms for each chart. If an SSC chart doesn't have a bpms itself it will
+			--fall back on the song bpms so we need to keep track of what that is
+			if not stepData then songBpms = NormalizeFloatDigits(value[2])
+			else stepBpms = NormalizeFloatDigits(value[2]) end
+		--in SSCs each chart needs NOTEDATA or Stepmania won't even try to load it
+		--so if we see NOTEDATA we know we're past the overall values and any new
+		--bpms values we see will be chart specific
+		--https://github.com/stepmania/stepmania/blob/master/src/NotesLoaderSSC.cpp#L933
+		elseif value[1] == 'NOTEDATA' then stepData = true
 		elseif value[1] == 'STEPSTYPE' then sscSteps = value[2]
 		elseif value[1] == 'DIFFICULTY' then sscDifficulty = value[2]
 		elseif value[1] == 'NOTES' then
-			--SSC files don't have 7 fields in notes so we just put it all in here
-			if string.find(song:GetSongFilePath(),".ssc$") then
+			--SSC files don't have 7 fields in notes so it would normally fail to generate hashes
+			--We can make a temporary table mimicking what it would look like in a .SM file
+			if string.find(SONGMAN:GetSongFromSteps(steps):GetSongFilePath(),".ssc$") then
 				local sscTable = {}
-				table.insert(sscTable,"1")
-				table.insert(sscTable, sscSteps)
-				table.insert(sscTable,"3")
-				table.insert(sscTable, sscDifficulty)
-				table.insert(sscTable,"5")
-				table.insert(sscTable,"6")
-				table.insert(sscTable, value[2])
+				sscTable[2] = sscSteps
+				sscTable[4] = sscDifficulty
+				sscTable[7] = value[2]
+				for i = 1,4 do table.insert(sscTable,i) end --filler so #notes >= 7
+				--To determine Bpms for SSC files first we check if there's a steps specific value.
+				--If no, then we check for an overall song value. If that doesn't exist either,
+				--Stepmania sets the Bpms to 60. SM files will also get set to 60 if there's no overall Bpms
+				--https://github.com/stepmania/stepmania/blob/master/src/TimingData.cpp#L1198
+				sscTable['bpms'] = stepBpms and stepBpms or songBpms and songBpms or '0.000=60.000'
+				stepBpms = nil --reset the stepBpms. If the next chart doesn't have bpms then we'll use the songBpms
 				table.insert(allNotes,sscTable)
 			else
+				value['bpms'] = songBpms and songBpms or '0.000=60.000'
 				table.insert(allNotes, value)
 			end
 		end
 	end
 
-	if bpms == '' then return '' end
-
-	for notes in ivalues(allNotes) do			
+	for notes in ivalues(allNotes) do
 		-- StepMania considers NOTES sections with greater than 7 sections valid.
 		-- https://github.com/stepmania/stepmania/blob/master/src/NotesLoaderSM.cpp#L1072-L1079
-		if #notes >= 7 and notes[2] == stepsType and difficulty == notes[4] then
+		if #notes >= 7 and notes[2] == stepsType and difficulty == ToEnumShortString(OldStyleStringToDifficulty(notes[4])) then
 			local minimizedChart = MinimizeChart(notes[7])
-			local chartDataAndBpm = minimizedChart .. bpms
+			local chartDataAndBpm = minimizedChart .. notes['bpms']
 			local hash = sha256(chartDataAndBpm)
 			-- Trace('Style: ' .. notes[2] .. '\tDifficulty: ' .. notes[4] .. '\tHash: ' .. hash)
 			return hash

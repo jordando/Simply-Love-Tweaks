@@ -1,4 +1,47 @@
+------------------------------------------------------------
+-- Helper Functions for Branches
+------------------------------------------------------------
+
+local EnoughCreditsToContinue = function()
+	local credits = GetCredits().Credits
+
+	local premium = ToEnumShortString(GAMESTATE:GetPremium())
+	local styletype = ToEnumShortString(GAMESTATE:GetCurrentStyle():GetStyleType())
+
+	if premium == "2PlayersFor1Credit" then
+		return (credits > 0) -- any value greater than 0 is good enough
+
+	elseif premium == "DoubleFor1Credit" then
+		-- versus, routine, couple
+		if styletype == "TwoPlayersTwoSides" or styletype == "TwoPlayersSharedSides" then
+			return (credits > 1)
+
+		-- single, double, solo
+		else
+			return (credits > 0)
+		end
+
+	elseif premium == "Off" then
+		-- single, solo
+		if styletype == "OnePlayerOneSide" then
+			return (credits > 0)
+
+		-- versus, double, routine, couple
+		else
+			return (credits > 1)
+		end
+	end
+
+	return false
+end
+
+------------------------------------------------------------
+
 if not Branch then Branch = {} end
+
+Branch.AfterScreenRankingDouble = function()
+	return PREFSMAN:GetPreference("MemoryCards") and "ScreenMemoryCard" or "ScreenRainbow"
+end
 
 SelectMusicOrCourse = function()
 	if GAMESTATE:IsCourseMode() then
@@ -78,9 +121,13 @@ Branch.AfterEvaluationStage = function()
 end
 
 Branch.AfterSelectPlayMode = function()
+	if SL.Global.GameMode == "Experiment" then return "ScreenLoadCustomScores" end
 	return SelectMusicOrCourse()
 end
 
+Branch.AfterLoadCustomScores = function()
+	return SelectMusicOrCourse()
+end
 
 Branch.AfterGameplay = function()
 	if THEME:GetMetric("ScreenHeartEntry", "HeartEntryEnabled") then
@@ -168,33 +215,6 @@ Branch.AllowScreenEvalSummary = function()
 	end
 end
 
-
-local EnoughCreditsToContinue = function()
-	local credits = GetCredits().Credits
-	local premium = GAMESTATE:GetPremium()
-	local style = GAMESTATE:GetCurrentStyle():GetName():gsub("8", "")
-
-	if premium == "Premium_2PlayersFor1Credit" and credits > 0 then return true end
-
-	if premium == "Premium_DoubleFor1Credit" then
-		if style == "versus" then
-			if credits > 1 then return true end
-		else
-			if credits > 0 then return true end
-		end
-	end
-
-	if premium == "Premium_Off" then
-		if style == "single" then
-			if credits > 0 then return true end
-		else
-			if credits > 1 then return true end
-		end
-	end
-
-	return false
-end
-
 Branch.AfterProfileSave = function()
 
 	if PREFSMAN:GetPreference("EventMode") then
@@ -279,5 +299,3 @@ Branch.AfterProfileSaveSummary = function()
 		return Branch.AfterInit()
 	end
 end
-
-	

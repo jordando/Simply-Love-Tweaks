@@ -154,8 +154,7 @@ local af =
 		DiffuseEmojis(self, machine_name)
 		local player_score, player_name
 		if PROFILEMAN:IsPersistentProfile(player) and GAMESTATE:GetCurrentSong() then --if there's no song there won't be a hash
-			local hash
-			if ThemePrefs.Get("UseCustomScores") then hash = GetHash(player) end
+			local hash = GetHash(player)
 			if hash and GetScores(player, hash) then
 				player_name = PROFILEMAN:GetProfile(player):GetDisplayName():upper()
 				player_score = FormatPercentScore(GetScores(player, hash)[1].score)

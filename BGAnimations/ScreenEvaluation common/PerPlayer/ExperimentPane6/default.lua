@@ -9,9 +9,10 @@ local pane = Def.ActorFrame{
 		self:visible(false)
 	end
 }
+local position = player == "PlayerNumber_P1" and (_screen.cx-WideScale(270,378)) or -_screen.cx + WideScale(60,167)
 
 pane[#pane+1] = LoadActor(THEME:GetPathB("ScreenEvaluation", "common/PerPlayer/Pane5"), player)..{
-	InitCommand=function(self) self:visible(true):x(_screen.cx-WideScale(270,378)) end
+	InitCommand=function(self) self:visible(true):x(position) end
 	}
 
 return pane

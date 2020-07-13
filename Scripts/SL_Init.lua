@@ -4,7 +4,7 @@ local PlayerDefaults = {
 	__index = {
 		initialize = function(self)
 			self.ActiveModifiers = {
-				SpeedModType = "x",
+				SpeedModType = "X",
 				SpeedMod = 1.00,
 				JudgmentGraphic = "Love 2x6.png",
 				ComboFont = "Wendy",
@@ -19,30 +19,26 @@ local PlayerDefaults = {
 				HideScore = false,
 				HideDanger = false,
 				HideComboExplosions = false,
+				HideErrorBar = true,
 
 				ColumnFlashOnMiss = false,
 				SubtractiveScoring = false,
 				MeasureCounter = "None",
 				MeasureCounterLeft = true,
 				MeasureCounterUp = false,
-				DataVisualizations = "Disabled",
+				DataVisualizations = "None",
 				TargetScore = 11,
 				ActionOnMissedTarget = "Nothing",
 				Pacemaker = false,
-				ReceptorArrowsPosition = "StomperZ",
 				LifeMeterType = "Standard",
 				MissBecauseHeld = false,
 				NPSGraphAtTop = false,
-				Vocalization = "None",
 			}
 			self.Streams = {
 				SongDir = nil,
 				StepsType = nil,
 				Difficulty = nil,
 				Measures = nil,
-			}
-			self.NoteDensity = {
-				Peak = nil
 			}
 			self.HighScores = {
 				EnteringName = false,
@@ -51,6 +47,7 @@ local PlayerDefaults = {
 			self.Stages = {
 				Stats = {}
 			}
+			self.PlayerOptionsString = nil
 			self.CurrentPlayerOptions = {
 				String = nil
 			}
@@ -79,7 +76,7 @@ local GlobalDefaults = {
 			}
 			self.ActiveModifiers = {
 				MusicRate = 1.0,
-				WorstTimingWindow = 5,
+				TimingWindows = {true, true, true, true, true},
 			}
 			self.Stages = {
 				PlayedThisGame = 0,
@@ -106,6 +103,7 @@ local GlobalDefaults = {
 			self.TimeAtSessionStart = nil
 
 			self.GameplayReloadCheck = false
+			----------------------Experiment only values----------------------------------------------
 			self.GoToOptions = false --when two tap to enter options is turned on this is used
 			self.ActivePlayerOptionsPane0 = 0 --for use with the OptionWheel panes
 			self.ActivePlayerOptionsPane1 = 0 --for use with the OptionWheel panes
@@ -118,6 +116,7 @@ local GlobalDefaults = {
 		-- These values outside initialize() won't be reset each game cycle,
 		-- but are rather manipulated as needed by the theme.
 		ActiveColorIndex = ThemePrefs.Get("SimplyLoveColor") or 1,
+		----------------------Experiment only values----------------------------------------------
 		DifficultyGroup = 1, --used when we're in difficulty sort to keep the correct difficulty defaulted
 		GradeGroup = "No_Grade", --used when we're in grade sort to keep the correct grade defaulted
 		LastSeenSong = nil, --set in SongMT transform. used to keep track of the last song when we're on "Close This Folder"
@@ -126,7 +125,7 @@ local GlobalDefaults = {
 		LastSongPlayedGroup = nil,--set by SL-CustomProfiles.lua every time profile is saved
 		ExperimentScreen = false, --keep track of when we're on ScreenSelectMusicExperiment TODO figure out why SCREENMAN:GetTopScreen() returns nil sometimes
 		Scrolling = false, --keep track of when left or right is held down, set by ScreenSelectMusicExperiment/default.lua
-		HashLookup = {} --hashes with corresponding song directories
+		HashLookup = {}, --hashes with corresponding song directories
 	}
 }
 
@@ -136,6 +135,7 @@ SL = {
 	P1 = setmetatable( {}, PlayerDefaults),
 	P2 = setmetatable( {}, PlayerDefaults),
 	Global = setmetatable( {}, GlobalDefaults),
+
 	-- Colors that Simply Love's background can be
 	Colors = {
 		"#FF3C23",
@@ -176,14 +176,6 @@ SL = {
 			color("#5b2b8e"),	-- purple
 			color("#ff0000")	-- red
 		},
-		StomperZ = {
-			color("#5b2b8e"),	-- purple
-			color("#0073ff"),	-- dark blue
-			color("#66c955"),	-- green
-			color("#e29c18"),	-- gold
-			color("#dddddd"),	-- grey
-			color("#ff0000")	-- red
-		}
 	},
 	Preferences = {
 		Casual = {
@@ -191,11 +183,11 @@ SL = {
 			RegenComboAfterMiss=0,
 			MaxRegenComboAfterMiss=0,
 			MinTNSToHideNotes="TapNoteScore_W3",
-			HarshHotLifePenalty=1,
+			HarshHotLifePenalty=true,
 
-			PercentageScoring=1,
+			PercentageScoring=true,
 			AllowW1="AllowW1_Everywhere",
-			SubSortByNumSteps=1,
+			SubSortByNumSteps=true,
 
 			TimingWindowSecondsW1=0.021500,
 			TimingWindowSecondsW2=0.043000,
@@ -211,11 +203,11 @@ SL = {
 			RegenComboAfterMiss=5,
 			MaxRegenComboAfterMiss=10,
 			MinTNSToHideNotes="TapNoteScore_W3",
-			HarshHotLifePenalty=1,
+			HarshHotLifePenalty=true,
 
-			PercentageScoring=1,
+			PercentageScoring=true,
 			AllowW1="AllowW1_Everywhere",
-			SubSortByNumSteps=1,
+			SubSortByNumSteps=true,
 
 			TimingWindowSecondsW1=0.021500,
 			TimingWindowSecondsW2=0.043000,
@@ -231,11 +223,11 @@ SL = {
 			RegenComboAfterMiss=5,
 			MaxRegenComboAfterMiss=10,
 			MinTNSToHideNotes="TapNoteScore_W4",
-			HarshHotLifePenalty=1,
+			HarshHotLifePenalty=true,
 
-			PercentageScoring=1,
+			PercentageScoring=true,
 			AllowW1="AllowW1_Everywhere",
-			SubSortByNumSteps=1,
+			SubSortByNumSteps=true,
 
 			TimingWindowSecondsW1=0.011000,
 			TimingWindowSecondsW2=0.021500,
@@ -244,26 +236,6 @@ SL = {
 			TimingWindowSecondsW5=0.135000,
 			TimingWindowSecondsHold=0.320000,
 			TimingWindowSecondsMine=0.065000,
-			TimingWindowSecondsRoll=0.350000,
-		},
-		StomperZ = {
-			TimingWindowAdd=0,
-			RegenComboAfterMiss=0,
-			MaxRegenComboAfterMiss=0,
-			MinTNSToHideNotes="TapNoteScore_W4",
-			HarshHotLifePenalty=0,
-
-			PercentageScoring=1,
-			AllowW1="AllowW1_Everywhere",
-			SubSortByNumSteps=1,
-
-			TimingWindowSecondsW1=0.012500,
-			TimingWindowSecondsW2=0.025000,
-			TimingWindowSecondsW3=0.050000,
-			TimingWindowSecondsW4=0.100000,
-			TimingWindowSecondsW5=0.10000,
-			TimingWindowSecondsHold=0.20000,
-			TimingWindowSecondsMine=0.070000,
 			TimingWindowSecondsRoll=0.350000,
 		},
 	},
@@ -361,46 +333,14 @@ SL = {
 			LifePercentChangeHeld=0.008,
 			LifePercentChangeHitMine=-0.05,
 		},
-		StomperZ = {
-			PercentScoreWeightW1=10,
-			PercentScoreWeightW2=9,
-			PercentScoreWeightW3=8,
-			PercentScoreWeightW4=5,
-			PercentScoreWeightW5=0,
-			PercentScoreWeightMiss=0,
-			PercentScoreWeightLetGo=0,
-			PercentScoreWeightHeld=10,
-			PercentScoreWeightHitMine=-5,
-
-			GradeWeightW1=10,
-			GradeWeightW2=9,
-			GradeWeightW3=8,
-			GradeWeightW4=5,
-			GradeWeightW5=0,
-			GradeWeightMiss=0,
-			GradeWeightLetGo=0,
-			GradeWeightHeld=10,
-			GradeWeightHitMine=-5,
-
-			LifePercentChangeW1=0.004,
-			LifePercentChangeW2=0.004,
-			LifePercentChangeW3=0.004,
-			LifePercentChangeW4=0.004,
-			LifePercentChangeW5=0,
-			LifePercentChangeMiss=-0.04,
-			LifePercentChangeLetGo=-0.04,
-			LifePercentChangeHeld=0,
-			LifePercentChangeHitMine=-0.04,
-		},
-	},
+	}
 }
 SL.Preferences.Experiment = SL.Preferences.ITG
 SL.Metrics.Experiment = SL.Metrics.ITG
 SL.JudgmentColors.Experiment = SL.JudgmentColors.ITG
 
-
--- Initialize preferences by calling this method.
--- We typically do this from ./BGAnimations/ScreenTitleMenu underlay/default.lua
+-- Initialize preferences by calling this method.  We typically do
+-- this from ./BGAnimations/ScreenTitleMenu underlay/default.lua
 -- so that preferences reset between each game cycle.
 
 function InitializeSimplyLove()
@@ -409,5 +349,4 @@ function InitializeSimplyLove()
 	SL.Global:initialize()
 end
 
--- TODO: remove this; it's for debugging purposes (Control+F2 to reload scripts) only
 InitializeSimplyLove()

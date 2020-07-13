@@ -47,6 +47,8 @@ local function input(event)
 					sortmenu:playcommand("SwitchToSort")
 				elseif focus.new_overlay == "Player Stats" then
 					overlay:queuecommand("DirectInputToPlayerStats")
+				elseif focus.new_overlay == "Practice" then
+					overlay:queuecommand("DirectInputToPractice")
 				end
 			end
 
