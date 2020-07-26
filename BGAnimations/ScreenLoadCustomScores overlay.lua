@@ -41,7 +41,7 @@ return Def.ActorFrame{
 	},
 
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		Text="Loading Scores: ",
         InitCommand=function(self)
             self:diffusealpha(0):linear(tweentime):diffusealpha(1)
