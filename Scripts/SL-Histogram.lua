@@ -1,6 +1,7 @@
-local function gen_vertices(player, width, height)
+local function gen_vertices(player, width, height, upColor, lowColor)
 	local Song, Steps
 	local first_step_has_occurred = false
+
 	if GAMESTATE:IsCourseMode() then
 		local TrailEntry = GAMESTATE:GetCurrentTrail(player):GetTrailEntry(GAMESTATE:GetCourseSongIndex())
 		Steps = TrailEntry:GetSteps()
@@ -11,14 +12,16 @@ local function gen_vertices(player, width, height)
 	end
 
 	local PeakNPS, NPSperMeasure = GetNPSperMeasure(Song, Steps)
-	
-	-- Store the PeakNPS in GAMESTATE:Env()[pn.."PeakNPS"] in case both players are joined
+
+	-- store the PeakNPS in GAMESTATE:Env()[pn.."PeakNPS"] in case both players are joined
 	-- their charts may have different peak densities, and if they both want histograms,
 	-- we'll need to be able to compare densities and scale one of the graphs vertically
 	GAMESTATE:Env()[ToEnumShortString(player).."PeakNPS"] = PeakNPS
+	GAMESTATE:Env()[ToEnumShortString(player).."CurrentSteps"] = Steps
 
 	-- broadcast this for any other actors on the current screen that rely on knowing the peak nps
 	MESSAGEMAN:Broadcast("PeakNPSUpdated", {PeakNPS=PeakNPS})
+
 	local verts = {}
 	local x, y, t
 
@@ -29,21 +32,24 @@ local function gen_vertices(player, width, height)
 		local LastSecond = Song:GetLastSecond()
 
 		-- magic numbers obtained from Photoshop's Eyedrop tool in rgba percentage form (0 to 1)
-		local graphColor = {Blue = {}, Yellow = {}}
+		local graphColor = {Blue = {}, Yellow = {}}	 
 		graphColor.Blue[1]= {0,    0.678, 0.753, 1} --blue
 		graphColor.Blue[2]= {0.51, 0,     0.631, 1} --purple
 		graphColor.Yellow[1]= {0.968, 0.953, 0.2, 1} --yellow
 		graphColor.Yellow[2]= {0.863, 0.353, 0.2, 1} --orange
 		
 		local lowerColor, upperColor, chosenColor
-		chosenColor = ThemePrefs.Get("DensityGraphColor")
+		if upColor and lowColor then 
+			lowerColor = lowColor
+			upperColor = upColor
+		else
+			chosenColor = ThemePrefs.Get("DensityGraphColor")
 
-		lowerColor=graphColor[chosenColor][1]
-		upperColor=graphColor[chosenColor][2]
+			lowerColor=graphColor[chosenColor][1]
+			upperColor=graphColor[chosenColor][2]
+		end
 
-
-		local upper
-		
+		local upper		   
 		for i, nps in ipairs(NPSperMeasure) do
 
 			if nps > 0 then first_step_has_occurred = true end
@@ -94,7 +100,7 @@ function interpolate_vert(v1, v2, offset)
 end
 
 
-function NPS_Histogram(player, width, height)
+function NPS_Histogram(player, width, height, upColor, lowColor)
 	local amv = Def.ActorMultiVertex{
 		Name="DensityGraph_AMV",
 		InitCommand=function(self)
@@ -108,16 +114,17 @@ function NPS_Histogram(player, width, height)
 				self:playcommand("SetDensity")
 			end
 		end,
-		LessLagMessageCommand=function(self) 
+		LessLagMessageCommand=function(self)
 			if GAMESTATE:IsHumanPlayer(player) then
 				self:playcommand("SetDensity")
 			end
 		end,
-		SetDensityCommand=function(self)
-			local verts = gen_vertices(player, width, height)
+		SetDensityCommand=function(self)					  
+			local verts = gen_vertices(player, width, height, upColor, lowColor)
 			self:SetNumVertices(#verts):SetVertices(verts)
 		end
 	}
+
 	return amv
 end
 

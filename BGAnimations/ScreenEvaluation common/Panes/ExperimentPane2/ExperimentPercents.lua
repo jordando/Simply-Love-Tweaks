@@ -28,7 +28,7 @@ for i=1,#TapNoteScores.Types do
 	local window = TapNoteScores.Types[i]
 
 	--delta between current stats and highscore stats
-	percentT[#percentT+1] = LoadFont("_wendy small")..{
+	percentT[#percentT+1] = LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
 			self:settext(string.format("%.2f%%", pss:GetPercentageOfTaps( "TapNoteScore_"..window )*100.0))
 			self:zoom(.5):horizalign(left)
@@ -50,13 +50,13 @@ end
 local percentLostT = Def.ActorFrame{
 	InitCommand=function(self)self:zoom(0.8):y(_screen.cy-40) end,
 
-	LoadFont("_wendy small")..{
+	LoadFont("Wendy/_wendy small")..{
 		Text="LOST %",
 		InitCommand=function(self)
 			self:zoom(.5):horizalign(left)
 		end,
 	},
-	LoadFont("_wendy small")..{
+	LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
 			self:zoom(.5):x(150):horizalign(left)
 			if pss:GetFailed() then
@@ -76,7 +76,7 @@ for i=2,#TapNoteScores.Types do
 	local missingPercent = missingDP / pss:GetPossibleDancePoints() * 100
 	total[#total+1] = total[#total] - missingPercent
 	--delta between current stats and highscore stats
-	percentLostT[#percentLostT+1] = LoadFont("_wendy small")..{
+	percentLostT[#percentLostT+1] = LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
 			self:settext(string.format("%.2f%%",missingPercent))
 			self:zoom(.5):horizalign(left)
@@ -93,7 +93,7 @@ for i=2,#TapNoteScores.Types do
 		end,
 	}
 	if not pss:GetFailed() then
-		percentLostT[#percentLostT+1] = LoadFont("_ScreenEvaluation numbers")..{
+		percentLostT[#percentLostT+1] = LoadFont("Wendy/_ScreenEvaluation numbers")..{
 			InitCommand=function(self)
 				self:settext(string.format("%.2f",total[i]))
 				self:zoom(.4):x(150):horizalign(left)

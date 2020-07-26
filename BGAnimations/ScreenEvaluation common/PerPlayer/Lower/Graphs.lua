@@ -2,19 +2,26 @@ if SL.Global.GameMode == "Casual" then return end
 
 local args = ...
 local player = args.player
-local alternateGraph = args.graph or false								  
+local scatterGraph,densityGraph
+local NumPlayers = #GAMESTATE:GetHumanPlayers()
 
-local GraphWidth = THEME:GetMetric("GraphDisplay", "BodyWidth")
+local GraphWidth  = THEME:GetMetric("GraphDisplay", "BodyWidth")
 local GraphHeight = THEME:GetMetric("GraphDisplay", "BodyHeight")
 
-local graph
-if not alternateGraph then
-	graph = LoadActor("./ScatterPlot.lua", {player=player, GraphWidth=GraphWidth, GraphHeight=GraphHeight} )
-else
-	graph = NPS_Histogram(player, GraphWidth, GraphHeight)..{OnCommand = function(self) self:x(-GraphWidth/2):y(GraphHeight):playcommand("SetDensity") end}
-end  
+if SL.Global.GameMode == "Experiment" then
+	densityGraph = NPS_Histogram(player, GraphWidth, GraphHeight,{0.6, 0.6, 0.6, 1},{0.2, 0.2, 0.2, 1})..{OnCommand = function(self) self:x(-GraphWidth/2):y(GraphHeight):playcommand("SetDensity") end}
+end
+scatterGraph = LoadActor("./ScatterPlot.lua", {player=player, GraphWidth=GraphWidth, GraphHeight=GraphHeight} )
+
 return Def.ActorFrame{
-	InitCommand=function(self) self:y(_screen.cy + 124) end,
+	InitCommand=function(self)
+		self:y(_screen.cy + 124)
+		if NumPlayers == 1 then
+			-- not quite an even 0.25 because we need to accomodate the extra 10px
+			-- that would normally be between the left and right panes
+			self:addx(GraphWidth * 0.2541)
+		end
+	end,
 
 	-- Draw a Quad behind the GraphDisplay (lifebar graph) and Judgment ScatterPlot
 	Def.Quad{
@@ -22,9 +29,9 @@ return Def.ActorFrame{
 			self:zoomto(GraphWidth, GraphHeight):diffuse(color("#101519")):vertalign(top)
 		end
 	},
-
-	graph,
-
+	densityGraph,
+	scatterGraph,
+	
 	-- The GraphDisplay provided by the engine provides us a solid color histogram detailing
 	-- the player's lifemeter during gameplay capped by a white line.
 	-- in normal gameplay (non-CourseMode), we hide the solid color but leave the white line.
@@ -48,6 +55,7 @@ return Def.ActorFrame{
 			else
 			    -- hide the GraphDisplay's body (2nd unnamed child)
 			    self:GetChild("")[2]:visible(false)
+				 self:GetChild("Line"):addy(1)
 			end
 		end
 	},

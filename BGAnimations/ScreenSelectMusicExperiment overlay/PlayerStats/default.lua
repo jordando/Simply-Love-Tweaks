@@ -89,7 +89,7 @@ local af =  Def.ActorFrame{
 			end,
 		},
 		CreateLineGraph(200,150)..{OnCommand=function(self) self:xy(-20,130) end},
-		LoadFont("_wendy small") ..
+		LoadFont("Wendy/_wendy small") ..
 		{
 			Name = "Session",
 			InitCommand = function(self)
@@ -162,7 +162,7 @@ if playerStats then
 				self:zoomto(300,450):diffuse(Color.Black)
 			end,
 		},
-		LoadFont("_wendy small") ..
+		LoadFont("Wendy/_wendy small") ..
 		{
 			Text = "All Time",
 			InitCommand = function(self)

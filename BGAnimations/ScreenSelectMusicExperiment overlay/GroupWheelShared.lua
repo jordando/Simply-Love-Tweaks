@@ -49,7 +49,7 @@ af[#af+1] = Def.ActorFrame{
 	SetGroupWheelCommand=function(self) self:xy( _screen.cx, _screen.cy+60 ) end,
 	
 	-- Group Label
-	LoadFont("_wendy small")..{
+	LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
 			self:settext( "GROUP " ):zoom(.5):horizalign(right):xy(WideScale(-240,-315),-60)
 		end,
@@ -65,7 +65,7 @@ af[#af+1] = Def.ActorFrame{
 		end,
 	},
 	-- Sort Label
-	LoadFont("_wendy small")..{
+	LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
 			self:settext( "Sort " ):zoom(.35):horizalign(right):xy(WideScale(-270,-350),-30)
 		end,
@@ -82,7 +82,7 @@ af[#af+1] = Def.ActorFrame{
 	},
 	-- Songs Label
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:settext("Songs "):zoom(.35):horizalign(right):xy(WideScale(-260,-350),-5):maxwidth(300)
 		end,
@@ -90,7 +90,7 @@ af[#af+1] = Def.ActorFrame{
 	},
 	-- Songs text
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:zoom(1):diffuse(Color.White):xy(WideScale(-315,-395),45):vertalign(bottom):horizalign(left):maxwidth(300)
 		end,
@@ -102,7 +102,7 @@ af[#af+1] = Def.ActorFrame{
 	},
 	-- Stepcharts Label
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:settext("Charts "):zoom(.35):horizalign(left):xy(WideScale(-200,-275),-5):maxwidth(300)
 		end,
@@ -110,7 +110,7 @@ af[#af+1] = Def.ActorFrame{
 	},
 	-- Stepcharts text
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:zoom(1):diffuse(Color.White):xy(WideScale(-200,-275),45):vertalign(bottom):horizalign(left):maxwidth(300)
 		end,
@@ -127,7 +127,7 @@ af[#af+1] = Def.ActorFrame{
 	},
 	-- Filtered Songs Label
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:settext("Filtered"):zoom(.25):horizalign(right):xy(WideScale(-315,-395),60):maxwidth(300):horizalign(left)
 		end,
@@ -135,7 +135,7 @@ af[#af+1] = Def.ActorFrame{
 	},
 	-- Filtered Songs text
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:zoom(0.75):diffuse(Color.White):xy(WideScale(-315,-395), 70):vertalign(top):horizalign(left)
 		end,
@@ -148,7 +148,7 @@ af[#af+1] = Def.ActorFrame{
 	},
 	-- Filtered Charts Label
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:settext("Filtered"):zoom(.25):horizalign(right):xy(WideScale(-200,-275),60):maxwidth(300):horizalign(left)
 		end,
@@ -156,7 +156,7 @@ af[#af+1] = Def.ActorFrame{
 	},
 	-- Filtered Charts text
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:zoom(0.75):diffuse(Color.White):xy(WideScale(-200,-275), 70):vertalign(top):horizalign(left)
 		end,
@@ -168,7 +168,7 @@ af[#af+1] = Def.ActorFrame{
 	},
 	-- Complete Charts Label
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:settext("Complete"):zoom(.25):horizalign(right):xy(WideScale(-95,-170),60):maxwidth(300):horizalign(left)
 		end,
@@ -176,7 +176,7 @@ af[#af+1] = Def.ActorFrame{
 	},
 	-- Complete Charts text
 	Def.BitmapText{
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:zoom(0.75):diffuse(Color.White):xy(WideScale(-95,-170), 70):vertalign(top):horizalign(left)
 		end,

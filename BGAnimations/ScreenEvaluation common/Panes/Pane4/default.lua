@@ -1,7 +1,7 @@
 -- Pane4 displays an aggregate histogram of judgment offsets
 -- as well as the mean timing error, median, and mode of those offsets.
 
-local player = ...
+local player, side = unpack(...)
 local pn = ToEnumShortString(player)
 
 -- table of offset values obtained during this song's playthrough
@@ -15,8 +15,8 @@ local bottombar_height = 13
 
 local abbreviations = {
 	ITG = { "Fan", "Ex", "Gr", "Dec", "WO" },
+	Experiment = { "Fan", "Ex", "Gr", "Dec", "WO" },
 	["FA+"] = { "Fan", "Fan", "Ex", "Gr", "Dec" },
-	Experiment = { "Fan", "Ex", "Gr", "Dec", "WO" },									
 }
 
 local colors = {}
@@ -73,10 +73,8 @@ end
 -- Actors
 
 local pane = Def.ActorFrame{
-	Name="Pane4",
 	InitCommand=function(self)
-		self:visible(false)
-			:xy(-pane_width*0.5, pane_height*1.95)
+		self:xy(-pane_width*0.5, pane_height*1.95)
 	end
 }
 
@@ -94,7 +92,7 @@ pane[#pane+1] = Def.Quad{
 
 -- "Early" text
 pane[#pane+1] = Def.BitmapText{
-	Font="_wendy small",
+	Font="Common Bold",
 	Text=ScreenString("Early"),
 	InitCommand=function(self)
 		self:addx(10):addy(-125)
@@ -105,7 +103,7 @@ pane[#pane+1] = Def.BitmapText{
 
 -- "Late" text
 pane[#pane+1] = Def.BitmapText{
-	Font="_wendy small",
+	Font="Common Bold",
 	Text=ScreenString("Late"),
 	InitCommand=function(self)
 		self:addx(pane_width-10):addy(-125)

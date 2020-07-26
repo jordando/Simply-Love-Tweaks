@@ -5,7 +5,7 @@ local minDif, maxDif, num_dif, x, y, w, h
 
 CreateBarGraph = function(_w, _h)
 	w, h = _w, _h
-	local legend = LoadFont("_wendy small")..{
+	local legend = LoadFont("Wendy/_wendy small")..{
 		Name="Legend_BMT",
 		Initialize=function(self, actor, params)
 			local group = params.group or GetCurrentGroup()

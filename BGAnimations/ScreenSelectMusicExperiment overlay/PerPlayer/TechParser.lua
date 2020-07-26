@@ -40,6 +40,9 @@ local function ParseTech(lines)
 	end
     local peak = GAMESTATE:Env()["P1".."PeakNPS"]
     if not peak then return end
+    if GAMESTATE:GetCurrentSteps(PLAYER_1) ~= GAMESTATE:Env()["P1".."CurrentSteps"] then
+        SM("peak doesn't match up!")
+    end
     Trace("Peak is:")
     Trace(peak)
     local timingData = GAMESTATE:GetCurrentSteps(PLAYER_1):GetTimingData()

@@ -34,6 +34,11 @@ SL_CustomPrefs.Get = function()
 			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values = { true, false }
 		},
+		ErrorBarInFront = {
+			Default = false,
+			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
+			Values 	= { true, false }
+		},
 		LoadCustomScoresUpfront = {
 			Default = false,
 			Choices = {  THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
@@ -76,6 +81,8 @@ SL_CustomPrefs.Get = function()
 			Choices = { 0,1,2,3,4,5,6,7,8,9 },
 			Values = { 0,1,2,3,4,5,6,7,8,9 }
 		},
+
+
 		HideStockNoteSkins =
 		{
 			Default = false,
@@ -237,8 +244,9 @@ SL_CustomPrefs.Get = function()
 			Values  = { 0, 1, 2 }
 		},
 		-- - - - - - - - - - - - - - - - - - - -
-		--- ???
-		RabbitHole = {
+		-- this was previously titled "The Rabbit Hole"
+		-- https://github.com/48productions/Simply-Potato-SM5/pull/4#issuecomment-587281943
+		HereInTheDarkness = {
 			Default = 0,
 			Choices = range(0, 22, 1),
 			Values = range(0, 22, 1),
@@ -250,10 +258,11 @@ SL_CustomPrefs.Validate = function()
 	local file = IniFile.ReadFile("Save/ThemePrefs.ini")
 	local sl_prefs = SL_CustomPrefs.Get()
 
-	-- If a [Simply Love] section is found in ./Save/ThemePrefs.ini
-	if file["Simply Love"] then
+	-- If a section for this theme is found in ./Save/ThemePrefs.ini
+	local theme_name = THEME:GetCurThemeName()
+	if file[theme_name] then
 		-- loop through key/value pairs retrieved and do some basic validation
-		for k,v in pairs( file["Simply Love"] ) do
+		for k,v in pairs( file[theme_name] ) do
 			if sl_prefs[k] then
 				-- if we reach here, the setting exists in both the master definition as well as the user's ThemePrefs.ini
 				-- so perform some rudimentary validation; check for both type mismatch and presence in sl_prefs

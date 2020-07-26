@@ -8,7 +8,7 @@ CreateLineGraph = function(_w, _h)
 ----------------------------------------------------------------------------------------------------
 --Legend
 ----------------------------------------------------------------------------------------------------
-	local legend = LoadFont("_wendy small")..{
+	local legend = LoadFont("Wendy/_wendy small")..{
 		Name="VertLegend_BMT",
 		Initialize=function(self, actor)
 			local toPrint = ""

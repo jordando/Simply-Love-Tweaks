@@ -4,7 +4,7 @@ local hash = args.hash
 local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
 
 local pane = Def.ActorFrame{
-	Name="Pane4",
+	Name="Pane4_SideP1",
 	InitCommand=function(self)
 		self:visible(false):x(WideScale(115,0))
 	end,
@@ -93,7 +93,7 @@ local stats = Def.ActorFrame{
 	end
 }
 --LastPlayed
-stats[#stats+1] = LoadFont("_wendy small")..{
+stats[#stats+1] = LoadFont("Wendy/_wendy small")..{
 	Name="LastPlayedNumber",
 	InitCommand=function(self)
 		self:zoom(.4):y(200):halign(0)
@@ -101,7 +101,7 @@ stats[#stats+1] = LoadFont("_wendy small")..{
 }
 
 --NumTimes
-stats[#stats+1] = LoadFont("_wendy small")..{
+stats[#stats+1] = LoadFont("Wendy/_wendy small")..{
 	Name="NumPlayedNumber",
 	InitCommand=function(self)
 		self:zoom(.4):y(230):halign(0)
@@ -109,7 +109,7 @@ stats[#stats+1] = LoadFont("_wendy small")..{
 }
 
 --MaxRate
-stats[#stats+1] = LoadFont("_wendy small")..{
+stats[#stats+1] = LoadFont("Wendy/_wendy small")..{
 	Name="MaxRate",
 	InitCommand=function(self)
 		self:zoom(.4):y(260):halign(0)
@@ -117,7 +117,7 @@ stats[#stats+1] = LoadFont("_wendy small")..{
 }
 
 --FirstPass
-stats[#stats+1] = LoadFont("_wendy small")..{
+stats[#stats+1] = LoadFont("Wendy/_wendy small")..{
 	Name="FirstPass",
 	InitCommand=function(self)
 		self:zoom(.4):y(290):halign(0)

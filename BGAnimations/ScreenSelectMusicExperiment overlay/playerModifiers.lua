@@ -6,19 +6,19 @@ return Def.Actor{
 
 			local pn = ToEnumShortString(player)
 
-			-- On first load of ScreenSelectMusic, CurrentPlayerOptions.String will be nil
+			-- On first load of ScreenSelectMusic, PlayerOptionsString will be nil
 			-- So don't bother trying to use it to reset PlayerOptions
-			if SL[pn].CurrentPlayerOptions.String then
+			if SL[pn].PlayerOptionsString then
 				-- SL[pn].CurrentPlayerOptions.String is set in ScreenGameplay in.lua
 				-- Each ScreenGameplay in, we store the current PlayerOptions (from the engine) there as a string.
 				--
 				-- Here, in ScreenSelectMusic, we compare the engine's sense of PlayerOptions against that previously
-				-- stored in SL[pn].CurrentPlayerOptions.String.  If they don't match, we assume that the engine's
+				-- stored in SL[pn].PlayerOptionsString.  If they don't match, we assume that the engine's
 				-- sense of PlayerOptions was modified during the last ScreenGameplay by ITG mods via ApplyGameCommands()
 				--
 				-- If so, we don't want those mods to persist into the next ScreenGameplay, so if the engine's notion of PlayerOptions
 				-- doesn't mach theme's notion of PlayerOptions, reset the engine to match the theme.
-				if SL[pn].CurrentPlayerOptions.String ~= GAMESTATE:GetPlayerState(player):GetPlayerOptionsString("ModsLevel_Preferred") then
+				if SL[pn].PlayerOptionsString ~= GAMESTATE:GetPlayerState(player):GetPlayerOptionsString("ModsLevel_Preferred") then
 					GAMESTATE:GetPlayerState(player):SetPlayerOptions("ModsLevel_Preferred", SL[pn].CurrentPlayerOptions.String)
 				end
 			end

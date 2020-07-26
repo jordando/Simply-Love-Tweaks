@@ -18,7 +18,7 @@ local pane = Def.ActorFrame{
 	end
 }
 	
-pane[#pane+1] = LoadFont("_wendy small")..{
+pane[#pane+1] = LoadFont("Wendy/_wendy small")..{
 	InitCommand=function(self)
 		self:zoom(.5)
 		self:settext("NO BACKGROUND")

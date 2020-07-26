@@ -2,6 +2,8 @@ local player = ...
 local pn = ToEnumShortString(player)
 local playerString = "Player"..pn.."%sX"
 
+if SL[ToEnumShortString(player)].ActiveModifiers.HideErrorBar then return end
+
 --Visual display of deviance values-- taken from Etterna and converted to run in SM5
 
 local jcT = {}
@@ -128,6 +130,4 @@ for i=1,barcount do
 end
 
 -- Add the completed errorbar frame to the primary actor frame t if enabled
-if not SL[ToEnumShortString(player)].ActiveModifiers.HideErrorBar then
-    return e
-end
+return e

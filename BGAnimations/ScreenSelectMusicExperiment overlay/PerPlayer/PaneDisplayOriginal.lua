@@ -238,7 +238,7 @@ end
 
 -- chart difficulty meter
 af[#af + 1] =
-	LoadFont("_wendy small") ..
+	LoadFont("Wendy/_wendy small") ..
 	{
 		Name = "DifficultyMeter",
 		InitCommand = function(self)

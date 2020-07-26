@@ -99,20 +99,26 @@ local af = Def.ActorFrame{
 				self:GetChild("PeakNPS"):settext("")
 				self:GetChild("AvgNps"):settext("")
 			end
+			--make sure we have peaknps set before checking for tech
+			local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
+			self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch)
 		else
 			self:GetChild("Measures"):settext("")
 			self:GetChild("TotalStream"):settext("")
 			self:GetChild("PeakNPS"):settext("")
 			self:GetChild("AvgNps"):settext("")
+			self:GetChild("Tech"):settext("")
 		end
 	end,
 	--TODO part of the pane that gets hidden if two players are joined. i'd like to display this somewhere though
 	PeakNPSUpdatedMessageCommand=function(self)
 		if not GAMESTATE:IsHumanPlayer(player) then return end
-		--make sure we have peaknps set before checking for tech
-		local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
-		self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch)
-		if GAMESTATE:GetCurrentSong() and GAMESTATE:Env()[pn.."PeakNPS"] and ThemePrefs.Get("ShowExtraSongInfo") and GAMESTATE:GetNumSidesJoined() < 2 then
+		if GAMESTATE:GetCurrentSong() and
+		GAMESTATE:Env()[pn.."PeakNPS"] and
+		ThemePrefs.Get("ShowExtraSongInfo") and
+		GAMESTATE:GetNumSidesJoined() < 2 and
+		GAMESTATE:Env()[pn.."CurrentSteps"] == GAMESTATE:GetCurrentSteps(player)
+		then
 			self:GetChild("PeakNPS"):settext( THEME:GetString("ScreenGameplay", "PeakNPS") .. ": " .. round(GAMESTATE:Env()[pn.."PeakNPS"] * SL.Global.ActiveModifiers.MusicRate,2))
 		else
 			self:GetChild("PeakNPS"):settext( "" )

@@ -50,7 +50,7 @@ local af = Def.ActorFrame{
 	--Show what sort type we're using when on groupwheel
 	Def.BitmapText{
 		Name="HeaderText",
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 		InitCommand=function(self)
 			self:diffusealpha(1):zoom( WideScale(0.4,0.5)):xy(15, 15):halign(0)
 		end,
@@ -62,7 +62,7 @@ local af = Def.ActorFrame{
 
 	--Time in game or menu timer
 	Def.BitmapText{
-		Font=PREFSMAN:GetPreference("EventMode") and "_wendy monospace numbers" or "_wendy small",
+		Font=PREFSMAN:GetPreference("EventMode") and "Wendy/_wendy monospace numbers" or "Wendy/_wendy small",
 		Name="Stage Number",
 		InitCommand=function(self)
 			bmt_actor = self
@@ -85,7 +85,7 @@ local af = Def.ActorFrame{
 -- Stage Number
 if not PREFSMAN:GetPreference("EventMode") then
 	af[#af+1] = Def.BitmapText{
-		Font=PREFSMAN:GetPreference("EventMode") and "_wendy monospace numbers" or "_wendy small",
+		Font=PREFSMAN:GetPreference("EventMode") and "Wendy/_wendy monospace numbers" or "Wendy/_wendy small",
 		Name="Stage Number",
 		Text=SSM_Header_StageText(),
 		InitCommand=function(self)

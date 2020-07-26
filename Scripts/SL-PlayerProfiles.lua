@@ -14,6 +14,7 @@ local profile_whitelist = {
 	NoteSkin = "string",
 	JudgmentGraphic = "string",
 	ComboFont = "string",
+	HoldJudgment = "string",
 	BackgroundFilter = "string",
 
 	HideTargets = "boolean",
@@ -34,7 +35,7 @@ local profile_whitelist = {
 	MeasureCounter = "string",
 	MeasureCounterLeft = "boolean",
 	MeasureCounterUp = "boolean",
-	HideRestCounts = "boolean",
+	HideLookahead = "boolean",
 
 	ColumnFlashOnMiss = "boolean",
 	SubtractiveScoring = "boolean",
@@ -44,10 +45,13 @@ local profile_whitelist = {
 
 	ReceptorArrowsPosition = "string",
 
-	PlayerOptionsString = "string"
+	PlayerOptionsString = "string",
+
+	EvalPanePrimary   = "number",
+	EvalPaneSecondary = "number",
 }
 
--- ------------------------------------------
+-- -----------------------------------------------------------------------
 
 local theme_name = THEME:GetThemeDisplayName()
 local filename =  theme_name .. " UserPrefs.ini"
@@ -84,6 +88,7 @@ LoadProfileCustom = function(profile, dir)
 				or type(v) ~= "string" then
 					SL[pn].ActiveModifiers[k] = v
 				end
+
 				-- special-case PlayerOptionsString for now
 				-- it is saved to and read from profile as a string, but doesn't have a corresponding
 				-- OptionRow in ScreenPlayerOptions, so it will fail validation above
@@ -98,17 +103,21 @@ LoadProfileCustom = function(profile, dir)
 					GAMESTATE:GetPlayerState(player):SetPlayerOptions("ModsLevel_Preferred", v)
 
 					-- However! It's quite likely that a FailType mod could be in that^ string, meaning a player could
-					-- have their own setting for FailType saved to their profile.  I think it makes more sense to allow
+					-- have their own setting for FailType saved to their profile.  I think it makes more sense to let
 					-- machine operators specify a default FailType at a global/machine level, so use this opportunity to
 					-- use the PlayerOptions interface to set FailSetting() using the default FailType setting from
 					-- the operator menu's Advanced Options
 					GAMESTATE:GetPlayerState(player):GetPlayerOptions("ModsLevel_Preferred"):FailSetting( GetDefaultFailType() )
 				end
-			elseif k == "LastSongPlayedName" then SL.Global.LastSongPlayedName = v
-			elseif k == "LastSongPlayedGroup" then SL.Global.LastSongPlayedGroup = v end
+
+				if k=="EvalPaneSecondary" and type(v)==profile_whitelist.EvalPaneSecondary then
+					SL[pn].EvalPaneSecondary = v
+				elseif k=="EvalPanePrimary" and type(v)==profile_whitelist.EvalPanePrimary then
+					SL[pn].EvalPanePrimary   = v
+				end
+			end
 		end
 	end
-
 
 	return true
 end
@@ -128,12 +137,13 @@ SaveProfileCustom = function(profile, dir)
 				end
 			end
 
-			-- PlayerOptionsString is saved outside the SL[pn].ActiveModifiers tables
+			-- these values are saved outside the SL[pn].ActiveModifiers tables
 			-- and thus won't be handled in the loop above
 			output.PlayerOptionsString = SL[pn].PlayerOptionsString
-
+			output.EvalPanePrimary   = SL[pn].EvalPanePrimary
+			output.EvalPaneSecondary = SL[pn].EvalPaneSecondary
 			output["LastSongPlayedName"] = GAMESTATE:GetCurrentSong():GetMainTitle()
-			output["LastSongPlayedGroup"] = GAMESTATE:GetCurrentSong():GetGroupName()
+			output["LastSongPlayedGroup"] = GAMESTATE:GetCurrentSong():GetGroupName()																
 
 			IniFile.WriteFile( path, {[theme_name]=output} )
 
@@ -141,10 +151,45 @@ SaveProfileCustom = function(profile, dir)
 			--only if we're in Experiment mode using custom scores with a named profile
 			--(don't bother saving for guests)
 			if SL.Global.GameMode == "Experiment" and PROFILEMAN:GetPlayerName(player) ~= "" then SaveScores(pn) end
-
 			break
 		end
 	end
 
 	return true
+end
+
+-- -----------------------------------------------------------------------
+-- returns a path to a profile avatar, or nil if none is found
+
+GetAvatarPath = function(profileDirectory, displayName)
+
+	if type(profileDirectory) ~= "string" then return end
+
+	-- check the profile directory for "avatar.png" first (or "avatar.jpg", etc.)
+	local path = ActorUtil.ResolvePath(profileDirectory .. "avatar", 1, true)
+	          -- support avatars from Hayoreo's Digital Dance, which uses "Profile Picture.png" in profile dir
+	          or ActorUtil.ResolvePath(profileDirectory .. "profile picture", 1, true)
+	          -- support SM5.3's avatar location to ease the eventual transition
+	          or (displayName and displayName ~= "" and ActorUtil.ResolvePath("/Appearance/Avatars/" .. displayName, 1, true) or nil)
+
+	if path and ActorUtil.GetFileType(path) == "FileType_Bitmap" then
+		return path
+	end
+end
+
+-- -----------------------------------------------------------------------
+-- returns a path to a player's profile avatar, or nil if none is found
+
+GetPlayerAvatarPath = function(player)
+	local profile_slot = {
+		[PLAYER_1] = "ProfileSlot_Player1",
+		[PLAYER_2] = "ProfileSlot_Player2"
+	}
+
+	if not profile_slot[player] then return end
+
+	local dir  = PROFILEMAN:GetProfileDir(profile_slot[player])
+	local name = PROFILEMAN:GetProfile(player):GetDisplayName()
+
+	return GetAvatarPath(dir, name)
 end

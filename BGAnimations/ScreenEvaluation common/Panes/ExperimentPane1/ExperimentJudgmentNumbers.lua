@@ -25,7 +25,7 @@ end
 local TapNoteScores = {
 	Types = { 'W1', 'W2', 'W3', 'W4', 'W5', 'Miss' },
 	-- x values for P1 and P2
-	x = { P1=64, P2=64 }
+	x = { P1=78, P2=64 }
 }
 
 local RadarCategories = {
@@ -61,7 +61,7 @@ if highScore then
 		else number = highScore:GetTapNoteScore(window) end
 
 		--delta between current stats and highscore stats
-		deltaT[#deltaT+1] = LoadFont("_wendy small")..{
+		deltaT[#deltaT+1] = LoadFont("Wendy/_wendy small")..{
 			InitCommand=function(self)
 				local toPrint
 				toPrint = pss:GetTapNoteScores( "TapNoteScore_"..window ) - number
@@ -81,17 +81,17 @@ if highScore then
 				end
 				
 				if toPrint > 0 then
-					if window == "Miss" or window == "W5" 
-						then self:diffuse(Color.Red)
-					else self:diffuse(Color.Green) end
-				elseif window == "Miss" or window == "W5" then self:diffuse(Color.Green)
-				else self:diffuse(Color.Red) end
+					if window == "Miss" then self:diffuse(Color.Red)
+					elseif window == "W1" then self:diffuse(Color.Green) end
+				elseif window == "Miss" then self:diffuse(Color.Green)
+				elseif window == "W1" and toPrint ~= 0 then self:diffuse(Color.Red)
+				else self:diffuse(Color.White) end
 			end,
 		}
 		
 		-- actual numbers for previous record
 		highScoreT[#highScoreT+1] = Def.RollingNumbers{
-			Font="_ScreenEvaluation numbers",
+			Font="Wendy/_ScreenEvaluation numbers",
 			InitCommand=function(self)
 				self:zoom(0.5):horizalign(right)
 
@@ -113,7 +113,7 @@ if highScore then
 				end
 			end,
 			BeginCommand=function(self)
-				self:x( TapNoteScores.x[pn] - WideScale(30,0) )
+				self:x( TapNoteScores.x[pn] - WideScale(50,20) )
 				self:y((i-1)*35 -20)
 				self:targetnumber(number)
 			end
@@ -128,7 +128,7 @@ if highScore then
 		else performance = highScore:GetRadarValues():GetValue(RCType) end
 		-- player performace value
 		highScoreT[#highScoreT+1] = Def.RollingNumbers{
-			Font="_ScreenEvaluation numbers",
+			Font="Wendy/_ScreenEvaluation numbers",
 			InitCommand=function(self) self:zoom(0.5):horizalign(right):Load("RollingNumbersEvaluationB") end,
 			BeginCommand=function(self)
 				self:y((index-1)*35 + 53)
@@ -139,7 +139,7 @@ if highScore then
 
 	end
 	--Label for previous record or current record depending on if you got a new high score
-	highScoreT[#highScoreT+1] = LoadFont("_wendy small")..{
+	highScoreT[#highScoreT+1] = LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
 			self:zoom(.8):xy(150,-75)
 			if tonumber(PercentDP) <= tonumber(pss:GetPercentDancePoints()) then self:settext("Previous Record")
@@ -158,7 +158,7 @@ if highScore then
 	-- Format the Percentage string, removing the % symbol
 	percent = percent:gsub("%%", "")
 
-	highScoreT[#highScoreT+1] = LoadFont("_wendy white")..{
+	highScoreT[#highScoreT+1] = LoadFont("Wendy/_wendy white")..{
 		Name="Percent",
 		Text=percent,
 		InitCommand=function(self)
@@ -170,7 +170,7 @@ if highScore then
 	highScoreT[#highScoreT+1] = LoadActor("./ExperimentJudgmentLabels.lua", player)
 
 else
-	highScoreT[#highScoreT+1] = LoadFont("_wendy small")..{
+	highScoreT[#highScoreT+1] = LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
 			self:zoom(.8):xy(player=="PlayerNumber_P1" and 70 or 200,-45)
 			self:settext("No previous score\nat Rate "..SL.Global.ActiveModifiers.MusicRate)

@@ -59,7 +59,7 @@ for key, item in pairs(PaneItems) do
 	}
 end
 
-	pane[#pane+1] = LoadFont("_wendy small")..{
+	pane[#pane+1] = LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
 			self:xy(labelX_col1, -55):zoom(.5):diffuse(Color.White):halign(0):zoom(.5)
 		end,

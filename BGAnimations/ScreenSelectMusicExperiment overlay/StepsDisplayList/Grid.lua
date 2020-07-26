@@ -131,7 +131,7 @@ for RowNumber=1,num_rows do
 
 	Grid[#Grid+1] = Def.BitmapText{
 		Name="Meter_"..RowNumber,
-		Font="_wendy small",
+		Font="Wendy/_wendy small",
 
 		InitCommand=function(self)
 			local height = self:GetParent():GetChild("Blocks_"..RowNumber):GetHeight()
