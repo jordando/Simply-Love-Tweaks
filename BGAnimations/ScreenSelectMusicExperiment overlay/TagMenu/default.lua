@@ -17,7 +17,7 @@ local t = Def.ActorFrame {
 	end,
 	DirectInputToTagMenuCommand=function(self) 
 		self:playcommand("ShowTagMenu")
-		self:queuecommand("Stall") 
+		self:queuecommand("Stall")
 	end,
 	StallCommand=function(self) 
 		self:visible(true):sleep(0.5):queuecommand("CaptureTest")

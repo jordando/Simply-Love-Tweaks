@@ -32,7 +32,6 @@ local t = Def.ActorFrame{
 	
 	Def.ActorFrame{
 		CurrentSongChangedMessageCommand=function(self,params) if params.song then self:playcommand("SetBanner") end end,
-		--LessLagMessageCommand=function(self) self:playcommand("SetBanner") end,
 		CurrentCourseChangedMessageCommand=function(self) self:playcommand("SetBanner") end,
 		CloseThisFolderHasFocusMessageCommand=function(self) 
 			self:GetChild("Banner"):LoadFromSongGroup(SL.Global.CurrentGroup)

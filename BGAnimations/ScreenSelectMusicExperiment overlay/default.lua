@@ -169,6 +169,9 @@ local t = Def.ActorFrame {
 	GroupWheel:create_actors( "GroupWheel", row.how_many * col.how_many, group_mt, 0, 0, true), 
 	-- Graphical Banner
 	LoadActor("./Banner.lua"), -- the big banner above song information
+	-- CD Title
+	LoadActor("./CdTitle.lua"),
+	
 	--All of this stuff is put in an AF because we hide and show it together
 	--Information about the song - including the grid/stream info, nps histogram, and step information
 	Def.ActorFrame{

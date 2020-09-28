@@ -420,7 +420,7 @@ end
 --both of these default to false if not explicitly set which will return all scores regardless
 --of rate or fail status.
 function GetScores(player, hash, checkRate, checkFailed)
-	assert(hash, "GetScores requires a hash")
+	if not hash then return nil end
 	local rate = SL.Global.ActiveModifiers.MusicRate
 	local checkRate = checkRate or false
 	local checkFailed = checkFailed or false

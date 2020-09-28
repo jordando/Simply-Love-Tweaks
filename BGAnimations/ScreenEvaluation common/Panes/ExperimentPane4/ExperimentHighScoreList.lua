@@ -27,7 +27,7 @@ local row_height = 22 -- sigh
 
 -- ---------------------------------------------
 -- setup that can occur now that the arguments have been handled
-local experimentHighScores = GetScores(player,GetHash(player))
+local experimentHighScores = GetScores(player,args.Hash)
 --add our current song to the list of scores and mark it so we know which one it is
 local currentScore = {current=true,score=pss:GetPercentDancePoints(),dateTime=GetCurrentDateTime(),rate=SL.Global.ActiveModifiers.MusicRate,grade=pss:GetFailed() and "Failed" or ""}
 if not experimentHighScores then experimentHighScores = {} experimentHighScores[1]= currentScore
