@@ -22,7 +22,7 @@ local function GetBeatAtTime(beat, bpms, stops)
     end
     -- Add all the stops strictly before the this beat since the last row
     -- we've evaluated.
-    while stop_index < #stops and stops[stop_index][1] < finalBeat do
+    while stop_index + 1 < #stops and stops[stop_index + 1][1] < finalBeat do
         cur_time = cur_time + stops[stop_index][2]
         stop_index = stop_index + 1
      end
@@ -42,6 +42,7 @@ local function ParseTech(lines)
     if not peak then return end
     if GAMESTATE:GetCurrentSteps(PLAYER_1) ~= GAMESTATE:Env()["P1".."CurrentSteps"] then
         SM("peak doesn't match up!")
+        SM({GAMESTATE:GetCurrentSteps(PLAYER_1),GAMESTATE:Env()["P1".."CurrentSteps"]})
     end
     Trace("Peak is:")
     Trace(peak)

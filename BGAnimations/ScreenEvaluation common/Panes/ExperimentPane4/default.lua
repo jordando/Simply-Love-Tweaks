@@ -74,7 +74,7 @@ local pane = Def.ActorFrame{
 
 --Highscore Display
 local params = { Player=player, NumHighScores=10, RoundsAgo=1 }
-if not ThemePrefs.Get("OriginalHighScoreList") then
+if not ThemePrefs.Get("OriginalHighScoreList") and hash then
 	pane[#pane+1] = LoadActor("ExperimentHighScoreList.lua", params)..{
 		InitCommand=function(self) self:xy(WideScale(-115,0),_screen.cy - 62):zoom(.8) end
 	}

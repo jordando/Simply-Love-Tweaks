@@ -9,7 +9,8 @@ local highscoreX = WideScale(56, 80)
 local highscorenameX = WideScale(61, 97)
 
 local InitializeMeasureCounterAndModsLevel = LoadActor("./MeasureCounterAndModsLevel.lua")
-local TechParser = LoadActor("TechParser.lua")
+local TechParser
+if ThemePrefs.Get("EnableTechParser") then TechParser = LoadActor("TechParser.lua") end
 
 --TODO figure out how to change this if a second player joins
 local histogramHeight = 40
@@ -99,9 +100,6 @@ local af = Def.ActorFrame{
 				self:GetChild("PeakNPS"):settext("")
 				self:GetChild("AvgNps"):settext("")
 			end
-			--make sure we have peaknps set before checking for tech
-			local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
-			self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch)
 		else
 			self:GetChild("Measures"):settext("")
 			self:GetChild("TotalStream"):settext("")
@@ -122,6 +120,11 @@ local af = Def.ActorFrame{
 			self:GetChild("PeakNPS"):settext( THEME:GetString("ScreenGameplay", "PeakNPS") .. ": " .. round(GAMESTATE:Env()[pn.."PeakNPS"] * SL.Global.ActiveModifiers.MusicRate,2))
 		else
 			self:GetChild("PeakNPS"):settext( "" )
+		end
+		--make sure we have peaknps set before checking for tech
+		if ThemePrefs.Get("EnableTechParser") then
+			local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
+			self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch)
 		end
 	end,
 }
