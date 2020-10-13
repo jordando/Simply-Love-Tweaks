@@ -199,6 +199,7 @@ Branch.AllowScreenNameEntry = function()
 		return "ScreenNameEntryTraditional"
 
 	else
+		SL.Global.ExperimentSave = false
 		return "ScreenProfileSaveSummary"
 	end
 end

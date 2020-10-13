@@ -127,6 +127,7 @@ local GlobalDefaults = {
 		LastSongPlayedName = nil, --set by SL-CustomProfiles.lua every time profile is saved
 		LastSongPlayedGroup = nil,--set by SL-CustomProfiles.lua every time profile is saved
 		ExperimentScreen = false, --keep track of when we're on ScreenSelectMusicExperiment TODO figure out why SCREENMAN:GetTopScreen() returns nil sometimes
+		ExperimentSave = true, --keep track of when we want to save custom scores
 		Scrolling = false, --keep track of when left or right is held down, set by ScreenSelectMusicExperiment/default.lua
 		HashLookup = {}, --hashes with corresponding song directories
 	}

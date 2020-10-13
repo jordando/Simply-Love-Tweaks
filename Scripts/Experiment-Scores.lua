@@ -358,7 +358,7 @@ function SaveScores(pn)
 end
 
 --- Add the latest score from PlayerStageStats to SL[pn][Scores]
-function AddScore(player)
+function AddScore(player, hash)
 	local pn = ToEnumShortString(player)
 	local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
 	local TapNoteScores = {
@@ -382,8 +382,6 @@ function AddScore(player)
 		local performance = pss:GetRadarActual():GetValue( "RadarCategory_"..RCType )
 		stats[RCType] = performance
 	end
-	local steps = GAMESTATE:GetCurrentSteps(pn)
-	local hash = GenerateHash(steps,stepsType,ToEnumShortString(steps:GetDifficulty()))
 	if #hash > 0 then
 		if not SL[pn]['Scores'][hash] then SL[pn]['Scores'][hash] = {FirstPass='Never',NumTimesPlayed = 0, BestPass=0} end
 		if not SL[pn]['Scores'][hash]['HighScores'] then SL[pn]['Scores'][hash]['HighScores'] = {} end
@@ -555,9 +553,4 @@ function AddCurrentHash()
 		end
 	end
 	SaveHashLookup()
-	if not ThemePrefs.Get("LoadCustomScoresUpfront") then
-		for player in ivalues(GAMESTATE:GetHumanPlayers()) do
-			LoadNewFromStats(player)
-		end
-	end
 end

@@ -3,6 +3,9 @@ local NumPanes = SL.Global.GameMode=="Casual" and 1 or 6
 if GAMESTATE:GetCurrentStyle():GetStyleType() ~= "StyleType_OnePlayerTwoSides" and SL.Global.GameMode == "Experiment" then
 	NumPanes = 5
 end
+
+local hash
+
 local t = Def.ActorFrame{}
 
 if SL.Global.GameMode ~= "Casual" then
@@ -16,7 +19,7 @@ if SL.Global.GameMode ~= "Casual" then
 	end
 	t.OffCommand=function(self)
 		for player in ivalues(GAMESTATE:GetHumanPlayers()) do
-			if SL.Global.GameMode == "Experiment" then AddScore(player) end
+			if SL.Global.GameMode == "Experiment" then AddScore(player, hash) end
 		end
 	end
 end
@@ -42,7 +45,6 @@ t[#t+1] = LoadActor("./Shared/CasualHelpText.lua")
 
 -- -----------------------------------------------------------------------
 -- Then, load player-specific actors.
-local hash
 
 for player in ivalues(Players) do
 

@@ -23,7 +23,7 @@ local function GetBeatAtTime(beat, bpms, stops)
     -- Add all the stops strictly before the this beat since the last row
     -- we've evaluated.
     while stop_index + 1 < #stops and stops[stop_index + 1][1] < finalBeat do
-        cur_time = cur_time + stops[stop_index][2]
+        cur_time = cur_time + stops[stop_index + 1][2]
         stop_index = stop_index + 1
      end
 

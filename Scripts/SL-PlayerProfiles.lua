@@ -115,6 +115,12 @@ LoadProfileCustom = function(profile, dir)
 				elseif k=="EvalPanePrimary" and type(v)==profile_whitelist.EvalPanePrimary then
 					SL[pn].EvalPanePrimary   = v
 				end
+			else
+				if k == "LastSongPlayedGroup" then
+					SL.Global.LastSongPlayedGroup = v
+				elseif k == "LastSongPlayedName" then
+					SL.Global.LastSongPlayedName = v
+				end
 			end
 		end
 	end
@@ -143,14 +149,16 @@ SaveProfileCustom = function(profile, dir)
 			output.EvalPanePrimary   = SL[pn].EvalPanePrimary
 			output.EvalPaneSecondary = SL[pn].EvalPaneSecondary
 			output["LastSongPlayedName"] = GAMESTATE:GetCurrentSong():GetMainTitle()
-			output["LastSongPlayedGroup"] = GAMESTATE:GetCurrentSong():GetGroupName()																
+			output["LastSongPlayedGroup"] = GAMESTATE:GetCurrentSong():GetGroupName()
 
 			IniFile.WriteFile( path, {[theme_name]=output} )
 
 			--Save scores in separate txt file (See /scripts/Experiment-Scores.lua)
 			--only if we're in Experiment mode using custom scores with a named profile
 			--(don't bother saving for guests)
-			if SL.Global.GameMode == "Experiment" and PROFILEMAN:GetPlayerName(player) ~= "" then SaveScores(pn) end
+			if SL.Global.GameMode == "Experiment"
+			and PROFILEMAN:GetPlayerName(player) ~= ""
+			and SL.Global.ExperimentSave then SaveScores(pn) end
 			break
 		end
 	end
