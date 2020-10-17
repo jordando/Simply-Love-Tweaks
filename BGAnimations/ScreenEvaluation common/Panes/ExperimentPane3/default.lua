@@ -10,7 +10,9 @@ local doublePosition = player == "PlayerNumber_P1" and 0 or -305
 af[#af+1] = LoadActor(THEME:GetPathB("ScreenEvaluation", "common/Panes/Pane2"), {player, PLAYER_1})..{InitCommand=function(self) self:visible(true):x(doublePosition) end}
 
 if GAMESTATE:GetCurrentStyle():GetStyleType() ~= "StyleType_OnePlayerTwoSides" then
-	af[#af+1] = LoadActor(THEME:GetPathB("ScreenEvaluation", "common/Panes/Pane5"), {player, PLAYER_1})..{InitCommand=function(self) self:visible(true):x(position) end}
+	if PREFSMAN:GetPreference("OnlyDedicatedMenuButtons") then
+		af[#af+1] = LoadActor(THEME:GetPathB("ScreenEvaluation", "common/Panes/Pane5"), {player, PLAYER_1})..{InitCommand=function(self) self:visible(true):x(position) end}
+	end
 end
 
 return af

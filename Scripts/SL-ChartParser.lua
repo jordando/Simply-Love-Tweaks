@@ -20,6 +20,7 @@ GetSimfileString = function(steps)
 	-- that we are opening the file in read-only mode
 	if f:Open(filename, 1) then
 		contents = f:Read()
+		f:Close()
 	end
 
 	-- destroy the generic RageFile now that we have the contents

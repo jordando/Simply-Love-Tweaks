@@ -70,9 +70,6 @@ if highScore then
 				self:zoom(.5):horizalign(left)
 				self:x( TapNoteScores.x[pn] - WideScale(175,200))
 				self:y((i-1)*35 -20)
-				if SL.Global.GameMode ~= "ITG" then
-					self:diffuse( SL.JudgmentColors[SL.Global.GameMode][i] )
-				end
 				-- if some TimingWindows were turned off, the leading 0s should not
 				-- be colored any differently than the (lack of) JudgmentNumber,
 				-- so load a unique Metric group.

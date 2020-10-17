@@ -336,24 +336,29 @@ end
 --- Write rate scores to disk
 function SaveScores(pn)
 	if SL[pn]['Scores'] then
-		local toWrite = ""
+		local profileDir
+		if pn == 'P1' then profileDir = 'ProfileSlot_Player1' else profileDir = 'ProfileSlot_Player2' end
+		-- create a generic RageFile that we'll use to read the contents
+		local file = RageFileUtil.CreateRageFile()
+		-- the second argument here (the 2) signifies
+		-- that we are opening the file in write mode
+		if not file:Open(PROFILEMAN:GetProfileDir(profileDir).."/Scores.txt", 2) then SM("Could not open HashLookup.txt") return end
 		for _,hash in pairs(SL[pn]['Scores']) do --TODO don't type this out manually
 			if hash.hash then
-				toWrite = toWrite..hash.title.."\t"..hash.group.."\t"..hash.Difficulty.."\t"..hash.StepsType.."\t"..hash.LastPlayed.."\t"..hash.NumTimesPlayed.."\t"
-					..hash.FirstPass.."\t"..hash.BestPass.."\t"..hash.hash.."\r\n"
+				file:PutLine(hash.title.."\t"..hash.group.."\t"..hash.Difficulty.."\t"..hash.StepsType.."\t"..hash.LastPlayed.."\t"..hash.NumTimesPlayed.."\t"
+					..hash.FirstPass.."\t"..hash.BestPass.."\t"..hash.hash)
 				if hash["HighScores"] then
 					for score in ivalues(hash["HighScores"]) do
-						toWrite = toWrite..score.rate.."\t"..score.score.."\t"
+						file:PutLine(score.rate.."\t"..score.score.."\t"
 						..score.W1.."\t"..score.W2.."\t"..score.W3.."\t"..score.W4.."\t"..score.W5.."\t"..score.Miss.."\t"
 						..score.Holds.."\t"..score.Mines.."\t"..score.Hands.."\t"..score.Rolls.."\t"
-						..score.grade.."\t"..score.dateTime.."\r\n"
+						..score.grade.."\t"..score.dateTime)
 					end
 				end
 			end
 		end
-		local profileDir
-		if pn == 'P1' then profileDir = 'ProfileSlot_Player1' else profileDir = 'ProfileSlot_Player2' end
-		WriteFileContents(PROFILEMAN:GetProfileDir(profileDir).."/Scores.txt",toWrite,true)
+		file:Close()
+		file:destroy()
 	end
 end
 
