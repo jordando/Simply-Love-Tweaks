@@ -27,7 +27,7 @@ if not GAMESTATE:IsCourseMode() then
             
                 local toScale = cdtitle:GetWidth() > cdtitle:GetHeight() and cdtitle:GetWidth() or cdtitle:GetHeight()
                 self:zoom(22/toScale * ratio)
-                self:finishtweening():addrotationy(0):linear(.5):addrotationy(360)
+                self:finishtweening():addrotationy(0):linear(.5):addrotationy(360):bounce()
 			else
 				cdtitle:visible(false)
 			end

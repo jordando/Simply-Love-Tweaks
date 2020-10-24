@@ -39,7 +39,7 @@ local function ParseTech(lines)
 		chart[#chart+1] = line
 	end
     local peak = GAMESTATE:Env()["P1".."PeakNPS"]
-    if not peak then return end
+    if not peak then return nil end
     if GAMESTATE:GetCurrentSteps(PLAYER_1) ~= GAMESTATE:Env()["P1".."CurrentSteps"] then
         SM("peak doesn't match up!")
         SM({GAMESTATE:GetCurrentSteps(PLAYER_1),GAMESTATE:Env()["P1".."CurrentSteps"]})
@@ -267,7 +267,7 @@ end
 
 return function (steps, stepsType, difficulty)
         local msdFile = ParseMsdFile(steps)
-        if #msdFile == 0 then return ''	end
+        if #msdFile == 0 then return nil	end
         local songBpms = ''
         local stepBpms
         local stepData = false --for SSC. until we get to the first 'Notes' anything we find is for the overall song
@@ -311,7 +311,7 @@ return function (steps, stepsType, difficulty)
                 end
             end
         end
-    
+
         for notes in ivalues(allNotes) do
             -- StepMania considers NOTES sections with greater than 7 sections valid.
             -- https://github.com/stepmania/stepmania/blob/master/src/NotesLoaderSM.cpp#L1072-L1079
@@ -320,7 +320,7 @@ return function (steps, stepsType, difficulty)
                 ParseTech(notes[7])
             end
         end
-    
+
         return {
             doublestep = doublestep,
             crossover = crossover,

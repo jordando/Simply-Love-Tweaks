@@ -6,7 +6,6 @@ local zoom_factor = WideScale(0.8,0.9)
 local labelX_col1 = WideScale(-130,-70)
 
 local highscoreX = WideScale(56, 80)
-local highscorenameX = WideScale(61, 97)
 
 local InitializeMeasureCounterAndModsLevel = LoadActor("./MeasureCounterAndModsLevel.lua")
 local TechParser
@@ -95,7 +94,11 @@ local af = Def.ActorFrame{
 				finalText = math.floor(finalText*100)/100 --truncate to two decimals
 				self:GetChild("AvgNps"):settext(THEME:GetString("ScreenSelectMusicExperiment", "AvgNps")..": "..finalText)
 			else
-				self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "StreamCounterOff"))
+				if SL[pn].ActiveModifiers.MeasureCounter == "None" then 
+					self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "StreamCounterOff"))
+				else
+					self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "UnableToParse"))
+				end
 				self:GetChild("TotalStream"):settext("")
 				self:GetChild("PeakNPS"):settext("")
 				self:GetChild("AvgNps"):settext("")
@@ -124,7 +127,11 @@ local af = Def.ActorFrame{
 		--make sure we have peaknps set before checking for tech
 		if ThemePrefs.Get("EnableTechParser") then
 			local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
-			self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch)
+			if tech then 
+				self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch)
+			else
+				self:GetChild("Tech"):settext(THEME:GetString("ScreenSelectMusicExperiment", "UnableToParse"))
+			end
 		end
 	end,
 }
