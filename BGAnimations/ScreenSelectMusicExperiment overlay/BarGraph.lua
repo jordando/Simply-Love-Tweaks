@@ -1,14 +1,13 @@
 local group_info = ...
 
 --variables needed for both the legend and the bargraph
-local minDif, maxDif, num_dif, x, y, w, h
+local minDif, maxDif, num_dif, adjusted_num_dif, x, y, w, h
 
 CreateBarGraph = function(_w, _h)
 	w, h = _w, _h
 	local legend = LoadFont("Wendy/_wendy small")..{
 		Name="Legend_BMT",
-		Initialize=function(self, actor, params)
-			local group = params.group or GetCurrentGroup()
+		Initialize=function(self, actor)
 			local toPrint = ""
 			for i = 0, num_dif do
 				if minDif + i > 25 then break end
@@ -17,8 +16,10 @@ CreateBarGraph = function(_w, _h)
 				if i == 11 then toPrint = toPrint.." " end --11 has two ones so add another space
 				toPrint = toPrint.. " " .. tostring(minDif + i) .. " "
 			end
+			toPrint = string.sub(toPrint,1,-1)
 			actor:settext(toPrint)
-			actor:zoom((x*num_dif+(x-5))/actor:GetWidth())
+			actor:zoom((x*math.min(num_dif,adjusted_num_dif)+(x-5))/actor:GetWidth())
+			if tonumber(maxDif) >= 25 then actor:settext(toPrint.."+") end
 			actor:Draw()
 		end,
 	}
@@ -55,15 +56,16 @@ CreateBarGraph = function(_w, _h)
 				end
 			end
 			if over25 > 0 then
-				table.insert(verts,{{num_dif*x,0,0}, Color.Red})
-				table.insert(verts,{{num_dif*x,y*over25*-1,0}, Color.Blue})
-				table.insert(verts,{{num_dif*x+(x-5),y*over25*-1,0}, Color.Green})
-				table.insert(verts,{{num_dif*x+(x-5),0,0}, Color.Yellow})
+				local finalBar = math.min(num_dif,adjusted_num_dif)
+				table.insert(verts,{{finalBar*x,0,0}, Color.Red})
+				table.insert(verts,{{finalBar*x,y*over25*-1,0}, Color.Blue})
+				table.insert(verts,{{finalBar*x+(x-5),y*over25*-1,0}, Color.Green})
+				table.insert(verts,{{finalBar*x+(x-5),0,0}, Color.Yellow})
 				if over25Passed > 0 then
-					table.insert(verts,{{num_dif*x,0,0}, Color.Green})
-					table.insert(verts,{{num_dif*x,y*over25Passed*-1,0}, Color.White})
-					table.insert(verts,{{num_dif*x+(x-5),y*over25Passed*-1,0}, Color.White})
-					table.insert(verts,{{num_dif*x+(x-5),0,0}, Color.Green})
+					table.insert(verts,{{finalBar*x,0,0}, Color.Green})
+					table.insert(verts,{{finalBar*x,y*over25Passed*-1,0}, Color.White})
+					table.insert(verts,{{finalBar*x+(x-5),y*over25Passed*-1,0}, Color.White})
+					table.insert(verts,{{finalBar*x+(x-5),0,0}, Color.Green})
 				end
 			end
 			actor:SetNumVertices(#verts):SetVertices(verts)
@@ -89,10 +91,14 @@ CreateBarGraph = function(_w, _h)
 			minDif = group_info[group]['Level'][1]['difficulty']
 			maxDif = group_info[group]['Level'][#group_info[group]['Level']]['difficulty']
 			num_dif = maxDif - minDif
-			x = _w / (num_dif)
+			--if there's a joke chart with an absurd difficulty we want things to scale at the
+			--max difficulty displayed which is 25 right now. we can't change num_dif outright
+			--because then the 25+ difficulty charts won't get bars
+			adjusted_num_dif = math.min(num_dif,(math.min(25,maxDif)-minDif)+2)
+			x = w / math.min(num_dif,adjusted_num_dif)
 			if x < 10 then x = 10 --this will produce a minimum bar size of 15. smaller than that and number are very hard to read (consequence is that we can overflow)
 			elseif x > 20 then x = 20 end --don't want our graph to get too fat, this maxes out at 35
-			y = _h / group_info[group].max_num
+			y = h / group_info[group].max_num
 			amv:Initialize(self:GetChild("BarGraph_AMV"), params)
 			legend:Initialize(self:GetChild("Legend_BMT"), params)
 		end
