@@ -121,17 +121,19 @@ local af = Def.ActorFrame{
 		GAMESTATE:Env()[pn.."CurrentSteps"] == GAMESTATE:GetCurrentSteps(player)
 		then
 			self:GetChild("PeakNPS"):settext( THEME:GetString("ScreenGameplay", "PeakNPS") .. ": " .. round(GAMESTATE:Env()[pn.."PeakNPS"] * SL.Global.ActiveModifiers.MusicRate,2))
+			--make sure we have peaknps set before checking for tech
+			if ThemePrefs.Get("EnableTechParser") then
+				local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
+				if tech then
+					self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch)
+					SL[ToEnumShortString(player)]["ParsedSteps"] = tech.parsedSteps
+				else
+					self:GetChild("Tech"):settext(THEME:GetString("ScreenSelectMusicExperiment", "UnableToParse"))
+				end
+			end
 		else
 			self:GetChild("PeakNPS"):settext( "" )
-		end
-		--make sure we have peaknps set before checking for tech
-		if ThemePrefs.Get("EnableTechParser") then
-			local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
-			if tech then 
-				self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch)
-			else
-				self:GetChild("Tech"):settext(THEME:GetString("ScreenSelectMusicExperiment", "UnableToParse"))
-			end
+			self:GetChild("Tech"):settext( "" )
 		end
 	end,
 }
