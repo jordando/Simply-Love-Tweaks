@@ -1,8 +1,5 @@
 local Players = GAMESTATE:GetHumanPlayers()
 local NumPanes = SL.Global.GameMode=="Casual" and 1 or 6
-if GAMESTATE:GetCurrentStyle():GetStyleType() ~= "StyleType_OnePlayerTwoSides" and SL.Global.GameMode == "Experiment" then
-	NumPanes = 5
-end
 
 local hash
 

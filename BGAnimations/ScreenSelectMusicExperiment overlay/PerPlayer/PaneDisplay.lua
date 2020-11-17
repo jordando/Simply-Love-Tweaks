@@ -135,6 +135,7 @@ local af = Def.ActorFrame{
 			self:GetChild("PeakNPS"):settext( "" )
 			self:GetChild("Tech"):settext( "" )
 		end
+
 	end,
 }
 
