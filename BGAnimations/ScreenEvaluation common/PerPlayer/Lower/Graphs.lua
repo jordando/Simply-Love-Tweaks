@@ -8,7 +8,7 @@ local NumPlayers = #GAMESTATE:GetHumanPlayers()
 local GraphWidth  = THEME:GetMetric("GraphDisplay", "BodyWidth")
 local GraphHeight = THEME:GetMetric("GraphDisplay", "BodyHeight")
 if SL.Global.GameMode == "Experiment" then
-	densityGraph = NPS_Histogram(player, GraphWidth, GraphHeight,{0.6, 0.6, 0.6, 1},{0.2, 0.2, 0.2, 1})..{OnCommand = function(self) self:x(-GraphWidth/2):y(GraphHeight):playcommand("SetDensity") end}
+	densityGraph = NPS_Histogram(player, GraphWidth+5, GraphHeight,{0.6, 0.6, 0.6, 1},{0.2, 0.2, 0.2, 1})..{OnCommand = function(self) self:x(-GraphWidth/2):y(GraphHeight):playcommand("SetDensity") end}
 end
 scatterGraph = LoadActor("./ScatterPlot.lua", {player=player, GraphWidth=GraphWidth, GraphHeight=GraphHeight} )
 

@@ -223,7 +223,7 @@ local function ParseTech(lines)
     --note is high
     local possibleStart = 0
 
-    while i < #chart do
+    while i < #chart+1 do
         -- If we hit a comma or a semi-colon, then we've hit the end of our measure
         -- For the upcoming measure, calculate how much of a beat each line represents
         -- (Each measure is 4 beats evenly divided by the number of lines in the measure)
