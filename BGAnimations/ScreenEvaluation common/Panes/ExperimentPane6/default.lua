@@ -1,17 +1,30 @@
---This pane is only for doubles
+--This pane is for per foot breakdowns
 
 local args = ...
 local player = args.player
+
 
 local af = Def.ActorFrame{
 	Name="Pane6_SideP1",
 	InitCommand=function(self)
 		self:visible(false)
-	end
+	end,
+
+	LoadFont("Wendy/_wendy white")..{
+		Name="NoShow",
+		InitCommand=function(self)
+			self:horizalign(0):zoom(0.25):xy( 30, 200)
+			if not ThemePrefs.Get("EnableTechParser") then
+				self:settext("Tech parsing not enabled")
+			elseif not SL[ToEnumShortString(player)]["ParsedSteps"] then
+				self:settext("Unable to parse chart")
+			end
+		end,
+	}
 }
 
 --if tech parser isn't turned on we can't get per foot breakdowns
-if not ThemePrefs.Get("EnableTechParser") then
+if not ThemePrefs.Get("EnableTechParser") or not SL[ToEnumShortString(player)]["ParsedSteps"] then
 	return af
 end
 
@@ -63,7 +76,7 @@ footBreakdown.right["up"] = {}
 footBreakdown.right["right"] = {}
 for i, value in ipairs(ordered_offsets) do
 	local footStats = SL[ToEnumShortString(player)]["ParsedSteps"][i]
-	if footStats.Foot and footStats.Stream == true then
+	if footStats.Foot and footStats.Stream == true and footStats.TechType ~= "Jump" then
 		if footBreakdown[footStats.Foot][footStats.Note][value.Judgment] then
 			footBreakdown[footStats.Foot][footStats.Note][value.Judgment].count = footBreakdown[footStats.Foot][footStats.Note][value.Judgment].count + 1
 			if value.Offset and value.Offset < 0 then 
@@ -108,12 +121,6 @@ af[#af+1] = Def.Quad{
 af[#af+1] = LoadActor("./Percentage.lua", {player = player, side = "right"})..{InitCommand=function(self) self:visible(true):x(_screen.cx - 2) end}
 af[#af+1] = LoadActor("./JudgmentLabels.lua", {player = player, side = "right"})..{InitCommand=function(self) self:visible(true):x(_screen.cx+155) end}
 af[#af+1] = LoadActor("./Arrows.lua", {player = player, side = "right", footBreakdown = convertedFootBreakdown})..{InitCommand=function(self) self:visible(true):x(_screen.cx-305) end}
-
-if GAMESTATE:GetCurrentStyle():GetStyleType() ~= "StyleType_OnePlayerTwoSides" then
-	if PREFSMAN:GetPreference("OnlyDedicatedMenuButtons") then
-		af[#af+1] = LoadActor(THEME:GetPathB("ScreenEvaluation", "common/Panes/Pane5"), {player, PLAYER_1})..{InitCommand=function(self) self:visible(true):x(position) end}
-	end
-end
 
 return af
 

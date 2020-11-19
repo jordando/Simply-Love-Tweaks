@@ -21,7 +21,6 @@ local function gen_vertices(player, width, height, upColor, lowColor)
 
 	-- broadcast this for any other actors on the current screen that rely on knowing the peak nps
 	MESSAGEMAN:Broadcast("PeakNPSUpdated", {PeakNPS=PeakNPS})
-
 	local verts = {}
 	local x, y, t
 
@@ -39,7 +38,7 @@ local function gen_vertices(player, width, height, upColor, lowColor)
 		graphColor.Yellow[2]= {0.863, 0.353, 0.2, 1} --orange
 		
 		local lowerColor, upperColor, chosenColor
-		if upColor and lowColor then 
+		if upColor and lowColor then
 			lowerColor = lowColor
 			upperColor = upColor
 		else
@@ -49,7 +48,7 @@ local function gen_vertices(player, width, height, upColor, lowColor)
 			upperColor=graphColor[chosenColor][2]
 		end
 
-		local upper		   
+		local upper
 		for i, nps in ipairs(NPSperMeasure) do
 
 			if nps > 0 then first_step_has_occurred = true end
