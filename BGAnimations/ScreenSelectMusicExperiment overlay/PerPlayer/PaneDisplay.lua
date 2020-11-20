@@ -9,7 +9,7 @@ local highscoreX = WideScale(56, 80)
 
 local InitializeMeasureCounterAndModsLevel = LoadActor("./MeasureCounterAndModsLevel.lua")
 local TechParser
-if ThemePrefs.Get("EnableTechParser") then TechParser = LoadActor("TechParser.lua") end
+if ThemePrefs.Get("EnableTechParser") then TechParser = LoadActor(THEME:GetPathB("","_modules/TechParser.lua")) end
 
 --TODO figure out how to change this if a second player joins
 local histogramHeight = 40

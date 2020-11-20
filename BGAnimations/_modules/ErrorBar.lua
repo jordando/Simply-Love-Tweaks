@@ -6,8 +6,6 @@ if SL[ToEnumShortString(player)].ActiveModifiers.HideErrorBar then return end
 
 --Visual display of deviance values-- taken from Etterna and converted to run in SM5
 
-local jcT = {}
-
 -- Table of judgments for the judgecounter
 local jdgT = {
 	TapNoteScore_W1 = SL.JudgmentColors[SL.Global.GameMode][1],
@@ -30,18 +28,18 @@ end
 
 -- User Parameters
 --==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--
-local barcount = 30 									-- Number of bars. Older bars will refresh if judgments/barDuration exceeds this value. You don't need more than 40.
+local barcount = 30 							-- Number of bars. Older bars will refresh if judgments/barDuration exceeds this value. You don't need more than 40.
 local frameX = CenterX				    		-- X Positon (Center of the bar)
-local frameY = SCREEN_CENTER_Y					        -- Y Positon (Center of the bar)
-local frameHeight = 10 									-- Height of the bar
-local frameWidth = 240                               	-- Width of the bar
-local barWidth = 2										-- Width of the ticks.
-local barDuration = 0.75 								-- Time duration in seconds before the ticks fade out. Doesn't need to be higher than 1. Maybe if you have 300 bars I guess.
+local frameY = SCREEN_CENTER_Y					-- Y Positon (Center of the bar)
+local frameHeight = 10 							-- Height of the bar
+local frameWidth = 240                          -- Width of the bar
+local barWidth = 2								-- Width of the ticks.
+local barDuration = 0.75 						-- Time duration in seconds before the ticks fade out. Doesn't need to be higher than 1. Maybe if you have 300 bars I guess.
 --==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--
 
 local wscale = 500 							-- so we aren't calculating it over and over again
-local currentbar = 1 									-- so we know which error bar we need to update
-local ingots = {}										-- references to the error bars
+local currentbar = 1 						-- so we know which error bar we need to update
+local ingots = {}							-- references to the error bars
 
 -- Makes the error bars. They position themselves relative to the center of the screen based on your dv and diffuse to your judgement value before disappating or refreshing
 -- Should eventually be handled by the game itself to optimize performance
@@ -67,7 +65,10 @@ local e = Def.ActorFrame{
         -- basically the equivalent of using GetChildren() if it returned unnamed children numerically indexed
 		for i=1,barcount do
 			ingots[#ingots+1] = self:GetChild(i)
-		end
+        end
+        if SL[ToEnumShortString(player)].ActiveModifiers.ErrorBarUp then
+            self:addy(-69)
+        else self:addy(-12) end
     end,
     JudgmentMessageCommand=function(self, params)
 		if params.Player ~= player then return end

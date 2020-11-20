@@ -14,9 +14,7 @@ local af = Def.ActorFrame{
 		Name="NoShow",
 		InitCommand=function(self)
 			self:horizalign(0):zoom(0.25):xy( 30, 200)
-			if not ThemePrefs.Get("EnableTechParser") then
-				self:settext("Tech parsing not enabled")
-			elseif not SL[ToEnumShortString(player)]["ParsedSteps"] then
+			if not SL[ToEnumShortString(player)]["ParsedSteps"] then
 				self:settext("Unable to parse chart")
 			end
 		end,
@@ -24,7 +22,7 @@ local af = Def.ActorFrame{
 }
 
 --if tech parser isn't turned on we can't get per foot breakdowns
-if not ThemePrefs.Get("EnableTechParser") or not SL[ToEnumShortString(player)]["ParsedSteps"] then
+if not SL[ToEnumShortString(player)]["ParsedSteps"] then
 	return af
 end
 

@@ -66,6 +66,12 @@ for player in ivalues(Players) do
 		local difficulty = ToEnumShortString(GAMESTATE:GetCurrentSteps(pn):GetDifficulty())
 		hash = GenerateHash(GAMESTATE:GetCurrentSteps(player),stepsType, difficulty)
 		if hash ~= GetHash(player) then AddCurrentHash() end
+
+		if not SL[ToEnumShortString(player)]["ParsedSteps"] then
+			TechParser = LoadActor(THEME:GetPathB("","_modules/TechParser.lua"))
+			local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
+			if tech then SL[ToEnumShortString(player)]["ParsedSteps"] = tech.parsedSteps end
+		end
 	end
 end
 

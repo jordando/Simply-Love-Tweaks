@@ -32,11 +32,10 @@ for player in ivalues( GAMESTATE:GetHumanPlayers() ) do
 
 	af[#af+1] = LoadActor("./TrackTimeSpentInGameplay.lua", player)
 	af[#af+1] = LoadActor("./JudgmentOffsetTracking.lua", player)
-
 	-- FIXME: refactor PerColumnJudgmentTracking to not be inside this loop
 	--        the Lua input callback logic shouldn't be duplicated for each player
 	af[#af+1] = LoadActor("./PerColumnJudgmentTracking.lua", player)
-	if SL[ToEnumShortString(player)].ActiveModifiers.ErrorBarInFront == "Front" then						   
+	if not SL[ToEnumShortString(player)].ActiveModifiers.ErrorBarBehind then
 		af[#af+1] = LoadActor(THEME:GetPathB("","_modules/ErrorBar.lua"), player)
 	end
 	-- the SM5 engine causes NoteField columns in pump to overlap one another slightly
