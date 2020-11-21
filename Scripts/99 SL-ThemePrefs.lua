@@ -34,11 +34,6 @@ SL_CustomPrefs.Get = function()
 			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values = { true, false }
 		},
-		ErrorBarInFront = {
-			Default = false,
-			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
-			Values 	= { true, false }
-		},
 		LoadCustomScoresUpfront = {
 			Default = false,
 			Choices = {  THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },

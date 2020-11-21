@@ -460,8 +460,9 @@ local Overrides = {
 		Values = { "MeasureCounterLeft", "MeasureCounterUp", "HideLookahead" },
 	},
 	-------------------------------------------------------------------------
-	ErrorBarInFront = {
-		Values = {"Front","Back"}
+	ErrorBarOptions = {
+		SelectType = "SelectMultiple",
+		Values = {"ErrorBarBehind", "ErrorBarUp"}
 	},			   
 	-------------------------------------------------------------------------
 	TimingWindows = {

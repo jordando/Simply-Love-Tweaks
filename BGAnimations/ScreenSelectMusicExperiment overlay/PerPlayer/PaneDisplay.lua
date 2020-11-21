@@ -131,6 +131,8 @@ local af = Def.ActorFrame{
 					SL[ToEnumShortString(player)]["ParsedSteps"] = nil
 					self:GetChild("Tech"):settext(THEME:GetString("ScreenSelectMusicExperiment", "UnableToParse"))
 				end
+			else
+				SL[ToEnumShortString(player)]["ParsedSteps"] = nil
 			end
 		else
 			SL[ToEnumShortString(player)]["ParsedSteps"] = nil
