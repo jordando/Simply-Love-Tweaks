@@ -118,6 +118,30 @@ local song_mt = {
 							subself:y(0):visible(true)
 						end,
 					},
+					-- subtitle
+					Def.BitmapText{
+						Font="Common Normal",
+						InitCommand=function(subself)
+							self.subtitle_bmt = subself
+							subself:zoom(.5):diffuse(.9,.9,.9,1):shadowlength(0.75):maxwidth(190):xy(100,12):halign(1)
+						end,
+						SlideToTopCommand=function(subself)
+							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):maxwidth(125):settext( self.song:GetDisplaySubTitle()) end end,
+						SlideBackIntoGridCommand=function(subself)
+							if self.song  ~= "CloseThisFolder" then
+								subself:settext( self.song:GetDisplaySubTitle() ):maxwidth(190):zoom(.65)
+							end
+						end,
+						GainFocusCommand=function(subself) --make the words a little bigger to make it seem like they're popping out
+							subself:visible(true):zoom(.65)
+						end,
+						LoseFocusCommand=function(subself)
+							subself:zoom(.5)
+							subself:y(12):visible(true)
+						end,
+					},
+					
+
 				},
 			}
 			--Things we need two of
@@ -279,6 +303,7 @@ local song_mt = {
 			if type(item.song) == "string" then
 				self.song = item.song
 				self.title_bmt:settext( THEME:GetString("ScreenSelectMusicExperiment", "CloseThisFolder") )
+				self.subtitle_bmt:settext("")
 				self.index = 0
 			else
 				self.song = item.song
@@ -288,6 +313,7 @@ local song_mt = {
 					self.title_bmt:settext( "["..block.difficulty.."]["..math.floor(block.bpm).."] "..self.song:GetDisplayMainTitle() )
 				else
 					self.title_bmt:settext( self.song:GetDisplayMainTitle() )
+					self.subtitle_bmt:settext(self.song:GetDisplaySubTitle())
 				end
 
 			end
