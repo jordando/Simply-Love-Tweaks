@@ -1,16 +1,16 @@
 -- Pane6 displays QR codes for uploading scores to groovestats.com
 
-local args = ...
-local player = args.player
--- ------------------------------------------
---
+local player, _, ComputedData = unpack(...)
 
+-- ------------------------------------------
 -- ValidForGrooveStats.lua contains various checks requested by Archi
 -- to determine whether the score should be permitted on GrooveStats
--- and returns a table of booleans, one per check.  Obviously, this is
--- trivial to circumvent and not meant to keep malicious users out of
--- GrooveStats. The intent is to prevent well-intentioned-but-unaware
--- players from accidentally submitting invalid scores to GrooveStats.
+-- and returns a table of booleans, one per check.
+--
+-- Obviously, this is trivial to circumvent and not meant to keep
+-- malicious users out of GrooveStats. It is intended to prevent
+-- well-intentioned-but-unaware players from accidentally submitting
+-- invalid scores to GrooveStats.
 
 local checks = LoadActor("./ValidForGrooveStats.lua", player)
 
@@ -25,16 +25,28 @@ local X_HasBeenBlinked = false
 
 -- GrooveStatsURL.lua returns a formatted URL with some parameters in the query string
 if ValidForGrooveStats then
-	url = LoadActor("./GrooveStatsURL.lua", player)
+
+	-- don't generate the GrooveStats URL twice if only one player is joined
+	-- and we've already generated it for a previous controller's pane
+	-- it involves expensive hash computations
+	if ComputedData and ComputedData.GrooveStatsURL then
+		url = ComputedData.GrooveStatsURL
+	else
+		url = LoadActor("./GrooveStatsURL.lua", player)
+		if ComputedData then ComputedData.GrooveStatsURL = url end
+	end
+
 	text = ScreenString("QRInstructions")
+
 else
+	-- hbdi
 	url = "https://www.youtube.com/watch?v=FMABVVk4Ge4"
 
 	for i, passed_check in ipairs(checks) do
 		if passed_check == false then
-			-- the 3rd check is GameMode (ITG, FA+, Casual, etc.)
-			if i==3 then
-				-- that string has a %s token which so we can pass in the current SL GameMode
+			-- the 4th check is GameMode (ITG, FA+, Casual, etc.)
+			if i==4 then
+				-- that string has a %s token so we can pass in the current SL GameMode
 				text = text .. ScreenString("QRInvalidScore"..i):format(SL.Global.GameMode) .. "\n"
 			else
 				-- other strings can be used as-is
@@ -49,18 +61,27 @@ local qrcode_size = 168
 -- ------------------------------------------
 
 local pane = Def.ActorFrame{
-	Name="Pane6",
-	InitCommand=function(self) self:visible(false):xy(-140, 222) end,
-	ShrinkCommand=function(self)
+	InitCommand=function(self) self:xy(-140, 222) end,
+	PaneSwitchCommand=function(self)
 		if self:GetVisible() and not ValidForGrooveStats and not X_HasBeenBlinked then
 			self:queuecommand("BlinkX")
 		end
 	end
 }
 
-pane[#pane+1] = qrcode_amv( url, qrcode_size )..{
-	InitCommand=function(self) self:xy(116, -32):align(0,0.5) end
-}
+local qr_amv
+-- don't generate the QR code twice if only one player is joined
+-- and we've already generated it for a previous controller's pane
+if ComputedData and ComputedData.QRCode then
+	qr_amv = ComputedData.QRCode
+else
+	local qr_module_path = THEME:GetPathB("", "_modules/QR Code/SL-QRCode.lua")
+	qr_amv = LoadActor( qr_module_path , {url, qrcode_size} )..{}
+	qr_amv.InitCommand=function(self) self:xy(116, -32):align(0,0.5) end
+	if ComputedData then ComputedData.QRCode = qr_amv end
+end
+
+pane[#pane+1] = qr_amv
 
 -- red X to visually cover the QR code if the score was invalid
 if not ValidForGrooveStats then

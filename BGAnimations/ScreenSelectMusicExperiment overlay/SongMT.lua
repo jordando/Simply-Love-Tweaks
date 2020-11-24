@@ -203,6 +203,8 @@ local song_mt = {
 						SL.Global.GroupToSong = false
 						SL.Global.LastSeenIndex = self.index
 						SL.Global.SongTransition = true
+						SL.Global.LastSongPlayedName = GAMESTATE:GetCurrentSong():GetDisplayMainTitle()
+						SL.Global.LastSongPlayedGroup = GAMESTATE:GetCurrentSong():GetGroupName()
 						MESSAGEMAN:Broadcast("CurrentSongChanged", {song=self.song, index=self.index})
 						MESSAGEMAN:Broadcast("BeginSongTransition") --See the MessageCommand in ScreenSelectMusicExperiment/default.lua for details
 						stop_music()

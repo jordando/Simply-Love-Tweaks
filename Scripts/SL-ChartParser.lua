@@ -241,6 +241,7 @@ end
 GetNPSperMeasure = function(Song, Steps)
 	if Song==nil or Steps==nil then return end
 
+	local SongDir = Song:GetSongDir()			  
 	local SimfileString, Filetype = GetSimfileString( Steps )
 	if not SimfileString then return end
 

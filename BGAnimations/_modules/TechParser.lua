@@ -10,24 +10,24 @@ local safe = true --if there are no warps or negative bpms we can easily calcula
 local bpms
 local stops
 
-local function GetBeatAtTime(beat, bpms, stops)
-    local cur_bpm = bpms[1][2] --initializes to whatever the song starts at
+local function GetBeatAtTime(beat, bpmTable, stopsTable)
+    local cur_bpm = bpmTable[1][2] --initializes to whatever the song starts at
     local cur_beat = 0
     local bpm_index = 0
     local stop_index = 0
     local cur_time = 0
     local finalBeat = beat
 
-    while bpm_index + 1 < #bpms and bpms[bpm_index + 1][1] < finalBeat do
-        cur_time = cur_time + 60.0/cur_bpm * (bpms[bpm_index + 1][1] - cur_beat)
+    while bpm_index + 1 < #bpmTable and bpmTable[bpm_index + 1][1] < finalBeat do
+        cur_time = cur_time + 60.0/cur_bpm * (bpmTable[bpm_index + 1][1] - cur_beat)
         bpm_index = bpm_index + 1
-        cur_beat = bpms[bpm_index][1]
-        cur_bpm = bpms[bpm_index][2]
+        cur_beat = bpmTable[bpm_index][1]
+        cur_bpm = bpmTable[bpm_index][2]
     end
     -- Add all the stops strictly before the this beat since the last row
     -- we've evaluated.
-    while stop_index + 1 < #stops and stops[stop_index + 1][1] < finalBeat do
-        cur_time = cur_time + stops[stop_index + 1][2]
+    while stop_index + 1 < #stopsTable and stopsTable[stop_index + 1][1] < finalBeat do
+        cur_time = cur_time + stopsTable[stop_index + 1][2]
         stop_index = stop_index + 1
      end
 
@@ -41,16 +41,19 @@ local function ParseTech(lines)
     local chart = {}
 	for line in lines:gmatch("[^\r\n]+") do
 		chart[#chart+1] = line
-	end
-    local peak = GAMESTATE:Env()["P1".."PeakNPS"]
-    if not peak then return nil end
-    if GAMESTATE:GetCurrentSteps(PLAYER_1) ~= GAMESTATE:Env()["P1".."CurrentSteps"] then
+    end
+    --TODO: for now this only works for master player
+    local player = GAMESTATE:GetMasterPlayerNumber()
+    local pn = ToEnumShortString(player)
+    local peak = GAMESTATE:Env()[pn.."PeakNPS"]
+    if not peak then return false end
+    if GAMESTATE:GetCurrentSteps(player) ~= GAMESTATE:Env()[pn.."CurrentSteps"] then
         SM("peak doesn't match up!")
-        SM({GAMESTATE:GetCurrentSteps(PLAYER_1),GAMESTATE:Env()["P1".."CurrentSteps"]})
+        SM({GAMESTATE:GetCurrentSteps(player),GAMESTATE:Env()[pn.."CurrentSteps"]})
     end
     Trace("Peak is:")
     Trace(peak)
-    local timingData = GAMESTATE:GetCurrentSteps(PLAYER_1):GetTimingData()
+    local timingData = GAMESTATE:GetCurrentSteps(player):GetTimingData()
     if timingData:HasWarps() or timingData:HasNegativeBPMs() then
         safe = false
     else
@@ -282,6 +285,7 @@ local function ParseTech(lines)
         end
         i = i + 1
     end
+    return true
 end
 
 local function NormalizeFloatDigits(param)
@@ -352,8 +356,7 @@ return function (steps, stepsType, difficulty)
             -- https://github.com/stepmania/stepmania/blob/master/src/NotesLoaderSM.cpp#L1072-L1079
             if #notes >= 7 and notes[2] == stepsType and difficulty == ToEnumShortString(OldStyleStringToDifficulty(notes[4])) then
                 Trace("PARSE TEST")
-                ParseTech(notes[7])
-                success = true
+                success = ParseTech(notes[7])
             end
         end
 

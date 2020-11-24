@@ -57,7 +57,7 @@ for t in ivalues(sequential_offsets) do
 	end
 
 	-- pad the right end because the time measured seems to lag a little...
-	x = scale(CurrentSecond, FirstSecond, TotalSeconds + 0.1, 0, GraphWidth)
+	x = scale(CurrentSecond, FirstSecond, TotalSeconds + 0.05, 0, GraphWidth)
 
 	if Offset ~= "Miss" then
 		-- DetermineTimingWindow() is defined in ./Scripts/SL-Helpers.lua

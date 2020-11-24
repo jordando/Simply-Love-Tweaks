@@ -1,7 +1,6 @@
 if SL.Global.GameMode == "Casual" then return end
 
-local args = ...
-local player = args.player
+local player = ...
 local scatterGraph,densityGraph
 local NumPlayers = #GAMESTATE:GetHumanPlayers()
 
