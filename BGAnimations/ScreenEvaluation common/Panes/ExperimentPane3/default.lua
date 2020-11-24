@@ -7,7 +7,7 @@ local args = ...
 local player = args.player
 
 local af = Def.ActorFrame{
-	Name="Pane3_SideP1",
+	--Name="Pane3_SideP1",
 	InitCommand=function(self) self:visible(false) end,
 	-- ExpandForDoubleCommand() does not do anything here, but we check for its presence in
 	-- this ActorFrame in ./InputHandler to determine which panes to expand the background for

@@ -4,7 +4,7 @@ local hash = args.hash
 local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
 
 local pane = Def.ActorFrame{
-	Name="Pane4_SideP1",
+	--Name="Pane4_SideP1",
 	InitCommand=function(self)
 		self:visible(false):x(WideScale(115,0))
 	end,
@@ -16,10 +16,11 @@ local pane = Def.ActorFrame{
 		local lastPlayed, numPlayed, firstPass
 		local chartStats = GetChartStats(player, hash)
 		if not chartStats then
-			if not PROFILEMAN:GetProfile(pn):GetHighScoreList(GAMESTATE:GetCurrentSong(),GAMESTATE:GetCurrentSteps(player)):GetHighScores() then
+			--if there's only one high score than this is the first time we've played the chart
+			if #PROFILEMAN:GetProfile(pn):GetHighScoreList(GAMESTATE:GetCurrentSong(),GAMESTATE:GetCurrentSteps(player)):GetHighScores() == 1 then
 				lastPlayed = "NEVER"
 				numPlayed = 1
-				firstPass = pss:GetFailed() and "NEVER" or "TODAY"
+				firstPass = pss:GetFailed() and "NEVER" or "Just now"
 			else
 				lastPlayed = "UNKNOWN"
 				numPlayed = "UNKNOWN"

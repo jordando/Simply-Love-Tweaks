@@ -2,7 +2,7 @@ local args = ...
 local player = args.player
 
 local pane = Def.ActorFrame{
-	Name="Pane5_SideP1",
+	--Name="Pane5_SideP1",
 	InitCommand=function(self)
 		self:visible(false)
 	end

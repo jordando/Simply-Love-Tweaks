@@ -125,12 +125,13 @@ local af = Def.ActorFrame{
 			if ThemePrefs.Get("EnableTechParser") then
 				local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
 				if tech then
-					self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch)
+					self:GetChild("Tech"):settext("XO:"..tech.crossover.." DS:"..tech.doublestep.." FS:"..tech.footswitch.." JS:"..tech.jumpstream)
 					SL[ToEnumShortString(player)]["ParsedSteps"] = tech.parsedSteps
 				else
 					SL[ToEnumShortString(player)]["ParsedSteps"] = nil
 					self:GetChild("Tech"):settext(THEME:GetString("ScreenSelectMusicExperiment", "UnableToParse"))
 				end
+			--even if tech is turned off we want to clear out the steps so screeneval regenerates per song	
 			else
 				SL[ToEnumShortString(player)]["ParsedSteps"] = nil
 			end
