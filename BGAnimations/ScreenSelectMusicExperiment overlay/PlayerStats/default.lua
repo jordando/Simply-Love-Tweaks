@@ -54,7 +54,6 @@ local af =  Def.ActorFrame{
 	DirectInputToPlayerStatsCommand=function(self) self:queuecommand("Stall") end,
 	StallCommand=function(self)
 		self:visible(true):sleep(0.25):queuecommand("CaptureTest")
-		MESSAGEMAN:Broadcast("SetOptionPanes")
 		self:queuecommand("SetPlayerStats")
 	end,
 	CaptureTestCommand=function(self) SCREENMAN:GetTopScreen():AddInputCallback( playerStats_input ) end,
@@ -211,7 +210,6 @@ if playerStats then
 			end
 		},
 	}
-
 	--Get first passes
 	local firstPasses = {}
 	local songs = SONGMAN:GetAllSongs()

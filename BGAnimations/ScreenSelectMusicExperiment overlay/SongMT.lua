@@ -270,7 +270,8 @@ local song_mt = {
 					self.title_bmt:diffuse(Color.White)
 				else
 					self[pn..'grade_sprite']:visible(false)
-					self[pn..'pass_box']:visible(false)
+					self['P1pass_box']:visible(false)
+					self['P2pass_box']:visible(false)
 					self.title_bmt:diffuse(Color.Red)
 				end
 				--handle row hiding
