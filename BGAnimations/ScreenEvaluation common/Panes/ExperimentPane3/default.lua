@@ -14,9 +14,7 @@ local af = Def.ActorFrame{
 	ExpandForDoubleCommand=function() end
 }
 
---TODO make sure these work with p2
 local position = player == "PlayerNumber_P1" and (_screen.cx - 115 + WideScale(115,0)) or -305
---local doublePosition = player == "PlayerNumber_P1" and 0 or -305
 af[#af+1] = LoadActor("./Percentage.lua", player)..{InitCommand=function(self) self:visible(true) end}
 af[#af+1] = LoadActor("./JudgmentLabels.lua", player)..{InitCommand=function(self) self:visible(true) end}
 af[#af+1] = LoadActor("./Arrows.lua", player)..{InitCommand=function(self) self:visible(true) end}

@@ -75,22 +75,21 @@ local pane = Def.ActorFrame{
 
 --Highscore Display
 local params = { Player=player, NumHighScores=10, RoundsAgo=1, Hash=hash}
+local position = player == "PlayerNumber_P1" and WideScale(0,0) or WideScale(0,10)
 if not ThemePrefs.Get("OriginalHighScoreList") and hash then
 	pane[#pane+1] = LoadActor("ExperimentHighScoreList.lua", params)..{
-		InitCommand=function(self) self:xy(WideScale(-115,0),_screen.cy - 62):zoom(.8) end
+		InitCommand=function(self) self:xy(position,_screen.cy - 62):zoom(.8) end
 	}
 else
 	pane[#pane+1] = LoadActor(THEME:GetPathB("", "_modules/HighScoreList.lua"), params)..{
-		InitCommand=function(self) self:xy(WideScale(-115,0),_screen.cy - 62):zoom(.8) end
+		InitCommand=function(self) self:xy(position,_screen.cy - 62):zoom(.8) end
 	}
 end
-
-local position = player == "PlayerNumber_P1" and (_screen.cx - 250) or (-_screen.cx - WideScale(250,10))
 
 local stats = Def.ActorFrame{
 	Name="stats",
 	InitCommand=function(self)
-		self:x(position)
+		self:x(player == "PlayerNumber_P1" and (_screen.cx - WideScale(150,250)) or (-_screen.cx - WideScale(100,10)))
 	end
 }
 --LastPlayed

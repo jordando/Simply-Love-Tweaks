@@ -127,8 +127,10 @@ local GetGroupInfo = function()
 		info[group]['PassedLevel'] = {}
 		info[group].filtered_charts = 0
 		info[group].all_charts = 0
+		info[group].duration = 0
 		for song in ivalues(songs) do
 			if song:HasStepsType(GetStepsType()) then
+				info[group].duration = info[group].duration + song:MusicLengthSeconds()
 				for steps in ivalues(song:GetStepsByStepsType(GetStepsType())) do
 					info[group].all_charts = info[group].all_charts + 1
 					--if the chart passes filters, add to our list of charts

@@ -270,7 +270,7 @@ local function ConvertFilters()
 end
 
 --- requires a song and chart as input parameters. returns true if the chart passes all filters and false otherwise.
---- if no player is given use MasterPlayer. If no filters are given 
+--- if no player is given use MasterPlayer.
 function ValidateChart(song, chart, player)
 	local mpn = player or GAMESTATE:GetMasterPlayerNumber()
 	local filters = ConvertFilters()

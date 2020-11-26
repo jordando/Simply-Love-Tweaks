@@ -228,7 +228,7 @@ function UpdateGradeGroups(song)
 	for steps in ivalues(current_song:GetStepsByStepsType(GetStepsType())) do
 		local highScore = PROFILEMAN:GetProfile(GAMESTATE:GetMasterPlayerNumber()):GetHighScoreList(current_song,steps):GetHighScores()[1]
 		if highScore then --TODO this only checks for the master player. Maybe it should set both groups?
-			if highScore:GetGrade() then 
+			if highScore:GetGrade() then
 				table.insert(PreloadedGroups["Grade"][tostring(highScore:GetGrade())],current_song)
 				isPlayed = true
 			end

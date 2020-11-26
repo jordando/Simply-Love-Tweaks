@@ -218,7 +218,8 @@ af[#af+1] = Def.ActorFrame{
 				end
 				local toPrint = "MODE: Level "..mode.." ("..group_info[params.group].max_num.." charts)\n"
 				toPrint = toPrint.."MEDIAN: "..median[math.floor(#median/2)].."\n"
-				toPrint = toPrint.."PERCENT COMPLETE: "..math.floor((num_passed/num_charts)*10000/100).."%"
+				toPrint = toPrint.."PERCENT COMPLETE: "..math.floor((num_passed/num_charts)*10000/100).."%\n"
+				toPrint = toPrint.."DURATION: "..SecondsToHHMMSS(group_info[params.group].duration)
 				self:settext( toPrint )
 			end
 		end,

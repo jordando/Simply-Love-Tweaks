@@ -94,7 +94,7 @@ function ParseStats(player)
 			local key = string.gsub(line,"<([%w%p ]*)>[%w%p ]*</[%w%p ]*>?","%1") --look for lines with <XXX>YYY</XXX> and return XXX
 			local value = string.gsub(line,"<[%w%p ]*>([%w%p ]*)</[%w%p ]*>","%1")--look for lines with <XXX>YYY</XXX> and return YYY
 			--if fields are not opened and closed on the same line we need to add them in manually here. TODO manually doing this seems wrong
-			--NumSongsPlayedByPlayMode should get its own group but i don't care about it so... same with Song and Course 
+			--NumSongsPlayedByPlayMode should get its own group but i don't care about it so... same with Song and Course
 			if string.find(key,"Meter%d+") then
 				lines["NumSongsPlayedByMeter"][key] = value
 			elseif string.find(key,"Tier%d+") then
