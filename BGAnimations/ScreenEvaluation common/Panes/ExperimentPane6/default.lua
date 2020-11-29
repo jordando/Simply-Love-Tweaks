@@ -3,6 +3,8 @@
 local args = ...
 local player = args.player
 
+local fapping = SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and true or false
+
 local af = Def.ActorFrame{
 	--Name="Pane6_SideP1",
 	InitCommand=function(self)
@@ -57,6 +59,11 @@ for t in ivalues(sequential_offsets) do
 	if Offset ~= "Miss" then
 		CurrentSecond = CurrentSecond - Offset
 		TimingWindow = DetermineTimingWindow(Offset)
+		if fapping then
+			if math.abs(Offset) > SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW0"] * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"] then
+				TimingWindow = TimingWindow + 1
+			end
+		end
 		ordered_offsets[#ordered_offsets+1] = {Time = CurrentSecond, Judgment = TimingWindow, Offset = Offset}
 	else
 		CurrentSecond = CurrentSecond - worst_window

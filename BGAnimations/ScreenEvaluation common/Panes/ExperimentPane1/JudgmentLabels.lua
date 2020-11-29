@@ -1,6 +1,4 @@
-local player = ...
-local pn = ToEnumShortString(player)
-local track_missbcheld = SL[pn].ActiveModifiers.MissBecauseHeld
+local player, score, controller = unpack(...)
 
 local tns_string = "TapNoteScore" .. (SL.Global.GameMode=="ITG" and "" or SL.Global.GameMode)
 
@@ -21,14 +19,18 @@ else
 end
 TapNoteScores.Names = map(GetTNSStringFromTheme, TapNoteScores.Types)
 
-local box_height = 146
-local row_height = box_height/#TapNoteScores.Types
-
-local t = Def.ActorFrame{
-	InitCommand=function(self) self:xy(50 * (player==PLAYER_2 and -1 or 1), _screen.cy-36) end
+local RadarCategories = {
+	THEME:GetString("ScreenEvaluation", 'Holds'),
+	THEME:GetString("ScreenEvaluation", 'Mines'),
+	THEME:GetString("ScreenEvaluation", 'Hands'),
+	THEME:GetString("ScreenEvaluation", 'Rolls')
 }
 
-local miss_bmt
+local t = Def.ActorFrame{
+	InitCommand=function(self)
+		self:xy(50 * (controller=="left" and 1 or -1), _screen.cy-24)
+	end,
+}
 
 local windows = DeepCopy(SL.Global.ActiveModifiers.TimingWindows)
 local judgmentColors = DeepCopy( SL.JudgmentColors[SL.Global.GameMode] )
@@ -37,36 +39,34 @@ if fapping then
 	table.insert(windows,2,windows[1])
 	table.insert(judgmentColors,2,Color.White)
 end
---  labels: W1 ---> Miss
+--  labels: W1, W2, W3, W4, W5, Miss
 for i=1, #TapNoteScores.Types do
 	-- no need to add BitmapText actors for TimingWindows that were turned off
 	if windows[i] or i==#TapNoteScores.Types then
 
-		local label = TapNoteScores.Names[i]
-
 		t[#t+1] = LoadFont("Common Normal")..{
-			Text=label:upper(),
-			InitCommand=function(self)
-				self:zoom(0.8):horizalign(right):maxwidth(65/self:GetZoom())
-					:x( (player == PLAYER_1 and -130) or -28 )
-					:y( i * row_height )
-					:diffuse( judgmentColors[i] )
-
-				if i == #TapNoteScores.Types then miss_bmt = self end
+			Text=TapNoteScores.Names[i]:upper(),
+			InitCommand=function(self) self:zoom(0.833):horizalign(right):maxwidth(76) end,
+			BeginCommand=function(self)
+				self:x( controller == "left" and 28 or -28 )
+				self:halign( controller == "left" and 1 or 0)
+				self:y((i-1)* (fapping and 25 or 28) -16)
+				-- diffuse the JudgmentLabels the appropriate colors for the current GameMode
+				self:diffuse(judgmentColors[i] )
 			end
 		}
 	end
 end
 
-if track_missbcheld then
+-- labels: holds, mines, hands, rolls
+for index, label in ipairs(RadarCategories) do
+
 	t[#t+1] = LoadFont("Common Normal")..{
-		Text=ScreenString("Held"),
-		InitCommand=function(self)
-			self:y(140):zoom(0.6):halign(1)
-				:diffuse( SL.JudgmentColors[SL.Global.GameMode][6] )
-		end,
-		OnCommand=function(self)
-			self:x( miss_bmt:GetX() - miss_bmt:GetWidth()/1.15 )
+		Text=label,
+		InitCommand=function(self) self:zoom(0.833):horizalign(right) end,
+		BeginCommand=function(self)
+			self:x( (controller == "left" and -160) or 85 )
+			self:y((index-1)*28 + 41)
 		end
 	}
 end

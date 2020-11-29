@@ -11,15 +11,23 @@ local noteskin = GAMESTATE:GetPlayerState(player):GetCurrentPlayerOptions():Note
 -- so transform the string to be lowercase
 noteskin = noteskin:lower()
 
+local fapping = SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and true or false
 
-local gmods = SL.Global.ActiveModifiers
 
+local rows
+if fapping then rows = { "W0", "W1", "W2", "W3", "W4", "W5", "Miss" }
+else rows = { "W1", "W2", "W3", "W4", "W5", "Miss" } end
+
+local windows = DeepCopy(SL.Global.ActiveModifiers.TimingWindows)
+
+if fapping then
+	table.insert(windows,2,windows[1])
+end
 -- -----------------------------------------------------------------------
 
 local style = GAMESTATE:GetCurrentStyle()
 local num_columns = style:ColumnsPerPlayer()
 
-local rows = { "W1", "W2", "W3", "W4", "W5", "Miss" }
 local cols = {}
 
 -- loop num_columns number of time to fill the cols table with
@@ -47,7 +55,6 @@ local row_height = box_height/#rows
 local af = Def.ActorFrame{}
 af.InitCommand=function(self) self:xy(-104, _screen.cy-40) end
 
---SM(SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].column_judgments)
 for i, column in ipairs( cols ) do
 
 	local _x = col_width * i
@@ -72,7 +79,7 @@ for i, column in ipairs( cols ) do
 	-- for each possible judgment
 	for j, judgment in ipairs(rows) do
 		-- don't add rows for TimingWindows that were turned off, but always add Miss
-		if gmods.TimingWindows[j] or j==#rows then
+		if windows[j] or j==#rows then
 			-- add a BitmapText actor to be the number for this column
 			af[#af+1] = LoadFont("Common Normal")..{
 				InitCommand=function(self)
@@ -87,7 +94,7 @@ for i, column in ipairs( cols ) do
 					else
 						self:settext(SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].column_judgments[i][judgment])
 					end
-					if j == #rows then miss_bmt = self 
+					if j == #rows then miss_bmt = self
 					else bmt[j] = self end
 				end
 			}

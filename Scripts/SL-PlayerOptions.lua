@@ -475,7 +475,27 @@ local Overrides = {
 	ErrorBarOptions = {
 		SelectType = "SelectMultiple",
 		Values = {"ErrorBarBehind", "ErrorBarUp"}
-	},			   
+	},
+	-------------------------------------------------------------------------
+	EnableFAP = {
+		Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
+		Values 	= { true, false },
+		LoadSelections = function(self, list, pn)
+			local mods = SL[ToEnumShortString(pn)].ActiveModifiers
+			if mods.EnableFAP then
+				list[1] = true
+				list[2] = false
+			else
+				list[1] = false
+				list[2] = true
+			end
+			return list
+		end,
+		SaveSelections = function(self, list, pn)
+			local mods, playeroptions = GetModsAndPlayerOptions(pn)
+			mods.EnableFAP = list[1]
+		end,
+	},
 	-------------------------------------------------------------------------
 	TimingWindows = {
 		Values = function()

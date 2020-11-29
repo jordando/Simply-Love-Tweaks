@@ -34,6 +34,7 @@ local PlayerDefaults = {
 				LifeMeterType = "Standard",
 				MissBecauseHeld = false,
 				NPSGraphAtTop = false,
+				EnableFAP = false,
 			}
 			self.Streams = {
 				SongDir = nil,
@@ -357,6 +358,7 @@ SL = {
 	}
 }
 SL.Preferences.Experiment = SL.Preferences.ITG
+SL.Preferences.Experiment.TimingWindowSecondsW0=0.011000 --used in Experiment FA+ stuff
 SL.Metrics.Experiment = SL.Metrics.ITG
 SL.JudgmentColors.Experiment = SL.JudgmentColors.ITG
 

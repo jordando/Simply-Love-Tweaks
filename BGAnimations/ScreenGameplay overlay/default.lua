@@ -43,6 +43,7 @@ for player in ivalues( GAMESTATE:GetHumanPlayers() ) do
 	if not SL[ToEnumShortString(player)].ActiveModifiers.ErrorBarBehind then
 		af[#af+1] = LoadActor(THEME:GetPathB("","_modules/ErrorBar.lua"), player)
 	end
+	af[#af+1] = LoadActor("./FAPTracking.lua", player)
 end
 
 return af

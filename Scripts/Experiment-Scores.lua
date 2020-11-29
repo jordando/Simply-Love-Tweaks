@@ -136,6 +136,8 @@ function LoadNewFromStats(player)
 							local number = highScore:GetTapNoteScore( "TapNoteScore_"..window )
 							stats[window] = number
 						end
+						--stats doesn't contain FA+ fantastics so just assume full white
+						stats['W0'] = 0
 						for _,RCType in ipairs(RadarCategories.Types) do
 							local performance = highScore:GetRadarValues():GetValue( "RadarCategory_"..RCType )
 							stats[RCType] = performance
@@ -239,6 +241,8 @@ local function LoadFromStats(pn)
 			elseif string.find(line,"<Rolls>") then
 				highScore.Rolls = string.gsub(line,"<[%w%p ]*>([%w%p ]*)</[%w%p ]*>","%1")
 			elseif string.find(line,"</HighScore>") and song and #hash > 0 then
+				--stats doesn't contain FA+ fantastics so just assume full white
+				highScore.W0 = 0
 				if not statsTable[hash]['HighScores'] then statsTable[hash]['HighScores'] = {} end
 				table.insert(statsTable[hash]['HighScores'],highScore)
 				if highScore.grade ~= "Failed" and DateToMinutes(highScore.dateTime) < tempFirstPass then
@@ -316,7 +320,27 @@ function LoadScores(pn)
 					Hands = score[11],
 					Rolls = score[12],
 					grade = score[13],
-					dateTime = score[14]
+					dateTime = score[14],
+					W0 = 0
+					})
+			elseif #score == 15 then
+				if not Scores[hash]['HighScores'] then Scores[hash]['HighScores'] = {} end
+				table.insert(Scores[hash]['HighScores'],{
+					rate = score[1],
+					score = score[2],
+					W0 = score[3],
+					W1 = score[4],
+					W2 = score[5],
+					W3 = score[6],
+					W4 = score[7],
+					W5 = score[8],
+					Miss = score[9],
+					Holds = score[10],
+					Mines = score[11],
+					Hands = score[12],
+					Rolls = score[13],
+					grade = score[14],
+					dateTime = score[15],
 					})
 			end
 		end
@@ -349,7 +373,7 @@ function SaveScores(pn)
 					..hash.FirstPass.."\t"..hash.BestPass.."\t"..hash.hash)
 				if hash["HighScores"] then
 					for score in ivalues(hash["HighScores"]) do
-						file:PutLine(score.rate.."\t"..score.score.."\t"
+						file:PutLine(score.rate.."\t"..score.score.."\t"..score.W0.."\t"
 						..score.W1.."\t"..score.W2.."\t"..score.W3.."\t"..score.W4.."\t"..score.W5.."\t"..score.Miss.."\t"
 						..score.Holds.."\t"..score.Mines.."\t"..score.Hands.."\t"..score.Rolls.."\t"
 						..score.grade.."\t"..score.dateTime)
@@ -383,6 +407,7 @@ function AddScore(player, hash)
 		local number = pss:GetTapNoteScores( "TapNoteScore_"..window )
 		stats[window] = number
 	end
+	stats['W0'] = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame].W0
 	for _, RCType in ipairs(RadarCategories.Types) do
 		local performance = pss:GetRadarActual():GetValue( "RadarCategory_"..RCType )
 		stats[RCType] = performance

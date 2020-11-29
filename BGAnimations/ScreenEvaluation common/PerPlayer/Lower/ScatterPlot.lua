@@ -6,6 +6,9 @@ if GAMESTATE:IsCourseMode() then return end
 local args = ...
 local player = args.player
 
+--if we have FA+ tracking enabled then we need to add an extra timing window and shrink everything
+local fapping = SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and true or false
+
 local GraphWidth  = THEME:GetMetric("GraphDisplay", "BodyWidth")
 local GraphHeight = THEME:GetMetric("GraphDisplay", "BodyHeight")
 
@@ -25,7 +28,7 @@ local Offset, CurrentSecond, TimingWindow, x, y, c, r, g, b
 -- if players have disabled W4 or W4+W5, there will be a smaller pool
 -- of judgments that could have possibly been earned
 local worst_window = PREFSMAN:GetPreference("TimingWindowSecondsW5")
-local windows = SL.Global.ActiveModifiers.TimingWindows
+local windows = DeepCopy(SL.Global.ActiveModifiers.TimingWindows)
 for i=5,1 do
 	if windows[i] then
 		worst_window = PREFSMAN:GetPreference("TimingWindowSecondsW"..i)
@@ -37,13 +40,17 @@ end
 
 local colors = {}
 for w=5,1,-1 do
-	if SL.Global.ActiveModifiers.TimingWindows[w]==true then
+	if windows[w]==true then
 		colors[w] = DeepCopy(SL.JudgmentColors[SL.Global.GameMode][w])
 	else
 		colors[w] = DeepCopy(colors[w+1] or SL.JudgmentColors[SL.Global.GameMode][w+1])
 	end
 end
 
+if fapping then
+	table.insert(colors,2,Color.White)
+	table.insert(windows,2,windows[1])
+end
 -- ---------------------------------------------
 
 for t in ivalues(sequential_offsets) do
@@ -62,6 +69,11 @@ for t in ivalues(sequential_offsets) do
 	if Offset ~= "Miss" then
 		-- DetermineTimingWindow() is defined in ./Scripts/SL-Helpers.lua
 		TimingWindow = DetermineTimingWindow(Offset)
+		if fapping then
+			if math.abs(Offset) > SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW0"] * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"] then
+				TimingWindow = TimingWindow + 1
+			end
+		end
 		y = scale(Offset, worst_window, -worst_window, 0, GraphHeight)
 
 		-- get the appropriate color from the global SL table

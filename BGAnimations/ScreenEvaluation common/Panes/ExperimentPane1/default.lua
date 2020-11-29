@@ -1,12 +1,119 @@
 local args = ...
 local player = args.player
+local controller = player == 'PlayerNumber_P1' and "left" or "right"
+local hash = args.hash
+local otherSide = {left = "right", right = "left"}
+local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
+local comparisonScore
+local currentScore, sanitizedComparisonScore = {}, {}
+local RateScores
+local fapping = SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and true or false
 
-local af = Def.ActorFrame{
-	--Name="Pane1_SideP1",
+local TapNoteScores = {
+	Types = { 'W1', 'W2', 'W3', 'W4', 'W5', 'Miss' },
 }
 
-af[#af+1] = LoadActor(THEME:GetPathB("ScreenEvaluation", "common/Panes/Pane1"), {player, PLAYER_1})
-local position = player == "PlayerNumber_P1" and (_screen.cx - 155 + WideScale(105,0)) or -330
-af[#af+1] = LoadActor("./ExperimentJudgmentNumbers.lua", args)..{InitCommand=function(self) self:x(position) end}
+local RadarCategories = {
+	Types = { 'Holds', 'Mines', 'Hands', 'Rolls' },
+}
+--check to see if we have a custom saved score
+RateScores = GetScores(player, hash, true) --See /scripts/Experiment-Scores.lua
+if RateScores then
+	sanitizedComparisonScore = DeepCopy(RateScores[1])
+	if fapping then
+		sanitizedComparisonScore.W1 = sanitizedComparisonScore.W1 - sanitizedComparisonScore.W0
+	end
+end
+--if we don't, check if there's a highscore in the normal highscores (stats.xml)
+if not sanitizedComparisonScore then
+	local song = GAMESTATE:GetCurrentSong()
+	local steps = GAMESTATE:GetCurrentSteps(player)
+	local highScores = PROFILEMAN:GetProfile(player):GetHighScoreList(song, steps):GetHighScores()
+	if #highScores > 0 then
+		if highScores[1]:GetPercentDP() > pss:GetPercentDancePoints() then comparisonScore = highScores[1]
+		elseif highScores[2] then comparisonScore = highScores[2] end
+	end
+end
+--clean up the current score for judgment numbers
+--while we're at it, if we found a score in stats.xml clean that up too
+for i=1,#TapNoteScores.Types do
+	local window = TapNoteScores.Types[i]
+	currentScore[window] = pss:GetTapNoteScores( "TapNoteScore_"..window )
+	if comparisonScore then sanitizedComparisonScore[window] = comparisonScore:GetTapNoteScore(window) end
+end
+currentScore['W0'] = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].W0
+if fapping then currentScore['W1'] = currentScore['W1'] - currentScore['W0'] end
+for RCType in ivalues(RadarCategories.Types) do
+	currentScore[RCType] = pss:GetRadarActual():GetValue( "RadarCategory_"..RCType )
+	currentScore['possible'..RCType] = pss:GetRadarPossible():GetValue( "RadarCategory_"..RCType )
+	if comparisonScore then
+		sanitizedComparisonScore[RCType] = comparisonScore:GetRadarValues():GetValue(RCType)
+	end
+	sanitizedComparisonScore['possible'..RCType] = currentScore['possible'..RCType]
+end
+if comparisonScore then sanitizedComparisonScore.score = comparisonScore:GetPercentDP() end
+currentScore.score = pss:GetPercentDancePoints()
+
+local af = Def.ActorFrame{
+}
+
+--the default judgment breakdown shown in normal SL
+af[#af+1] = Def.ActorFrame{
+	InitCommand = function(self)
+		self:addx(controller == "left" and 0 or 310)
+	end,
+
+	-- labels like "FANTASTIC", "MISS", "holds", "rolls", etc.
+	LoadActor("./JudgmentLabels.lua",  {player, currentScore, controller}),
+
+	-- score displayed as a percentage
+	LoadActor("./Percentage.lua",  {currentScore, controller}),
+
+	-- numbers (How many Fantastics? How many Misses? etc.)
+	LoadActor("./JudgmentNumbers.lua",  {player, currentScore, controller}),
+}
+
+--another pane for either your current top score or the previous high score to compare
+local comparisonT = Def.ActorFrame{
+	InitCommand = function(self)
+		self:addx(otherSide[controller] == "left" and -74 or 310)
+		self:zoom(.75):addx(37):addy(88)
+	end
+}
+
+if sanitizedComparisonScore.score then
+
+	-- labels like "FANTASTIC", "MISS", "holds", "rolls", etc.
+	comparisonT[#comparisonT+1] = LoadActor("./JudgmentLabels.lua",  {player, sanitizedComparisonScore, otherSide[controller]})
+
+	-- score displayed as a percentage
+	comparisonT[#comparisonT+1] = LoadActor("./Percentage.lua",  {sanitizedComparisonScore, otherSide[controller]})
+
+	-- numbers (How many Fantastics? How many Misses? etc.)
+	comparisonT[#comparisonT+1] = LoadActor("./JudgmentNumbers.lua",  {player, sanitizedComparisonScore, otherSide[controller]})
+
+	-- delta comparing scores
+	comparisonT[#comparisonT+1] = LoadActor("./Delta.lua", {player, currentScore,sanitizedComparisonScore, otherSide[controller]})
+
+	--Label for previous record or current record depending on if you got a new high score
+	comparisonT[#comparisonT+1] = LoadFont("Wendy/_wendy small")..{
+		InitCommand=function(self)
+			self:zoom(.8):xy(otherSide[controller] == "right" and 0 or 5,155)
+			self:visible(true)
+			if tonumber(sanitizedComparisonScore.score) <= tonumber(pss:GetPercentDancePoints()) then self:settext("Previous Record")
+			else self:settext("Current Record") end
+		end,
+	}
+
+else
+	comparisonT[#comparisonT+1] = LoadFont("Wendy/_wendy small")..{
+		InitCommand=function(self)
+			self:zoom(.8):xy(otherSide[controller] == "right" and -30 or 30,200)
+			self:settext("No previous score\nat Rate "..SL.Global.ActiveModifiers.MusicRate)
+		end,
+	}
+end
+
+af[#af+1] = comparisonT
 
 return af
