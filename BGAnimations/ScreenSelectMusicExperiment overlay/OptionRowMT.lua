@@ -1,8 +1,11 @@
+local height = 200
+local count
+if ThemePrefs.Get("ShowExtraControl") ~= "none" then count = 4 else count = 3 end
+
 local optionrow_mt = {
 	__index = {
 		create_actors = function(self, name)
 			self.name=name
-
 			-- this is a terrible way to do this
 			local item_index = name:gsub("item", "")
 			self.index = item_index
@@ -13,7 +16,7 @@ local optionrow_mt = {
 					self.container = subself
 					subself:diffusealpha(0):queuecommand("Hide2")
 				end,
-				OnCommand=function(subself) subself:y(item_index * 62):sleep(.1) end, --this is where the first option row is
+				OnCommand=function(subself) subself:y(-10 + item_index * height/count):sleep(.1) end, --this is where the first option row is
 				
 				SendBroadcastCommand=function(subself) MESSAGEMAN:Broadcast("BothPlayersAreReady") end,
 
@@ -118,7 +121,6 @@ local optionrow_mt = {
 		transform = function(self, item_index, num_items, has_focus)
 
 			self.container:finishtweening()
-
 			if has_focus then
 				self.container:playcommand("GainFocus")
 			else

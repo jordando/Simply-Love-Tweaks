@@ -1,3 +1,5 @@
+-- The background for the song
+
 local player = ...
 
 local pane = Def.ActorFrame{

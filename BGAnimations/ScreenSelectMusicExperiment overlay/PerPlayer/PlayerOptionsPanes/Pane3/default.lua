@@ -1,3 +1,7 @@
+--Full breakdown
+--TODO add where BPM changes?
+
+
 local player = ...
 local pn = ToEnumShortString(player)
 

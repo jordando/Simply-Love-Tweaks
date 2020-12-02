@@ -30,5 +30,39 @@ local af = Def.ActorFrame{
 		OnCommand=function(self) self:xy(_screen.cx, _screen.cy + row.h/1.5 ) end,
 	},
 }
+local position = GAMESTATE:GetMasterPlayerNumber() == PLAYER_1 and 17 or 440
+
+local extraControl = {}
+
+extraControl["rate"] = LoadFont("Common Normal")..{
+	InitCommand=function(self) self:xy(position +_screen.cx / 2.5, _screen.cy + 155 ):zoom(1):diffuse(.6,.6,.6,1):halign(0):valign(0):maxwidth(315) end,
+	MusicRateChangedMessageCommand=function(self) self:playcommand("SetText") end,
+	StepsHaveChangedMessageCommand=function(self) self:playcommand("SetText") end,
+	SetTextCommand = function(self)
+		self:settext("BPM: "..StringifyDisplayBPMs())
+	end,
+}
+
+extraControl["scroll"] = LoadFont("Common Normal")..{
+	InitCommand=function(self) self:xy(position +_screen.cx / 2.5, _screen.cy + 155 ):zoom(1):diffuse(.6,.6,.6,1):halign(0):valign(0):maxwidth(315) end,
+	StepsHaveChangedMessageCommand=function(self) self:playcommand("SetText") end,
+	ScrollSpeedChangedMessageCommand=function(self) self:playcommand("SetText") end,
+	SetTextCommand = function(self)
+		local player = GAMESTATE:GetMasterPlayerNumber()
+		local mods = SL[ToEnumShortString(player)].ActiveModifiers
+		local type  = mods.SpeedModType or "X"
+		local speed = mods.SpeedMod or 1.00
+		if type == "X" then
+			local bpms = StringifyDisplayBPMs(player,GAMESTATE:GetCurrentSteps(player), speed)
+			self:settext("Speed: "..bpms.." ("..speed.."x)")
+		else
+			self:settext(type.."mod")
+		end
+	end,
+}
+
+if extraControl[ThemePrefs.Get("ShowExtraControl")] then
+	af[#af+1] = extraControl[ThemePrefs.Get("ShowExtraControl")]
+end
 
 return af

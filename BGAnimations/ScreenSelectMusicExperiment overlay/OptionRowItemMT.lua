@@ -44,7 +44,6 @@ local optionrow_item_mt = {
 		transform = function(self, item_index, num_items, has_focus)
 
 			self.container:finishtweening()
-
 			if has_focus then
 				self.container:playcommand("GainFocus")
 			else
@@ -55,7 +54,6 @@ local optionrow_item_mt = {
 		set = function(self, info)
 
 			if not info then return end
-
 			if type(info) == "table" then
 				self.bmt1:settext( info[1] )
 				self.bmt2:settext( info[2] )

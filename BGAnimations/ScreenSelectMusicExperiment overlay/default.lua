@@ -308,11 +308,14 @@ for pn in ivalues( {PLAYER_1, PLAYER_2} ) do
 	-- create an optionswheel that has enough items to handle the number of optionrows necessary
 	t[#t+1] = OptionsWheel[pn]:create_actors("OptionsWheel"..ToEnumShortString(pn), #OptionRows, optionrow_mt, _screen.cx - 100 + 140 * x_offset, _screen.cy - 30)
 
+	local height = 200
+	local count
+	if ThemePrefs.Get("ShowExtraControl") ~= "none" then count = 4 else count = 3 end
 	for i=1,#OptionRows do
-		-- Create sub-wheels for each optionrow with 3 items each.
+		-- Create sub-wheels for each optionrow with 2 items each.
 		-- Regardless of how many items are actually in that row,
 		-- we only display 1 at a time.
-		t[#t+1] = OptionsWheel[pn][i]:create_actors(ToEnumShortString(pn).."OptionWheel"..i, 3, optionrow_item_mt, WideScale(30, 130) + 140 * x_offset, _screen.cy - 5 + i * 62)
+		t[#t+1] = OptionsWheel[pn][i]:create_actors(ToEnumShortString(pn).."OptionWheel"..i, 2, optionrow_item_mt, WideScale(30, 130) + 140 * x_offset, _screen.cy - 15 + i * height/count)
 	end
 	OptionsWheel[pn].focus_pos = #OptionRows --start with the bottom (Start) selected
 end

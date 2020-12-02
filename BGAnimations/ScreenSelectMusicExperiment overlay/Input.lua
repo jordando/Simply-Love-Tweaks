@@ -9,7 +9,6 @@ local OptionRows = args.OptionRows
 local Players = GAMESTATE:GetHumanPlayers()
 
 local ActiveOptionRow = 1
-
 -----------------------------------------------------
 -- input handler
 local Handler = {}
@@ -151,6 +150,13 @@ Handler.ResetHeldButtons = function()
 	HeldButtons["MenuDown"] = false
 end
 
+local saveOption = function(event)
+	local index = ActiveOptionRow[event.PlayerNumber]
+	local choice = Handler.WheelWithFocus[event.PlayerNumber][index]:get_info_at_focus_pos()
+	local choices= OptionRows[index]:Choices()
+	local values = OptionRows[index].Values()
+	OptionRows[index]:OnSave(event.PlayerNumber, choice, choices, values)
+end
 -----------------------------------------------------
 -- start internal functions
 
@@ -169,10 +175,13 @@ Handler.Init = function()
 		[PLAYER_2] = #OptionRows
 	}
 	
-	Handler.CancelSongChoice = function()
+	Handler.CancelSongChoice = function(event)
 		Handler.Enabled = false
 		for pn in ivalues(Players) do
-
+			--if we're focusing on the extra options pane then we want to save every time we move over it
+			if ActiveOptionRow[event.PlayerNumber] == 3 and ActiveOptionRow[pn] ~= #OptionRows then
+				saveOption(event)
+			end
 			-- reset the ActiveOptionRow for this player
 			ActiveOptionRow[pn] = #OptionRows
 			-- hide this player's OptionsWheel
@@ -289,7 +298,7 @@ end
 Handler.Select=function(event)
 -- back out of the current wheel to the previous wheel if we're on the songwheel. if we're on the groupwheel then back out to main menu
 	if Handler.WheelWithFocus == SongWheel then 
-		CloseCurrentFolder() 
+		CloseCurrentFolder()
 		SOUND:PlayOnce( THEME:GetPathS("MusicWheel", "expand.ogg") )
 	elseif event.GameButton == "Back" then
 		SCREENMAN:GetTopScreen():SetNextScreenName( Branch.SSMCancel() ):StartTransitioningScreen("SM_GoToNextScreen") 
@@ -319,6 +328,10 @@ Handler['OptionsWheel'].MenuRight = function(event)
 			end
 			-- scroll to the next optionrow_item in this optionrow
 			Handler.WheelWithFocus[event.PlayerNumber][index]:scroll_by_amount(1)
+			--if we're focusing on the extra options pane then we want to save every time we move over it
+			if ActiveOptionRow[event.PlayerNumber] == 3 and ActiveOptionRow[event.PlayerNumber] ~= #OptionRows then
+				saveOption(event)
+			end
 			-- animate the right cursor
 			Handler.WheelWithFocus[event.PlayerNumber].container:GetChild("item"..index):GetChild("Cursor"):GetChild("RightArrow"):finishtweening():playcommand("Press")
 		end
@@ -338,6 +351,10 @@ Handler['OptionsWheel'].MenuLeft = function(event)
 			end
 			-- scroll to the previous optionrow_item in this optionrow
 			Handler.WheelWithFocus[event.PlayerNumber][index]:scroll_by_amount(-1)
+			--if we're focusing on the extra options pane then we want to save every time we move over it
+			if ActiveOptionRow[event.PlayerNumber] == 3  and ActiveOptionRow[event.PlayerNumber] ~= #OptionRows then
+				saveOption(event)
+			end
 			-- animate the left cursor
 			Handler.WheelWithFocus[event.PlayerNumber].container:GetChild("item"..index):GetChild("Cursor"):GetChild("LeftArrow"):finishtweening():playcommand("Press")
 		end
@@ -345,9 +362,13 @@ Handler['OptionsWheel'].MenuLeft = function(event)
 	return false
 end
 
-Handler['OptionsWheel'].MenuUp = function(event)		
+Handler['OptionsWheel'].MenuUp = function(event)
 	if not args.EnteringSong then
 		if ActiveOptionRow[event.PlayerNumber] > 1 then
+			--if we're focusing on the extra options pane then we want to save every time we move over it
+			if ActiveOptionRow[event.PlayerNumber] == 3  and ActiveOptionRow[event.PlayerNumber] ~= #OptionRows then
+				saveOption(event)
+			end
 			local index = ActiveOptionRow[event.PlayerNumber]
 			-- set the currently active option row, bounding it to not go below 1
 			ActiveOptionRow[event.PlayerNumber] = math.max(index-1, 1)
@@ -364,13 +385,7 @@ Handler['OptionsWheel'].MenuDown = function(event)
 		local index = ActiveOptionRow[event.PlayerNumber]
 		-- we want to proceed linearly to the last optionrow and then stop there
 		if ActiveOptionRow[event.PlayerNumber] < #OptionRows then
-			local index = ActiveOptionRow[event.PlayerNumber]
-			local choice = Handler.WheelWithFocus[event.PlayerNumber][index]:get_info_at_focus_pos()
-			local choices= OptionRows[index]:Choices()
-			local values = OptionRows[index].Values()
-
-			OptionRows[index]:OnSave(event.PlayerNumber, choice, choices, values)
-
+			saveOption(event)
 			Handler.WheelWithFocus[event.PlayerNumber]:scroll_by_amount(1)
 		end
 
@@ -408,10 +423,10 @@ Handler['OptionsWheel'].Start = function(event)
 	return false
 end
 
-Handler['OptionsWheel'].Select = function(event)	
+Handler['OptionsWheel'].Select = function(event)
 	if args.EnteringSong == false then
 			SOUND:PlayOnce( THEME:GetPathS("MusicWheel", "sort.ogg") )
-			Handler.CancelSongChoice()
+			Handler.CancelSongChoice(event)
 	end
 	return false
 end
@@ -438,8 +453,8 @@ Handler.Handler = function(event)
 		return false
 	else
 		HeldButtons[event.GameButton] = true
-		if Handler[event.GameButton] then 
-			if Handler.WheelWithFocus ~= OptionsWheel then Handler[event.GameButton](event) 
+		if Handler[event.GameButton] then
+			if Handler.WheelWithFocus ~= OptionsWheel then Handler[event.GameButton](event)
 			else Handler['OptionsWheel'][event.GameButton](event) end
 		end
 	end

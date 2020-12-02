@@ -30,6 +30,7 @@ local t = Def.ActorFrame{
 		CurrentSongChangedMessageCommand=function(self) self:queuecommand("Set") end,
 		CurrentCourseChangedMessageCommand=function(self) self:queuecommand("Set") end,
 		CurrentTrailP2ChangedMessageCommand=function(self) self:queuecommand("Set") end,
+		MusicRateChangedMessageCommand = function(self) self:queuecommand("Set") end,
 		UpdateTagsMessageCommand=function(self) self:queuecommand("Set") end, --Called by ./TagMenu/Input when changing the tags.
 		-- Update the tags for the current song
 		SetCommand = function(self)

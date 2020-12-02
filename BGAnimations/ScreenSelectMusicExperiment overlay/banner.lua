@@ -85,9 +85,11 @@ local t = Def.ActorFrame{
 	-- the MusicRate Quad and text
 	Def.ActorFrame{
 		InitCommand=function(self)
-			self:visible( SL.Global.ActiveModifiers.MusicRate ~= 1 ):y(75)
+			self:visible( tostring(SL.Global.ActiveModifiers.MusicRate) ~= tostring(1) ):y(75)
 		end,
-
+		MusicRateChangedMessageCommand = function(self)
+			self:visible(tostring(SL.Global.ActiveModifiers.MusicRate) ~= tostring(1) )
+		end,
 		--quad behind the music rate text
 		Def.Quad{
 			InitCommand=function(self) self:diffuse( color("#1E282FCC") ):zoomto(418,14) end
@@ -97,6 +99,9 @@ local t = Def.ActorFrame{
 		LoadFont("Common Normal")..{
 			InitCommand=function(self) self:shadowlength(1):zoom(0.85) end,
 			OnCommand=function(self)
+				self:settext(("%g"):format(SL.Global.ActiveModifiers.MusicRate) .. "x " .. THEME:GetString("OptionTitles", "MusicRate"))
+			end,
+			MusicRateChangedMessageCommand=function(self)
 				self:settext(("%g"):format(SL.Global.ActiveModifiers.MusicRate) .. "x " .. THEME:GetString("OptionTitles", "MusicRate"))
 			end
 		}
