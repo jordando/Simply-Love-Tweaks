@@ -51,7 +51,7 @@ af[#af+1] = Def.ActorFrame{
 	-- Group Label
 	LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
-			self:settext( "GROUP " ):zoom(.5):horizalign(right):xy(WideScale(-240,-315),-60)
+			self:settext( "GROUP " ):zoom(.5):horizalign(right):xy(WideScale(-240,-328),-60)
 		end,
 		OnCommand=function(self) self:diffuse(0.75,0.75,0.75,1) end
 	},
@@ -59,7 +59,7 @@ af[#af+1] = Def.ActorFrame{
 	Def.BitmapText{
 		Font="Common Normal",
 		Name="Title",
-		InitCommand=function(self) self:zoom(1.4):diffuse(Color.White):horizalign(left):xy(WideScale(-240,-315),-60):maxwidth(300) end,
+		InitCommand=function(self) self:zoom(1.4):diffuse(Color.White):horizalign(left):xy(WideScale(-240,-328),-60):maxwidth(300) end,
 		CurrentGroupChangedMessageCommand=function(self, params)
 			self:settext( GetGroupDisplayName(SL.Global.CurrentGroup))
 		end,
@@ -67,7 +67,7 @@ af[#af+1] = Def.ActorFrame{
 	-- Sort Label
 	LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
-			self:settext( "Sort " ):zoom(.35):horizalign(right):xy(WideScale(-270,-350),-30)
+			self:settext( "Sort " ):zoom(.35):horizalign(right):xy(WideScale(-270,-360),-30)
 		end,
 		OnCommand=function(self) self:diffuse(0.75,0.75,0.75,1) end
 	},
@@ -75,7 +75,7 @@ af[#af+1] = Def.ActorFrame{
 	Def.BitmapText{
 		Font="Common Normal",
 		Name="Title",
-		InitCommand=function(self) self:zoom(1):diffuse(Color.White):horizalign(left):xy(WideScale(-270,-350),-30):maxwidth(300) end,
+		InitCommand=function(self) self:zoom(1):diffuse(Color.White):horizalign(left):xy(WideScale(-270,-360),-30):maxwidth(300) end,
 		CurrentGroupChangedMessageCommand=function(self, params)
 			self:settext( SL.Global.GroupType )
 		end,

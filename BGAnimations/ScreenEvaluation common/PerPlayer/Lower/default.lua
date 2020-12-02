@@ -56,6 +56,10 @@ af[#af+1] = LoadActor("./PlayerModifiers.lua", player)
 -- was this player disqualified from ranking?
 af[#af+1] = LoadActor("./Disqualified.lua", player)
 
+-- in Experiment mode add the survival time and date to the footer
+if SL.Global.GameMode == "Experiment" and NumPlayers == 1 then
+	af[#af+1] = LoadActor("./ExperimentFooter.lua", player)
+end
 -- -----------------------------------------------------------------------
 
 return af

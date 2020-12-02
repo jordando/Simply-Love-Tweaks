@@ -69,7 +69,7 @@ local item_mt = {
 							subself:playcommand("LoseFocus"):diffusealpha(0)
 						else
 							-- position this folder in the header and switch to the songwheel
-							subself:playcommand("GainFocus"):xy(70,35):zoom(0.35)
+							subself:playcommand("GainFocus"):xy(70,28):zoom(0.35)
 							local starting_group = GetCurrentGroup()
 							switch_to_songs(starting_group)
 							MESSAGEMAN:Broadcast("CurrentGroupChanged", {group=self.groupName})
@@ -101,7 +101,7 @@ local item_mt = {
 				GainFocusCommand=function(subself) subself:linear(0.2):zoom(0.8) end,
 				LoseFocusCommand=function(subself) subself:linear(0.2):zoom(0.6) end,
 				SlideToTopCommand=function(subself)
-					subself:linear(0.12):y(35):zoom(0.35)
+					subself:linear(0.12):y(28):zoom(0.35)
 					       :linear(0.2 ):x(70):queuecommand("Switch")
 				end,
 				SlideBackIntoGridCommand=function(subself)
@@ -153,15 +153,15 @@ local item_mt = {
 					end,
 					OnCommand=function(subself)
 						if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
-							subself:horizalign(left):xy(150,-50):zoom(3):diffuse(Color.White):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate")
+							subself:horizalign(left):xy(150,-30):zoom(3):diffuse(Color.White):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate")
 						end
 					end,
 					--when the sort changes we may need to change the group text to whatever it becomes
 					GroupTypeChangedMessageCommand=function(subself)
 						if self.index == GroupWheel:get_actor_item_at_focus_pos().index and Input.WheelWithFocus ~= GroupWheel and GAMESTATE:GetCurrentSong() then --only if we're not on group wheel
-							subself:horizalign(left):xy(150,-50):zoom(3):diffuse(Color.White):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate")
+							subself:horizalign(left):xy(150,-30):zoom(3):diffuse(Color.White):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate")
 						end
-					end,		
+					end,
 					UntruncateCommand=function(subself) --group name to display is not necessarily the same so check in SL-SortHelpers
 						self.bmt:settext(GetGroupDisplayName(self.groupName))
 					end,
@@ -173,7 +173,7 @@ local item_mt = {
 					LoseFocusCommand=function(subself) subself:xy(0,6):horizalign(center):linear(0.15):zoom(1):diffuse(Color.White) end,
 
 					SlideToTopCommand=function(subself) subself:sleep(0.3):diffuse(Color.White):queuecommand("SlideToTop2") end,
-					SlideToTop2Command=function(subself) subself:horizalign(left):linear(0.2):xy(150,-50):zoom(3):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate") end,
+					SlideToTop2Command=function(subself) subself:horizalign(left):linear(0.2):xy(150,-30):zoom(3):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate") end,
 					SlideBackIntoGridCommand=function(subself) subself:horizalign(center):decelerate(0.33):xy(0,35):zoom(1.1):diffuse(Color.White):_wrapwidthpixels(150):shadowlength(0.5):playcommand("Truncate") end,
 				}
 			}

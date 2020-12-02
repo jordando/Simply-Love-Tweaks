@@ -5,8 +5,6 @@ local zoom_factor = WideScale(0.8,0.9)
 
 local labelX_col1 = WideScale(-130,-70)
 
-local highscoreX = WideScale(56, 80)
-
 local InitializeMeasureCounterAndModsLevel = LoadActor("./MeasureCounterAndModsLevel.lua")
 local TechParser
 if ThemePrefs.Get("EnableTechParser") then TechParser = LoadActor(THEME:GetPathB("","_modules/TechParser.lua")) end
@@ -53,8 +51,6 @@ local af = Def.ActorFrame{
 		self:GetChild("Measures"):settext("")
 		self:GetChild("TotalStream"):settext("")
 		self:GetChild("PeakNPS"):settext("")
-		self:GetChild("AvgNpsLabel"):settext("")
-		self:GetChild("AvgNps"):settext("")
 	end,
 	PlayerUnjoinedMessageCommand=function(self, params)
 		if player==params.Player then
@@ -88,11 +84,6 @@ local af = Def.ActorFrame{
 					if SL[pn].Streams.Segments > 15 then self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown3)
 					else self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown2) end
 				end
-				local duration = song:MusicLengthSeconds() / SL.Global.ActiveModifiers.MusicRate
-				local totalSteps = GAMESTATE:GetCurrentSteps(player):GetRadarValues(player):GetValue('RadarCategory_TapsAndHolds')
-				local finalText = totalSteps / duration
-				finalText = math.floor(finalText*100)/100 --truncate to two decimals
-				self:GetChild("AvgNps"):settext(THEME:GetString("ScreenSelectMusicExperiment", "AvgNps")..": "..finalText)
 			else
 				if SL[pn].ActiveModifiers.MeasureCounter == "None" then 
 					self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "StreamCounterOff"))
@@ -101,13 +92,11 @@ local af = Def.ActorFrame{
 				end
 				self:GetChild("TotalStream"):settext("")
 				self:GetChild("PeakNPS"):settext("")
-				self:GetChild("AvgNps"):settext("")
 			end
 		else
 			self:GetChild("Measures"):settext("")
 			self:GetChild("TotalStream"):settext("")
 			self:GetChild("PeakNPS"):settext("")
-			self:GetChild("AvgNps"):settext("")
 			self:GetChild("Tech"):settext("")
 		end
 	end,
@@ -120,8 +109,9 @@ local af = Def.ActorFrame{
 		GAMESTATE:GetNumSidesJoined() < 2 and
 		GAMESTATE:Env()[pn.."CurrentSteps"] == GAMESTATE:GetCurrentSteps(player)
 		then
-			self:GetChild("PeakNPS"):settext( THEME:GetString("ScreenGameplay", "PeakNPS") .. ": " .. round(GAMESTATE:Env()[pn.."PeakNPS"] * SL.Global.ActiveModifiers.MusicRate,2))
-			--make sure we have peaknps set before checking for tech
+			local peak = GAMESTATE:Env()[pn.."PeakNPS"] * SL.Global.ActiveModifiers.MusicRate
+			local conversion = peak / 16 * 240
+			self:GetChild("PeakNPS"):settext( THEME:GetString("ScreenGameplay", "PeakNPS") .. ": " .. round(peak,2) .. " (" .. round(conversion,0) .. "BPM 16ths)")
 			if ThemePrefs.Get("EnableTechParser") then
 				local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
 				if tech then
@@ -131,7 +121,7 @@ local af = Def.ActorFrame{
 					SL[ToEnumShortString(player)]["ParsedSteps"] = nil
 					self:GetChild("Tech"):settext(THEME:GetString("ScreenSelectMusicExperiment", "UnableToParse"))
 				end
-			--even if tech is turned off we want to clear out the steps so screeneval regenerates per song	
+			--even if tech is turned off we want to clear out the steps so screeneval regenerates per song
 			else
 				SL[ToEnumShortString(player)]["ParsedSteps"] = nil
 			end
@@ -153,12 +143,6 @@ af[#af+1] = LoadFont("Common Normal")..{
 af[#af+1] = LoadFont("Common Normal")..{
 	Name="PeakNPS",
 	InitCommand=function(self) self:xy(labelX_col1+20, _screen.h/8 - 30):zoom(zoom_factor):diffuse(Color.White):halign(0) end,
-}
-
---AVG NPS
-af[#af+1] = LoadFont("Common Normal")..{
-	Name="AvgNps",
-	InitCommand=function(self) self:xy(highscoreX,_screen.h/8 - 30):zoom(zoom_factor):diffuse(Color.White):halign(0) end,
 }
 
 --Total Stream

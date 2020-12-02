@@ -17,6 +17,7 @@ local RadarCategories = {
 	Types = { 'Holds', 'Mines', 'Hands', 'Rolls' },
 }
 --check to see if we have a custom saved score
+--if we do, it's ready to go so set sanitizedComparisonScore
 RateScores = GetScores(player, hash, true) --See /scripts/Experiment-Scores.lua
 if RateScores then
 	sanitizedComparisonScore = DeepCopy(RateScores[1])
@@ -25,6 +26,7 @@ if RateScores then
 	end
 end
 --if we don't, check if there's a highscore in the normal highscores (stats.xml)
+--if we find one then throw set it to comparisonScore (need to change formatting so judgment numbers can read it)
 if not sanitizedComparisonScore then
 	local song = GAMESTATE:GetCurrentSong()
 	local steps = GAMESTATE:GetCurrentSteps(player)
@@ -35,7 +37,7 @@ if not sanitizedComparisonScore then
 	end
 end
 --clean up the current score for judgment numbers
---while we're at it, if we found a score in stats.xml clean that up too
+--and comparison score if we have one
 for i=1,#TapNoteScores.Types do
 	local window = TapNoteScores.Types[i]
 	currentScore[window] = pss:GetTapNoteScores( "TapNoteScore_"..window )
@@ -51,7 +53,10 @@ for RCType in ivalues(RadarCategories.Types) do
 	end
 	sanitizedComparisonScore['possible'..RCType] = currentScore['possible'..RCType]
 end
-if comparisonScore then sanitizedComparisonScore.score = comparisonScore:GetPercentDP() end
+if comparisonScore then 
+	sanitizedComparisonScore.score = comparisonScore:GetPercentDP()
+	sanitizedComparisonScore.dateTime = comparisonScore.GetDate()
+end
 currentScore.score = pss:GetPercentDancePoints()
 
 local af = Def.ActorFrame{
@@ -98,12 +103,20 @@ if sanitizedComparisonScore.score then
 	--Label for previous record or current record depending on if you got a new high score
 	comparisonT[#comparisonT+1] = LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
-			self:zoom(.8):xy(otherSide[controller] == "right" and 0 or 5,155)
+			self:zoom(.65):xy(otherSide[controller] == "right" and 0 or 5,145)
 			self:visible(true)
 			if tonumber(sanitizedComparisonScore.score) <= tonumber(pss:GetPercentDancePoints()) then self:settext("Previous Record")
 			else self:settext("Current Record") end
 		end,
 	}
+		--Date
+		comparisonT[#comparisonT+1] = LoadFont("Wendy/_wendy small")..{
+			InitCommand=function(self)
+				self:zoom(.4):xy(otherSide[controller] == "right" and 0 or 5,173)
+				self:visible(true)
+				self:settext(sanitizedComparisonScore.dateTime)
+			end,
+		}
 
 else
 	comparisonT[#comparisonT+1] = LoadFont("Wendy/_wendy small")..{
