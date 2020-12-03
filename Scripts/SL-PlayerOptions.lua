@@ -7,7 +7,6 @@ local GetModsAndPlayerOptions = function(player)
 	local topscreen = SCREENMAN:GetTopScreen():GetName()
 	local modslevel = topscreen  == "ScreenEditOptions" and "ModsLevel_Stage" or "ModsLevel_Preferred"
 	local playeroptions = GAMESTATE:GetPlayerState(player):GetPlayerOptions(modslevel)
-
 	return mods, playeroptions
 end
 
@@ -387,7 +386,7 @@ local Overrides = {
 	-------------------------------------------------------------------------
 	DataVisualizations = {
 		Values = function()
-			local choices = { "None", "Target Score Graph", "Step Statistics" }
+			local choices = { "None", "Target Score Graph", "Step Statistics", "Alt. Step Statistics"}
 
 			-- None and Target Score Graph should always be available to players
 			-- but Step Statistics needs a lot of space and isn't always possible
@@ -408,6 +407,7 @@ local Overrides = {
 			or (mpn and GetNotefieldX(mpn) == _screen.cx and not IsUsingWideScreen())
 			then
 				table.remove(choices, 3)
+				table.remove(choices, 4)
 			end
 
 			return choices

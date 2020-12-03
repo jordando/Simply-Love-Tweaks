@@ -75,6 +75,16 @@ SL_CustomPrefs.Get = function()
 			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values 	= { true, false }
 		},
+		ShowExtraControl =
+		{
+			Default = "none",
+			Choices = {
+				THEME:GetString("ScreenSelectStyle", "None"),
+				THEME:GetString("ThemePrefs","Rate"),
+				THEME:GetString("ThemePrefs","Scroll")
+			},
+			Values 	= { "none", "rate", "scroll"}
+		},
 		---------------------------------------------------------------------------------
 		AllowFailingOutOfSet =
 		{
