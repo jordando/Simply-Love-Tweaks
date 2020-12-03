@@ -1,7 +1,14 @@
 local player = ...
 
 local pn = ToEnumShortString(player)
-local fapping = SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and true or false
+local fapping
+
+if SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and SL.Global.GameMode == "Experiment" then
+	fapping = true
+else 
+	fapping = false
+end
+
 local track_missbcheld = SL[pn].ActiveModifiers.MissBecauseHeld
 
 local IsUltraWide = (GetScreenAspectRatio() > 21/9)
@@ -178,6 +185,7 @@ for i, column in ipairs( cols ) do
 				JudgmentMessageCommand=function(self, params)
 					if params.Player ~= player then return end
 					if params.HoldNoteScore then return end
+					if not params.Notes then return end
 					for z = 1, 4 do
 						if fapping then
 							local updateZero = false
