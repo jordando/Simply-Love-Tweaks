@@ -181,6 +181,7 @@ end
 ---------------------------------------------------------------------------
 -- If there's no song set that means we're entering the screen for the first time, grab the default song and set up the groups
 if not GAMESTATE:GetCurrentSong() then
+	SL.Preferences.Experiment.TimingWindowSecondsW0=0.011000 --Set the extra window for FAP
 	local current_song = GetDefaultSong()
 	GAMESTATE:SetCurrentSong(current_song)
 	InitPreloadedGroups()
