@@ -65,7 +65,7 @@ SL_CustomPrefs.Get = function()
 		},
 		EnableTechParser =
 		{
-			Default = true,
+			Default = false,
 			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values 	= { true, false }
 		},

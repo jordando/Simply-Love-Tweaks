@@ -14,7 +14,7 @@ return Def.Actor{
 
         if params.TapNoteOffset then
             local tns = ToEnumShortString(params.TapNoteScore)
-            if tns == 'W1' and math.abs(params.TapNoteOffset) < SL.Preferences.Experiment["TimingWindowSecondsW0"] * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"] then
+            if tns == 'W1' and math.abs(params.TapNoteOffset) < SL.Global.TimingWindowSecondsW0 * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"] then
                 W0 = W0 + 1
             end
 		end

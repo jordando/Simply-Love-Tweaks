@@ -191,7 +191,7 @@ for i, column in ipairs( cols ) do
 						if fapping then
 							local updateZero = false
 							if params.Notes[z] and z == i then
-								local fapWindow = SL.Preferences.Experiment["TimingWindowSecondsW0"] * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"]
+								local fapWindow = SL.Global.TimingWindowSecondsW0 * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"]
 								if ToEnumShortString(params.TapNoteScore) == 'W1' then
 									--if we're on the W0 text and the offset is within the window
 									if judgment == "W0" and math.abs(params.TapNoteOffset) <= fapWindow then

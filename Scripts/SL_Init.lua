@@ -131,6 +131,10 @@ local GlobalDefaults = {
 		ExperimentSave = true, --keep track of when we want to save custom scores
 		Scrolling = false, --keep track of when left or right is held down, set by ScreenSelectMusicExperiment/default.lua
 		HashLookup = {}, --hashes with corresponding song directories
+		-- We want an extra window for FAP (FA+) but when Simply Love is trying to map preferences
+		-- we'll get an error saying it can't map TimingWindowSecondsW0 to anything because it doesn't
+		-- use it. TO get around this we set it here
+		TimingWindowSecondsW0=0.011000 --used in Experiment FA+ stuff
 	}
 }
 
@@ -358,10 +362,6 @@ SL = {
 	}
 }
 SL.Preferences.Experiment = SL.Preferences.ITG
--- We want an extra window for FAP (FA+) but when Simply Love is trying to map preferences
--- we'll get an error saying it can't map TimingWindowSecondsW0 to anything because it doesn't
--- use it. TO get around this we set it in ScreenSelectMusicExperiment/setup
--- SL.Preferences.Experiment.TimingWindowSecondsW0=0.011000 --used in Experiment FA+ stuff
 SL.Metrics.Experiment = SL.Metrics.ITG
 SL.JudgmentColors.Experiment = SL.JudgmentColors.ITG
 

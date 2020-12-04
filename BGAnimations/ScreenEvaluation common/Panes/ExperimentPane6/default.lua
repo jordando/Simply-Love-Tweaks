@@ -60,7 +60,7 @@ for t in ivalues(sequential_offsets) do
 		CurrentSecond = CurrentSecond - Offset
 		TimingWindow = DetermineTimingWindow(Offset)
 		if fapping then
-			if math.abs(Offset) > SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW0"] * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"] then
+			if math.abs(Offset) > SL.Global.TimingWindowSecondsW0 * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"] then
 				TimingWindow = TimingWindow + 1
 			end
 		end

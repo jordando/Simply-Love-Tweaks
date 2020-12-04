@@ -152,7 +152,7 @@ for offset=-worst_window, worst_window, 0.001 do
 		y = -1 * scale(y, 0, highest_offset_count, 0, pane_height*0.75)
 		local timingWindow = DetermineTimingWindow(offset)
 		if fapping then
-			if math.abs(offset) > SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW0"] * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"] then
+			if math.abs(offset) > SL.Global.TimingWindowSecondsW0 * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"] then
 				timingWindow = timingWindow + 1
 			end
 		end
