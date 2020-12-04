@@ -54,16 +54,13 @@ for i=1,GAMESTATE:GetCurrentStyle():ColumnsPerPlayer() do
 end
 
 -- get TNS names appropriate for the current GameMode, localized to the current language
-for i, judgment in ipairs(TNS.Types) do
-	TNS.Names[#TNS.Names+1] = THEME:GetString(tns_string, judgment)
-end
 TNS.Names = map(GetTNSStringFromTheme, TNS.Types)
 local leadingZeroAttr
 
 local style = GAMESTATE:GetCurrentStyle()
 local num_columns = style:ColumnsPerPlayer()
 
-local rows 
+local rows
 if fapping then rows = { "W0", "W1", "W2", "W3", "W4", "W5", "Miss" }
 else rows = { "W1", "W2", "W3", "W4", "W5", "Miss" } end
 
@@ -186,26 +183,34 @@ for i, column in ipairs( cols ) do
 					if params.Player ~= player then return end
 					if params.HoldNoteScore then return end
 					if not params.Notes then return end
-					for z = 1, 4 do
+					-- the judgment message is the same for all text boxes so we want to check
+					-- that our current box matches up with the note listed in the judgmentmessage
+					for z = 1, #cols do
+						-- if we're fapping then we have to do additional checks to see if W1 judgment
+						-- is actually supposed to be a W0
 						if fapping then
 							local updateZero = false
 							if params.Notes[z] and z == i then
 								local fapWindow = SL.Preferences.Experiment["TimingWindowSecondsW0"] * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"]
 								if ToEnumShortString(params.TapNoteScore) == 'W1' then
+									--if we're on the W0 text and the offset is within the window
 									if judgment == "W0" and math.abs(params.TapNoteOffset) <= fapWindow then
 										judgments[z][judgment] = judgments[z][judgment] + 1
 										self:settext( (pattern):format(judgments[z][judgment]) )
 										updateZero = true
+									--if we're on the W1 text and the offset is outside the window
 									elseif judgment == 'W1' and math.abs(params.TapNoteOffset) > fapWindow then
 										judgments[z][judgment] = judgments[z][judgment] + 1
 										self:settext( (pattern):format(judgments[z][judgment]) )
 										updateZero = true
 									end
+								-- any other text box can be looked at normally
 								elseif ToEnumShortString(params.TapNoteScore) == judgment then
 									judgments[z][judgment] = judgments[z][judgment] + 1
 									self:settext( (pattern):format(judgments[z][judgment]) )
 									updateZero = true
 								end
+								--if we ended up changing a number then change the brightness of leading 0s
 								if updateZero then
 									leadingZeroAttr = {
 										Length=(digits - (math.floor(math.log10(judgments[z][judgment]))+1)),

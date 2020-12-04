@@ -1,6 +1,10 @@
 local Players = GAMESTATE:GetHumanPlayers()
 local NumPanes = SL.Global.GameMode=="Casual" and 1 or 6
 
+if SL.Global.GameMode == "Experiment" and GetStepsType() == "StepsType_Dance_Double" then
+	NumPanes = 5
+end
+
 local hash
 
 local t = Def.ActorFrame{}

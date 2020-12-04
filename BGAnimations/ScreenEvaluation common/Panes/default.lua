@@ -55,7 +55,7 @@ elseif #players == 1 then
 	local mpn = GAMESTATE:GetMasterPlayerNumber()
 
 	for i=1, NumPanes do
-		if SL.Global.GameMode == "Experiment" and GAMESTATE:GetNumSidesJoined() == 1 then
+		if SL.Global.GameMode == "Experiment" and GetStepsType() ~= "StepsType_Dance_Double" then
 			af[#af+1] = LoadActor("./ExperimentPane"..i, {player = mpn, hash = hash})..{
 				Name="Pane"..i.."_".."Side"..ToEnumShortString(mpn),
 				InitCommand=function(self) self:x(offset[mpn]) end,

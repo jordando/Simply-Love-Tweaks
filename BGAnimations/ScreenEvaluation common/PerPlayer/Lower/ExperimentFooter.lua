@@ -31,11 +31,13 @@ local fmt = nil
 -- how long this song or course is, in seconds
 -- we'll use this to choose a formatting function
 local totalseconds = 0
+local altTotalSeconds = 0
 
 local song = GAMESTATE:GetCurrentSong()
 if song then
     --TODO not sure if i should be using GetLastSecond or MusicLengthSeconds here
     totalseconds = song:MusicLengthSeconds()
+    altTotalSeconds = song:GetLastSecond()
 end
 
 -- totalseconds is initilialzed in the engine as -1
@@ -46,6 +48,7 @@ if totalseconds < 0 then totalseconds = 0 end
 
 -- factor in MusicRate
 totalseconds = totalseconds / rate
+altTotalSeconds = altTotalSeconds / rate
 
 -- choose the appropriate time-to-string formatting function
 
@@ -76,6 +79,8 @@ return Def.ActorFrame{
             self:zoom(font_zoom):xy(width/1.4,-5):align(1,0):vertspacing(-6):_wrapwidthpixels((width-10) / font_zoom)
             if round(aliveSeconds,0) >= round(totalseconds,0) then
                 self:settext(fmt(totalseconds)):diffuse(Color.White)
+            elseif round(aliveSeconds,0) >= round(altTotalSeconds,0) then
+                self:settext(fmt(altTotalSeconds)):diffuse(Color.White)
             else
                 self:settext(fmt(aliveSeconds).." / "..fmt(totalseconds)):diffuse(Color.Red)
             end

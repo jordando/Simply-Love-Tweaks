@@ -96,7 +96,7 @@ local song_mt = {
 						Font="Common Normal",
 						InitCommand=function(subself)
 							self.title_bmt = subself
-							subself:zoom(1):diffuse(Color.White):shadowlength(0.75):maxwidth(190)
+							subself:zoom(1):y(-5):diffuse(Color.White):shadowlength(0.75):maxwidth(190)
 						end,
 						SlideToTopCommand=function(subself)
 							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):maxwidth(125):settext( self.song:GetDisplayMainTitle()) end end,
@@ -126,10 +126,10 @@ local song_mt = {
 							subself:zoom(.5):diffuse(.9,.9,.9,1):shadowlength(0.75):maxwidth(190):xy(100,12):halign(1)
 						end,
 						SlideToTopCommand=function(subself)
-							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):maxwidth(125):settext( self.song:GetDisplaySubTitle()) end end,
+							if self.song ~= "CloseThisFolder" then subself:zoom(.8):y(17):maxwidth(250):settext( self.song:GetDisplaySubTitle()) end end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
-								subself:settext( self.song:GetDisplaySubTitle() ):maxwidth(190):zoom(.65)
+								subself:settext( self.song:GetDisplaySubTitle() ):y(11):maxwidth(190):zoom(.65)
 							end
 						end,
 						GainFocusCommand=function(subself) --make the words a little bigger to make it seem like they're popping out
@@ -176,7 +176,7 @@ local song_mt = {
 						Texture=THEME:GetPathG("MusicWheelItem","Grades/grades 1x18.png"),
 						InitCommand=function(subself) subself:visible(false):zoom(WideScale(.25,.3)):x(side*grade_position):animate(0) self[pn..'grade_sprite'] = subself end,
 						SlideToTopCommand=function(subself)
-							subself:linear(.12):diffusealpha(0):xy(side*-1*-55,50):zoom(1):linear(.12):diffusealpha(1)
+							subself:linear(.12):diffusealpha(0):xy(side*-1*-55,60):zoom(1):linear(.12):diffusealpha(1)
 						end,
 						SlideBackIntoGridCommand=function(subself)
 							subself:linear(.12):diffusealpha(0):zoom( WideScale(.25, 0.3)):xy(side*grade_position,0):linear(.12):diffusealpha(1)

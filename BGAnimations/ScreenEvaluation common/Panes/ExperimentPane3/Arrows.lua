@@ -15,7 +15,7 @@ local fapping = SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and true
 local style = GAMESTATE:GetCurrentStyle()
 local num_columns = style:ColumnsPerPlayer()
 
-local rows 
+local rows
 if fapping then rows = { "W0", "W1", "W2", "W3", "W4", "W5", "Miss" }
 else rows = { "W1", "W2", "W3", "W4", "W5", "Miss" } end
 
@@ -81,11 +81,15 @@ for i, column in ipairs( cols ) do
 		if windows[j] or j==#rows then
 			-- add a BitmapText actor to be the number for this column
 			af[#af+1] = LoadFont("Common Normal")..{
-				Text=SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].column_judgments[i][judgment],
 				InitCommand=function(self)
 					self:xy(_x, j*row_height + 4)
 						:zoom(0.9)
 					if j == #rows then miss_bmt = self end
+					local number = SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].column_judgments[i][judgment]
+					if not fapping and judgment == "W1" then
+						number = number + SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].column_judgments[i]["W0"]
+					end
+					self:settext(number)
 				end
 			}
 		end

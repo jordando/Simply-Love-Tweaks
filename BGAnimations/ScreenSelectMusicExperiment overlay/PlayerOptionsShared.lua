@@ -44,7 +44,10 @@ extraControl["rate"] = LoadFont("Common Normal")..{
 }
 
 extraControl["scroll"] = LoadFont("Common Normal")..{
-	InitCommand=function(self) self:xy(position +_screen.cx / 2.5, _screen.cy + 155 ):zoom(1):diffuse(.6,.6,.6,1):halign(0):valign(0):maxwidth(315) end,
+	InitCommand=function(self) 
+		self:xy(SL_WideScale(position +_screen.cx / 5, position +_screen.cx / 2.5), _screen.cy + 155 ):zoom(1):diffuse(.6,.6,.6,1):valign(0):maxwidth(315) 
+		self:halign(GAMESTATE:GetMasterPlayerNumber() == PLAYER_1 and 0 or 1)
+	end,
 	StepsHaveChangedMessageCommand=function(self) self:playcommand("SetText") end,
 	ScrollSpeedChangedMessageCommand=function(self) self:playcommand("SetText") end,
 	SetTextCommand = function(self)

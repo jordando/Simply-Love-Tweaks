@@ -115,9 +115,8 @@ else
 				-- see: https://quietly-turning.github.io/Lua-For-SM5/LuaAPI#Enums-TapNoteType
 				if tnt == "TapNoteType_Tap" or tnt == "TapNoteType_HoldHead" or tnt == "TapNoteType_Lift" then
 					local tns = ToEnumShortString(params.TapNoteScore)
-					--TODO this doesn't account for different judge levels
-					-- count FAP here whether or not we end up using it
-					if SL.Global.GameMode == "Experiment" and
+					-- count FAP here if its enabled
+					if SL.Global.GameMode == "Experiment" and SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and
 					tns == 'W1' and math.abs(params.TapNoteOffset) < SL.Preferences.Experiment["TimingWindowSecondsW0"] * PREFSMAN:GetPreference("TimingWindowScale") + SL.Preferences[SL.Global.GameMode]["TimingWindowAdd"] then
 						judgments[col]['W0'] = judgments[col]['W0'] + 1
 					else

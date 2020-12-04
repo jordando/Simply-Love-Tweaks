@@ -9,7 +9,7 @@ local NoteFieldIsCentered = (GetNotefieldX(player) == _screen.cx)
 
 local stylename = GAMESTATE:GetCurrentStyle():GetName()
 
-if (SL[pn].ActiveModifiers.DataVisualizations ~= "Alt. Step Statistics")
+if (SL[pn].ActiveModifiers.DataVisualizations ~= "Step Statistics")
 or (SL.Global.GameMode == "Casual")
 or (GetNotefieldWidth() > _screen.w/2)
 or (NoteFieldIsCentered and not IsUsingWideScreen())
@@ -85,9 +85,11 @@ af[#af+1] = Def.ActorFrame{
 		end
 	end,
 
+	LoadActor("./Banner.lua", player),
 	LoadActor("./TapNoteJudgments.lua", player),
+	LoadActor("./HoldsMinesRolls.lua", player),
 	LoadActor("./Time.lua", player),
-	LoadActor("./GroupAndArtist.lua", player)
+	LoadActor("./GroupAndArtist.lua", player),
 }
 
 af[#af+1] = LoadActor("./DensityGraph.lua", {player, sidepane_width})
