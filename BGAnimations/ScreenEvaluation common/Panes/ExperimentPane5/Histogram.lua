@@ -151,8 +151,13 @@ for i=2,num_judgments_available do
 		Font="Common Normal",
 		Text=abbreviations[SL.Global.GameMode][i],
 		InitCommand=function(self)
-			local window = -1 * SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW"..incrementer]
-			local better_window = -1 * SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW"..incrementer-1]
+			local window, better_window
+			window = -1 * SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW"..incrementer]
+			if incrementer == 1 then
+				better_window = -1 * SL.Global.TimingWindowSecondsW0
+			else
+				better_window = -1 * SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW"..incrementer-1]
+			end
 
 			local x = scale(window, -worst_window, worst_window, 0, pane_width )
 			local x_better = scale(better_window, -worst_window, worst_window, 0, pane_width)
@@ -169,9 +174,13 @@ for i=2,num_judgments_available do
 		Font="Common Normal",
 		Text=abbreviations[SL.Global.GameMode][i],
 		InitCommand=function(self)
-			local window = SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW"..incrementer]
-			local better_window = SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW"..incrementer-1]
-
+			local window, better_window
+			window = SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW"..incrementer]
+			if incrementer == 1 then
+				better_window = SL.Global.TimingWindowSecondsW0
+			else
+				better_window = SL.Preferences[SL.Global.GameMode]["TimingWindowSecondsW"..incrementer-1]
+			end
 			local x = scale(window, -worst_window, worst_window, 0, pane_width )
 			local x_better = scale(better_window, -worst_window, worst_window, 0, pane_width)
 			local x_avg = (x+x_better)/2
