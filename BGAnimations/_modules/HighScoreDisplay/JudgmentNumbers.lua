@@ -28,6 +28,17 @@ local t = Def.ActorFrame{
 			self:x( self:GetX() * -1 )
 		end
 	end,
+	--for the highscore in the screenselect pane we need to use the same
+	--actors instead of creating everything so look for a messagecommand
+	--broadcast whenever the pane is set that will give us a new score
+	SetNewHighScorePaneMessageCommand = function(self, param)
+		for type in ivalues(TapNoteScores.Types) do
+			self:GetChild(type):settext(param[1][type])
+		end
+		for type in ivalues(RadarCategories.Types) do
+			self:GetChild(type):settext(param[1][type])
+		end
+	end
 }
 
 -- we might have to edit the judgement colors/windows if fapping so make a copy to make
@@ -47,13 +58,13 @@ for i=1,#TapNoteScores.Types do
 
 	-- actual numbers
 	t[#t+1] = Def.RollingNumbers{
+		Name=window,
 		Font="Wendy/_ScreenEvaluation numbers",
 		InitCommand=function(self)
 			self:zoom(0.5):horizalign(right)
 			if SL.Global.GameMode ~= "ITG" then
 				self:diffuse( judgmentColors[i] )
 			end
-
 			-- if some TimingWindows were turned off, the leading 0s should not
 			-- be colored any differently than the (lack of) JudgmentNumber,
 			-- so load a unique Metric group.
@@ -71,7 +82,7 @@ for i=1,#TapNoteScores.Types do
 			self:x( TapNoteScores.x[controller] )
 			self:y((i-1)* (fapping and 31 or 35) -20)
 			self:targetnumber(number)
-		end
+		end,
 	}
 
 end
@@ -85,6 +96,7 @@ for index, RCType in ipairs(RadarCategories.Types) do
 
 	-- player performance value
 	t[#t+1] = Def.RollingNumbers{
+		Name = RCType,
 		Font="Wendy/_ScreenEvaluation numbers",
 		InitCommand=function(self) self:zoom(0.5):horizalign(right):Load("RollingNumbersEvaluationB") end,
 		BeginCommand=function(self)
@@ -105,16 +117,18 @@ for index, RCType in ipairs(RadarCategories.Types) do
 	}
 
 	-- possible value
-	t[#t+1] = LoadFont("Wendy/_ScreenEvaluation numbers")..{
-		InitCommand=function(self) self:zoom(0.5):horizalign(right) end,
-		BeginCommand=function(self)
-			self:y((index-1)*35 + 53)
-			self:x( ((controller == "left") and -114) or 286 )
-			self:settext(("%03.0f"):format(possible))
-			local leadingZeroAttr = { Length=3-tonumber(tostring(possible):len()), Diffuse=color("#5A6166") }
-			self:AddAttribute(0, leadingZeroAttr )
-		end
-	}
+	if possible then
+		t[#t+1] = LoadFont("Wendy/_ScreenEvaluation numbers")..{
+			InitCommand=function(self) self:zoom(0.5):horizalign(right) end,
+			BeginCommand=function(self)
+				self:y((index-1)*35 + 53)
+				self:x( ((controller == "left") and -114) or 286 )
+				self:settext(("%03.0f"):format(possible))
+				local leadingZeroAttr = { Length=3-tonumber(tostring(possible):len()), Diffuse=color("#5A6166") }
+				self:AddAttribute(0, leadingZeroAttr )
+			end
+		}
+	end
 end
 
 return t

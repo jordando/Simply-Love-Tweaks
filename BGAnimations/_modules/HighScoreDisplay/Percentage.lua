@@ -25,6 +25,9 @@ return Def.ActorFrame{
 		InitCommand=function(self)
 			self:horizalign(right):zoom(0.585)
 			self:x( (controller == "left" and 1.5 or 141))
+		end,
+		SetNewHighScorePaneMessageCommand = function(self, param)
+			self:settext(FormatPercentScore(param[1].score):gsub("%%",""))
 		end
 	}
 }

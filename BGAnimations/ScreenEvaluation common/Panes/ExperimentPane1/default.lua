@@ -5,7 +5,8 @@ local hash = args.hash
 local otherSide = {left = "right", right = "left"}
 local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
 local comparisonScore
-local currentScore, sanitizedComparisonScore = {}, {}
+local currentScore = {}
+local sanitizedComparisonScore
 local RateScores
 local fapping = SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and true or false
 
@@ -34,6 +35,7 @@ if not sanitizedComparisonScore then
 	if #highScores > 0 then
 		if highScores[1]:GetPercentDP() > pss:GetPercentDancePoints() then comparisonScore = highScores[1]
 		elseif highScores[2] then comparisonScore = highScores[2] end
+		sanitizedComparisonScore = {}
 	end
 end
 --clean up the current score for judgment numbers
@@ -44,7 +46,10 @@ for i=1,#TapNoteScores.Types do
 	if comparisonScore then sanitizedComparisonScore[window] = comparisonScore:GetTapNoteScore(window) end
 end
 currentScore['W0'] = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].W0
-if fapping then currentScore['W1'] = currentScore['W1'] - currentScore['W0'] end
+if fapping then 
+	currentScore['W1'] = currentScore['W1'] - currentScore['W0']
+	if comparisonScore then sanitizedComparisonScore['W0'] = 0 end
+end
 for RCType in ivalues(RadarCategories.Types) do
 	currentScore[RCType] = pss:GetRadarActual():GetValue( "RadarCategory_"..RCType )
 	currentScore['possible'..RCType] = pss:GetRadarPossible():GetValue( "RadarCategory_"..RCType )
@@ -53,9 +58,9 @@ for RCType in ivalues(RadarCategories.Types) do
 	end
 	sanitizedComparisonScore['possible'..RCType] = currentScore['possible'..RCType]
 end
-if comparisonScore then 
+if comparisonScore then
 	sanitizedComparisonScore.score = comparisonScore:GetPercentDP()
-	sanitizedComparisonScore.dateTime = comparisonScore.GetDate()
+	sanitizedComparisonScore.dateTime = comparisonScore:GetDate()
 end
 currentScore.score = pss:GetPercentDancePoints()
 
@@ -68,14 +73,7 @@ af[#af+1] = Def.ActorFrame{
 		self:addx(controller == "left" and 0 or 310)
 	end,
 
-	-- labels like "FANTASTIC", "MISS", "holds", "rolls", etc.
-	LoadActor("./JudgmentLabels.lua",  {player, currentScore, controller}),
-
-	-- score displayed as a percentage
-	LoadActor("./Percentage.lua",  {currentScore, controller}),
-
-	-- numbers (How many Fantastics? How many Misses? etc.)
-	LoadActor("./JudgmentNumbers.lua",  {player, currentScore, controller}),
+	LoadActor(THEME:GetPathB("", "_modules/HighScoreDisplay"), {player, currentScore, controller})
 }
 
 --another pane for either your current top score or the previous high score to compare
@@ -88,14 +86,7 @@ local comparisonT = Def.ActorFrame{
 
 if sanitizedComparisonScore.score then
 
-	-- labels like "FANTASTIC", "MISS", "holds", "rolls", etc.
-	comparisonT[#comparisonT+1] = LoadActor("./JudgmentLabels.lua",  {player, sanitizedComparisonScore, otherSide[controller]})
-
-	-- score displayed as a percentage
-	comparisonT[#comparisonT+1] = LoadActor("./Percentage.lua",  {sanitizedComparisonScore, otherSide[controller]})
-
-	-- numbers (How many Fantastics? How many Misses? etc.)
-	comparisonT[#comparisonT+1] = LoadActor("./JudgmentNumbers.lua",  {player, sanitizedComparisonScore, otherSide[controller]})
+	comparisonT[#comparisonT+1] = LoadActor(THEME:GetPathB("", "_modules/HighScoreDisplay"), {player, sanitizedComparisonScore, otherSide[controller]})
 
 	-- delta comparing scores
 	comparisonT[#comparisonT+1] = LoadActor("./Delta.lua", {player, currentScore,sanitizedComparisonScore, otherSide[controller]})
