@@ -42,7 +42,10 @@ function switch_to_songs(group_name)
 		-- if there are no songs in the current group then switch to the first available group/first song
 		-- TODO it should put you on the groupwheel instead
 		local groups = PruneGroups(GetGroups())
-		switch_to_songs(groups[1])
+		-- if there's at least one group then jump in
+		if #groups >= 1 then
+			switch_to_songs(groups[1])
+		end
 	end
 end
 
@@ -158,7 +161,7 @@ local item_mt = {
 					end,
 					--when the sort changes we may need to change the group text to whatever it becomes
 					GroupTypeChangedMessageCommand=function(subself)
-						if self.index == GroupWheel:get_actor_item_at_focus_pos().index and Input.WheelWithFocus ~= GroupWheel and GAMESTATE:GetCurrentSong() then --only if we're not on group wheel
+						if self.index == GroupWheel:get_actor_item_at_focus_pos().index and Input.WheelWithFocus ~= GroupWheel and GAMESTATE:GetCurrentSong() and self.groupName then --only if we're not on group wheel
 							subself:horizalign(left):xy(150,-30):zoom(3):diffuse(Color.White):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate")
 						end
 					end,

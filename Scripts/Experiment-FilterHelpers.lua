@@ -71,6 +71,8 @@ local filters = {
 	{"MaxSteps",100,100000,100},
 	{"MinDifficulty",1,30,1},
 	{"MaxDifficulty",1,30,1},
+	{"MinBPM",5,1000,5},
+	{"MaxBPM",5,1000,5},
 }
 
 local Overrides = {}
@@ -98,7 +100,7 @@ Overrides["TagsFilter"] = {
 		end
 	end,
 }
-	
+
 Overrides["PassFailFilter"] = {
 	SelectType = "SelectMultiple",
 	Values = { "Passed", "Failed", "Unplayed" },
@@ -115,7 +117,7 @@ Overrides["PassFailFilter"] = {
 		return list
 	end,
 }
-			
+
 for item in ivalues(filters) do
 	Overrides[item[1].."Filter"] = {
 		Choices = function()
@@ -137,6 +139,10 @@ for item in ivalues(filters) do
 		end,
 		LoadSelections = function(self, list, pn)
 			local filter = SL.Global.ActiveFilters[item[1]]
+			if filter ~= "Off" then
+				filter = round(filter/item[4]) * item[4]
+				filter = tostring(filter)
+			end
 			local i = FindInTable(filter, self.Choices) or 1
 			list[i] = true
 			return list
@@ -266,6 +272,8 @@ local function ConvertFilters()
 	converted["maxDifficulty"] = SL.Global.ActiveFilters["MaxDifficulty"] == "Off" and 1000000 or tonumber(SL.Global.ActiveFilters["MaxDifficulty"])
 	converted["minJumps"] = SL.Global.ActiveFilters["MinJumps"] == "Off" and 0 or tonumber(SL.Global.ActiveFilters["MinJumps"])
 	converted["maxJumps"] = SL.Global.ActiveFilters["MaxJumps"] == "Off" and 1000000 or tonumber(SL.Global.ActiveFilters["MaxJumps"])
+	converted["minBPM"] = SL.Global.ActiveFilters["MinBPM"] == "Off" and 1 or tonumber(SL.Global.ActiveFilters["MinBPM"])
+	converted["maxBPM"] = SL.Global.ActiveFilters["MaxBPM"] == "Off" and 100000 or tonumber(SL.Global.ActiveFilters["MaxBPM"])
 	return converted
 end
 
@@ -288,6 +296,11 @@ function ValidateChart(song, chart, player)
 	if chartMeter > filters["maxDifficulty"] or chartMeter < filters["minDifficulty"] then return false end
 	if chartSteps > filters["maxSteps"] or chartSteps < filters["minSteps"] then return false end
 	if chartJumps > filters["maxJumps"] or chartJumps < filters["minJumps"] then return false end
+	--Check bpm (right now we're only looking at the max bpm of a song.)
+	--TODO this gets wonky with gimmick charts. do we care? also will filter out 24th note songs etc
+	local bpmTable = song:GetTimingData():GetActualBPM()
+	if bpmTable[2] < filters["minBPM"] then return false end
+	if bpmTable[2] > filters["maxBPM"] then return false end
 	--Check tags
 	if SL.Global.ActiveFilters["HideTags"] then
 		for k,v in pairs(GetGroups("Tag")) do
@@ -330,7 +343,7 @@ function GetActiveFiltersString()
 	local activeFilters = GetActiveFilters()
 	if not activeFilters then return "No Filters Set" end
 	local toPrint = "FILTERS:\n"
-	local numberFilters = {'Steps','Jumps','Difficulty'}
+	local numberFilters = {'Steps','Jumps','Difficulty', 'BPM'}
 	for filterType in ivalues(numberFilters) do
 		toPrint = toPrint..filterType.." - "
 		local foundFilter = false
@@ -345,8 +358,8 @@ function GetActiveFiltersString()
 		if activeFilters["HidePassed"] then toPrint = toPrint.."Passed Songs\n" end
 		if activeFilters["HideFailed"] then toPrint = toPrint.."Failed Songs\n" end
 		if activeFilters["HideUnplayed"] then toPrint = toPrint.."Unplayed Songs\n" end
-	else toPrint = toPrint.."Hide by Pass Status - Off\n" end	
-	if #activeFilters["HideTags"] > 0 then
+	else toPrint = toPrint.."Hide by Pass Status - Off\n" end
+	if #activeFilters["HideTags"] and #activeFilters["HideTags"] > 0 then
 		toPrint = toPrint.."-----Hide Tags-----\n"
 		for tagName in ivalues(activeFilters["HideTags"]) do
 			toPrint = toPrint..tagName.."\n"

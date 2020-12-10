@@ -5,11 +5,18 @@ local FiltersOkay = function()
 	local maxDifficulty = SL.Global.ActiveFilters["MaxDifficulty"]
 	local minJumps = SL.Global.ActiveFilters["MinJumps"]
 	local maxJumps = SL.Global.ActiveFilters["MaxJumps"]
+	local minBPM = SL.Global.ActiveFilters["MinBPM"]
+	local maxBPM = SL.Global.ActiveFilters["MaxBPM"]
 	
 	if minSteps ~= "Off" and maxSteps ~= "Off" then
 		if tonumber(minSteps) > tonumber(maxSteps) then
 			SM("WARNING: Min Steps must be less than or equal to Max Steps")
 			return false
+		end
+	end
+	if minBPM ~= "Off" and maxBPM ~= "Off" then
+		if tonumber(minBPM) > tonumber(maxBPM) then
+			SM("WARNING: Min BPM must be less than or equal to Max BPM")
 		end
 	end
 	if minDifficulty ~= "Off" and maxDifficulty ~= "Off" then

@@ -4,6 +4,45 @@ scrollers[PLAYER_2] = setmetatable({disable_wrapping=true}, sick_wheel_mt)
 
 local mpn = GAMESTATE:GetMasterPlayerNumber()
 
+local firstToUpper = function(str)
+    return (str:gsub("^%l", string.upper))
+end
+
+local conversions = {
+	min = "Min",
+	max = "Max",
+	jumps = "Jumps",
+	bpm = "BPM",
+	diff = "Difficulty",
+	steps = "Steps"
+}
+
+local QuickFilter = function(input)
+	local filters = {"jumps","steps","bpm","diff"}
+	local category, result, type
+	for filter in ivalues(filters) do
+		result = string.lower(input):match("^"..filter.."%s*=%s*(%d+)$")
+		if result then
+			type = "both"
+			category = filter
+			break
+		end
+		type, result = string.lower(input):match("^(min)"..filter.."%s*=%s*(%d*)$")
+		if result then category = filter type = firstToUpper(type) break end
+		type, result = string.lower(input):match("^(max)"..filter.."%s*=%s*(%d*)$")
+		if result then category = filter type = firstToUpper(type) break end
+	end
+	if result then
+		if type == "both" then
+			SL.Global.ActiveFilters["Max"..conversions[category]] = result
+			SL.Global.ActiveFilters["Min"..conversions[category]] = result
+		else
+			SL.Global.ActiveFilters[type..conversions[category]] = result
+		end
+		return true
+	end
+	return nil
+end
 local searchMenu_input
 
 local TextEntrySettings = {
@@ -19,7 +58,7 @@ local TextEntrySettings = {
 	-- Maximum amount of characters
 	MaxInputLength = 30,
 	
-	--Password = false,	
+	--Password = false,
 	
 	-- Validation function; function(answer, errorOut), must return boolean, string.
 	Validate = function(answer, errorOut)
@@ -30,13 +69,19 @@ local TextEntrySettings = {
 	OnOK = function(answer)
 		if answer == "" then MESSAGEMAN:Broadcast("FinishText") --if players who don't have a keyboard get here they can just hit enter to cancel out
 		else
-			MESSAGEMAN:Broadcast("SetSearchWheel",{searchTerm=answer})
+			local filter = QuickFilter(answer)
+			if filter then
+				MESSAGEMAN:Broadcast("GroupTypeChanged")
+				MESSAGEMAN:Broadcast("FinishText")
+			else
+				MESSAGEMAN:Broadcast("SetSearchWheel",{searchTerm=answer})
+			end
 		end
 	end,
 	
 	-- On Cancel; function()
 	OnCancel = function()
-		--MESSAGEMAN:Broadcast("FinishText")
+		MESSAGEMAN:Broadcast("FinishText")
 	end,
 	
 	-- Validate appending a character; function(answer,append), must return boolean
@@ -52,7 +97,7 @@ local ready = false
 local t = Def.ActorFrame {
 
 	ShowCustomSongMenuCommand=function(self) self:visible(true) end,
-	HideCustomSongMenuCommand=function(self) self:visible(false) end,	
+	HideCustomSongMenuCommand=function(self) self:visible(false) end,
 	-- FIXME: stall for 0.5 seconds so that the Lua InputCallback doesn't get immediately added to the screen.
 	-- It's otherwise possible to enter the screen with MenuLeft/MenuRight already held and firing off events,
 	-- which causes the sick_wheel of profile names to not display.  I don't have time to debug it right now.
@@ -84,7 +129,7 @@ local t = Def.ActorFrame {
 	-- the OffCommand will have been queued, when it is appropriate, from ./Input.lua
 	-- sleep for 0.5 seconds to give the PlayerFrames time to tween out
 	-- and queue a call to Finish() so that the engine can wrap things up
-	OffCommand=function(self)			
+	OffCommand=function(self)
 		self:sleep(0.5):queuecommand("Finish")
 	end,
 	FinishTextMessageCommand=function(self)

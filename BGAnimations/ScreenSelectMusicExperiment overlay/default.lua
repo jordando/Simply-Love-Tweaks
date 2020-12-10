@@ -53,6 +53,9 @@ local t = Def.ActorFrame {
 		--But this won't work when we first enter ScreenSelectMusicExperiment so we broadcast here once.
 		params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[mpn]] = Difficulty:Reverse()[GAMESTATE:GetCurrentSteps(mpn):GetDifficulty()]
 		MESSAGEMAN:Broadcast("CurrentSongChanged",{song=GAMESTATE:GetCurrentSong()})
+		--if we had to reset everything because filters killed it then update group info for the group shared wheel here
+		group_info = setup.GetGroupInfo()
+		MESSAGEMAN:Broadcast("UpdateGroupInfo", {group_info, GroupWheel:get_actor_item_at_focus_pos().groupName})
 		MESSAGEMAN:Broadcast("LessLag")
 	end,
 	OnCommand=function(self)
@@ -262,7 +265,7 @@ local t = Def.ActorFrame {
 	-- This command is broadcast by input.handler when it tries to start a song.
 	-- Emulates the "Press START for options that native screenselectmusic has
 	-- if we're allowing it (set in prefs)
-	ScreenTransitionMessageCommand=function(self) 
+	ScreenTransitionMessageCommand=function(self)
 		if ThemePrefs.Get("AllowTwoTap") then
 			self:playcommand("TransitionQuadOff")
 			self:queuecommand("ShowPressStartForOptions")

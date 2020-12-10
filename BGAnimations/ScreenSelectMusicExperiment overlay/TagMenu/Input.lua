@@ -41,7 +41,7 @@ local TextEntrySettings = {
 	
 	-- On Cancel; function()
 	OnCancel = function()
-		--MESSAGEMAN:Broadcast("FinishText")
+		MESSAGEMAN:Broadcast("FinishText")
 	end,
 	
 	-- Validate appending a character; function(answer,append), must return boolean

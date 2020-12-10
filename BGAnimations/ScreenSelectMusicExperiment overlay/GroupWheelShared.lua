@@ -16,9 +16,9 @@ local initializeBarGraph = CreateBarGraph(250,100)..{
 }
 ----------------------------------------------------------------------
 
-local af = Def.ActorFrame{ 
+local af = Def.ActorFrame{
 	Name="GroupWheelShared",
-	UpdateGroupInfoMessageCommand=function(self, params) 
+	UpdateGroupInfoMessageCommand=function(self, params)
 		group_info = params[1]
 		MESSAGEMAN:Broadcast("CurrentGroupChanged", {group=params[2]})
 	end,
