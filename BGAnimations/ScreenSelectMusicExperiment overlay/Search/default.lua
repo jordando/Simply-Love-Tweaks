@@ -16,28 +16,47 @@ local conversions = {
 	diff = "Difficulty",
 	steps = "Steps"
 }
-
+conversions["="] = function(type,result)
+	return "both", result
+end
+conversions["<="] = function(type,result)
+	return "Max", result
+end
+conversions["<"] = function(type,result)
+	return "Max", result - 1
+end
+conversions[">="] = function(type,result)
+	return "Min", result
+end
+conversions[">"] = function(type,result)
+	return "Min", result + 1
+end
 local QuickFilter = function(input)
 	local filters = {"jumps","steps","bpm","diff"}
 	local category, result, type
 	for filter in ivalues(filters) do
-		result = string.lower(input):match("^"..filter.."%s*=%s*(%d+)$")
-		if result then
-			type = "both"
-			category = filter
+		category = filter
+		type, result = string.lower(input):match("^"..filter.."%s*([<>]?=)%s*(%d+)$")
+		if type then
+			type, result = conversions[type](type, result)
+			break
+		end
+		type, result = string.lower(input):match("^"..filter.."%s*([<>])%s*(%d+)$")
+		if type then
+			type, result = conversions[type](type, result)
 			break
 		end
 		type, result = string.lower(input):match("^(min)"..filter.."%s*=%s*(%d*)$")
-		if result then category = filter type = firstToUpper(type) break end
+		if result then type = firstToUpper(type) break end
 		type, result = string.lower(input):match("^(max)"..filter.."%s*=%s*(%d*)$")
-		if result then category = filter type = firstToUpper(type) break end
+		if result then type = firstToUpper(type) break end
 	end
 	if result then
 		if type == "both" then
-			SL.Global.ActiveFilters["Max"..conversions[category]] = result
-			SL.Global.ActiveFilters["Min"..conversions[category]] = result
+			SL.Global.ActiveFilters["Max"..conversions[category]] = tostring(result)
+			SL.Global.ActiveFilters["Min"..conversions[category]] = tostring(result)
 		else
-			SL.Global.ActiveFilters[type..conversions[category]] = result
+			SL.Global.ActiveFilters[type..conversions[category]] = tostring(result)
 		end
 		return true
 	end
