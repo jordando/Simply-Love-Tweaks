@@ -59,7 +59,7 @@ return Def.ActorFrame {
 				local harder = NextHardest(pn,true) and Difficulty:Reverse()[NextHardest(pn,true):GetDifficulty()] or nil
 				--if the difference between harder and current difficulty is greater than the difference between easier and current
 				--then we can throw away the harder steps as we know the easier is closer
-				if harder and easier then 
+				if harder and easier then
 					if harder - params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]] > params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]] - easier then harder = nil end
 				end
 				--if they're equally close then default to harder steps, otherwise, set to the closest difficulty

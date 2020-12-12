@@ -1,0 +1,330 @@
+local function GetSongDirs()
+	local songs = SONGMAN:GetAllSongs()
+	local list = {}
+	for item in ivalues(songs) do
+		list[item:GetSongDir()]={title = item:GetMainTitle(), song = item}
+	end
+	return list
+end
+
+--- Looks through each song currently loaded in Stepmania and checks that we have an entry in the
+---  hash lookup. If we don't we make a hash and add it to the lookup. On the first run this will be
+--- every song
+local function AddToHashLookup()
+	local songs = GetSongDirs()
+	local newChartsFound = false
+	for dir,song in pairs(songs) do
+		if not SL.Global.HashLookup[dir] then SL.Global.HashLookup[dir] = {} end
+		local allSteps = song.song:GetAllSteps()
+		for _,steps in pairs(allSteps) do
+			if string.find(SONGMAN:GetSongFromSteps(steps):GetSongFilePath(),".dwi$") then
+				Trace("Hashes can't be generated for .DWI files")
+				Trace("Could not generate hash for "..dir)
+			else
+				local stepsType = ToEnumShortString(steps:GetStepsType())
+				stepsType = string.lower(stepsType):gsub("_","-")
+				local difficulty = ToEnumShortString(steps:GetDifficulty())
+				if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
+					Trace("Adding hash for "..dir.."("..difficulty..")")
+					local hash = GenerateHash(steps,stepsType,difficulty)
+					coroutine.yield() --resumed in ScreenLoadCustomScores.lua
+					if #hash > 0 then
+						Trace("Success")
+						if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
+						SL.Global.HashLookup[dir][difficulty][stepsType] = hash
+						newChartsFound = true
+					else
+						SM("WARNING: Could not generate hash for "..dir)
+					end
+				end
+			end
+		end
+	end
+	if newChartsFound then SaveHashLookup() end
+end
+
+--- Looks for a file in the "Other" folder of the theme called HashLookup.txt to load from.
+--- The file should be tab delimited and each line should be either a song directory
+--- or the difficulty, step type, and hash of the next highest song directory
+-- Creates a table of the form {song directory
+--								-->difficulty
+--									-->step type = hash
+--							  }
+function LoadHashLookup()
+	local contents
+	local hashLookup = {}
+	local path = THEME:GetCurrentThemeDirectory() .. "Other/HashLookup.txt"
+	if FILEMAN:DoesFileExist(path) then
+		contents = GetFileContents(path)
+		local dir
+		for line in ivalues(contents) do
+			local item = Split(line,"\t")
+			if #item == 1 then
+				dir = item[1]
+				if not hashLookup[dir] then hashLookup[dir] = {} end
+			elseif #item == 3 then
+				if not hashLookup[dir][item[1]] then hashLookup[dir][item[1]] = {} end
+				hashLookup[dir][item[1]][item[2]] = item[3]
+			end
+		end
+		SL.Global.HashLookup = hashLookup
+	end
+	if ThemePrefs.Get("LoadCustomScoresUpfront") then AddToHashLookup() end
+end
+
+--- Writes the hash lookup to disk.
+function SaveHashLookup()
+	local path = THEME:GetCurrentThemeDirectory() .. "Other/HashLookup.txt"
+	if SL.Global.HashLookup then
+		-- create a generic RageFile that we'll use to read the contents
+		local file = RageFileUtil.CreateRageFile()
+		-- the second argument here (the 2) signifies
+		-- that we are opening the file in write mode
+		if not file:Open(path, 2) then SM("Could not open HashLookup.txt") return end
+		for dir,charts in pairs(SL.Global.HashLookup) do
+			file:PutLine(dir)
+			for diff,stepTypes in pairs(charts) do
+				for stepType, hash in pairs(stepTypes) do
+					file:PutLine(diff.."\t"..stepType.."\t"..hash)
+				end
+			end
+		end
+		file:Close()
+		file:destroy()
+	end
+end
+
+--- returns a hash from the lookup table or nil if none is found. uses current song/steps if they're not supplied
+---@param player string
+---@param inputSong Song
+---@param inputSteps Steps
+function GetHash(player, inputSong, inputSteps)
+	local pn = assert(player,"GetHash requires a player") and ToEnumShortString(player)
+	local song = inputSong or GAMESTATE:GetCurrentSong()
+	local steps = inputSteps or GAMESTATE:GetCurrentSteps(pn)
+	local difficulty = ToEnumShortString(steps:GetDifficulty())
+	local stepsType = ToEnumShortString(GetStepsType()):gsub("_","-"):lower()
+	--if hashes aren't loaded up front there may not be a table.
+	if SL.Global.HashLookup[song:GetSongDir()] and
+	--if there's a table but we couldn't generate a hash it'll be empty. use next to make sure there's something there
+	next(SL.Global.HashLookup[song:GetSongDir()]) and
+	SL.Global.HashLookup[song:GetSongDir()][difficulty] then
+		return SL.Global.HashLookup[song:GetSongDir()][difficulty][stepsType]
+	else
+		return nil
+	end
+end
+
+--- Overwrite the HashLookup table for the current song.
+-- This is called in ScreenEvaluation Common when GenerateHash doesn't match the HashLookup
+-- (indicates that the chart itself was changed while leaving the name/directory alone)
+function AddCurrentHash()
+	local song = GAMESTATE:GetCurrentSong()
+	local dir = song:GetSongDir()
+	SL.Global.HashLookup[dir] = {}
+	local allSteps = song:GetAllSteps()
+	for _,steps in pairs(allSteps) do
+		local stepsType = ToEnumShortString(steps:GetStepsType()):gsub("_","-"):lower()
+		local difficulty = ToEnumShortString(steps:GetDifficulty())
+		if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
+			Trace("Adding hash for "..dir.."("..difficulty..")")
+			local hash = GenerateHash(steps,stepsType,difficulty)
+			if #hash > 0 then
+				Trace("Success")
+				if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
+				SL.Global.HashLookup[dir][difficulty][stepsType] = hash
+			end
+		end
+	end
+	SaveHashLookup()
+end
+
+-- Get the mode of a table.  Returns a table of values.
+-- Works on anything (not just numbers).
+local function GetMode( t )
+  local counts={}
+
+  for k, v in pairs( t ) do
+    if counts[v] == nil then
+      counts[v] = 1
+    else
+      counts[v] = counts[v] + 1
+    end
+  end
+
+  local biggestCount = 0
+
+  for k, v  in pairs( counts ) do
+    if v > biggestCount then
+      biggestCount = v
+    end
+  end
+
+  local temp={}
+
+  for k,v in pairs( counts ) do
+    if v == biggestCount then
+      table.insert( temp, k )
+    end
+  end
+
+  return temp
+end
+
+local function CompressDensity( t )
+	local previous = round(t[1],2)
+	local count = 0
+	local results = {}
+	for density in ivalues(t) do
+		local current = round(density,2)
+		if current ~= previous then
+			table.insert(results,count.."x"..previous)
+			count = 1
+			previous = current
+		else
+			count = count + 1
+		end
+	end
+	table.insert(results, count.."x"..previous)
+	return results
+end
+
+local function UncompressDensity( t )
+	local results = {}
+	for density in ivalues(t) do
+		local count, value  = density:match("(%d+)x(%d+.?%d?%d?)")
+		for i=1, tonumber(count) do
+			table.insert(results,value)
+		end
+	end
+	return results
+end
+
+function GetStreamData(steps, stepsType, difficulty, notesPerMeasure)
+    local song = SONGMAN:GetSongFromSteps(steps)
+    local hash = GetHash(PLAYER_1,song, steps) --TODO take out the player thing, only needed when we don't give a song/steps
+    --exit out if we don't have a hash
+    if not hash then return end
+    local peakNPS, densityT = GetNPSperMeasure(song,steps)
+    local streamData = {}
+    streamData.PeakNPS = peakNPS
+	streamData.Density = densityT
+	local modeT = GetMode(densityT)
+	if #modeT and #modeT > 1 then modeT = table.sort(modeT) end
+	streamData.NpsMode = modeT[#modeT]
+	local measures = GetStreams(steps, stepsType, difficulty, notesPerMeasure)
+	if measures then
+		streamData.TotalMeasures = measures[#measures].streamEnd
+        local lastSequence = #measures
+		local totalStreams = 0
+		local previousSequence = 0
+        local segments = 0
+        local breakdown = "" --breakdown tries to display the full streams including rest measures
+        local breakdown2 = "" --breakdown2 tries to display the streams without rest measures
+        local breakdown3 = "" --breakdown3 combines streams that would normally be separated with a -
+        for _, sequence in ipairs(measures) do
+            if not sequence.isBreak then
+                totalStreams = totalStreams + sequence.streamEnd - sequence.streamStart
+                breakdown = breakdown..sequence.streamEnd - sequence.streamStart.." "
+                if previousSequence < 2 then
+                    breakdown2 = breakdown2.."-"..sequence.streamEnd - sequence.streamStart
+                elseif previousSequence >= 2 then
+                    breakdown2 = breakdown2.."/"..sequence.streamEnd - sequence.streamStart
+                    previousSequence = 0
+                end
+                segments = segments + 1
+            else
+                breakdown = breakdown.."("..sequence.streamEnd - sequence.streamStart..") "
+                previousSequence = previousSequence + sequence.streamEnd - sequence.streamStart
+            end
+        end
+		streamData.TotalStreams = totalStreams
+        streamData.Segments = segments
+        streamData.Breakdown1 = breakdown
+        if totalStreams ~= 0 then
+            local percent = totalStreams / measures[lastSequence].streamEnd
+            percent = math.floor(percent*100)
+			streamData.Percent = percent
+			--trim off break at the beginning and end of the song to get a more accurate density percent
+			local extraMeasures = 0
+			if measures[1].isBreak then
+				extraMeasures = measures[1].streamEnd - measures[1].streamStart
+			end
+			if measures[#measures].isBreak then
+				extraMeasures = extraMeasures + measures[#measures].streamEnd - measures[#measures].streamStart
+			end
+			if extraMeasures > 0 then
+				local adjustedPercent = totalStreams / (measures[lastSequence].streamEnd - extraMeasures)
+				adjustedPercent = math.floor(adjustedPercent*100)
+				streamData.AdjustedPercent = adjustedPercent
+			else
+				streamData.AdjustedPercent = percent
+			end
+            for stream in ivalues(Split(breakdown2,"/")) do
+                local combine = 0
+                local multiple = false
+                for part in ivalues(Split(stream,"-")) do
+                    if combine ~= 0 then multiple = true end
+                    combine = combine + tonumber(part)
+                end
+                breakdown3 = breakdown3.."/"..combine..(multiple and "*" or "")
+            end
+            streamData.Breakdown2 = string.sub(breakdown2,2)
+            streamData.Breakdown3 = string.sub(breakdown3,2)
+        end
+        SL.Global.StreamData[hash] = streamData
+        return true
+    else
+        return false
+    end
+end
+
+--- Writes the stream data table to disk.
+function SaveStreamData()
+	local path = THEME:GetCurrentThemeDirectory() .. "Other/StreamData.txt"
+	if SL.Global.StreamData then
+		-- create a generic RageFile that we'll use to read the contents
+		local file = RageFileUtil.CreateRageFile()
+		-- the second argument here (the 2) signifies
+		-- that we are opening the file in write mode
+		if not file:Open(path, 2) then SM("Could not open StreamData.txt") return end
+		for hash,data in pairs(SL.Global.StreamData) do
+			file:PutLine(hash)
+			file:PutLine(
+				data.PeakNPS.."\t"..data.NpsMode.."\t"..data.Percent.."\t"..
+				data.AdjustedPercent.."\t"..data.TotalStreams.."\t"..
+				data.TotalMeasures.."\t"..data.Breakdown1.."\t"..
+				data.Breakdown2.."\t"..data.Breakdown3
+			)
+			file:PutLine(table.concat(CompressDensity(data.Density), " "))
+		end
+		file:Close()
+		file:destroy()
+	end
+end
+
+local function ParseLoad(results, input)
+	local hash = input[1]
+	if not results[hash] then results[hash] = {} end
+	local splitInput = Split(input[2],"\t")
+	results[hash].PeakNPS, results[hash].NpsMode, results[hash].Percent,
+	results[hash].AdjustedPercent, results[hash].TotalStreams,
+	results[hash].TotalMeasures, results[hash].Breakdown1, results[hash].Breakdown2,
+	results[hash].Breakdown3 = unpack(splitInput)
+	results[hash].Density = UncompressDensity(Split(input[3]," "))
+	--return results
+end
+
+function LoadStreamData()
+	local contents
+	local streamData = {}
+	local path = THEME:GetCurrentThemeDirectory() .. "Other/StreamData.txt"
+	if FILEMAN:DoesFileExist(path) then
+		contents = GetFileContents(path)
+		for i = 0, (#contents / 3) - 1 do
+			local index = (i * 3) + 1
+			ParseLoad(streamData,{contents[index],contents[index+1],contents[index+2]})
+		end
+		SL.Global.StreamData = streamData
+	end
+end

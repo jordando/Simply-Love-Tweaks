@@ -6,6 +6,7 @@ local parsedSteps
 local ambiguousStartPosition
 local ambiguousDoublestepPosition
 
+local debug = false
 local safe = true --if there are no warps or negative bpms we can easily calculate time at beat manually
 local bpms
 local stops
@@ -51,8 +52,8 @@ local function ParseTech(lines)
         SM("peak doesn't match up!")
         SM({GAMESTATE:GetCurrentSteps(player),GAMESTATE:Env()[pn.."CurrentSteps"]})
     end
-    Trace("Peak is:")
-    Trace(peak)
+    if debug then Trace("Peak is:") end
+    if debug then Trace(peak) end
     local timingData = GAMESTATE:GetCurrentSteps(player):GetTimingData()
     if timingData:HasWarps() or timingData:HasNegativeBPMs() then
         safe = false
@@ -153,8 +154,8 @@ local function ParseTech(lines)
             doublestep = doublestep + 1
             ambiguousDoublestepPosition = #parsedSteps+1
             potentialFootswitch = i
-            Trace("Potential footswitch at line "..i)
-            Trace("Doublestep. Keeping "..previousFoot.." on "..note)
+            if debug then Trace("Potential footswitch at line "..i) end
+            if debug then Trace("Doublestep. Keeping "..previousFoot.." on "..note) end
         else
             --validSteps is a table of what panels [foot] can hit depending on where the [previousFoot] is 
             if validSteps[foot][currentFoot[previousFoot]][note] then
@@ -169,14 +170,14 @@ local function ParseTech(lines)
                         doublestep = doublestep - 1
                         potentialFootswitch = nil
                         ReverseFeet(ambiguousDoublestepPosition, true)
-                        Trace("Footswitch: switching feet and erasing Doublestep")
+                        if debug then Trace("Footswitch: switching feet and erasing Doublestep") end
                     -- if the pattern started on up or down we default to left but sometimes that leads to
                     -- a ton of crossovers if we were supposed to start right. assume the player was supposed
                     -- to start with right
                     elseif ambiguousStart then
                         ambiguousStart = nil
                         ReverseFeet(ambiguousStartPosition)
-                        Trace("AmbiguousStart: switching feet")
+                        if debug then Trace("AmbiguousStart: switching feet") end
                     end
                     -- switch the current feet (as if we had done the footswitch or right start) and try again
                     currentFoot["Set"..foot.."Foot"](currentFoot[previousFoot])
@@ -186,39 +187,39 @@ local function ParseTech(lines)
                 -- crossover
                 crossover = crossover + 1
                 techType = "crossover"
-                Trace("This is a crossover")
+                if debug then Trace("This is a crossover") end
             end
         end
         if techType ~= "doublestep" then
             currentFoot["Set"..foot.."Foot"](note)
-            Trace("Moving "..foot.." to "..note)
+            if debug then Trace("Moving "..foot.." to "..note) end
         end
         return techType
     end
 
     local function BeginNewSegment()
-        Trace("New Pattern")
+        if debug then Trace("New Pattern") end
         potentialFootswitch = nil
         checkingPattern = true
         -- (probably wrongly) assume we never purposefully start in a crossover so
         -- left note start with left foot and right note with right
         if note == "left" or note == "right" then
-            Trace("Starting with "..note.." foot".." on "..note)
+            if debug then Trace("Starting with "..note.." foot".." on "..note) end
             currentFoot["Set"..note.."Foot"](note)
         -- if we're starting with up or down it's ambiguous so just default to left. mark that there was an
         -- ambiguous start in case we later find we could avoid a crossover by starting right.
         else
-            Trace("Ambiguous, starting with left foot on "..note.." (saving line "..i..")")
+            if debug then Trace("Ambiguous, starting with left foot on "..note.." (saving line "..i..")") end
             currentFoot.SetleftFoot(note)
             ambiguousStart = i
             ambiguousStartPosition = #parsedSteps+1
-            Trace("ambiguousStart - "..ambiguousStart)
+            if debug then Trace("ambiguousStart - "..ambiguousStart) end
         end
     end
 
-    Trace("Begin parsing chart")
-    Trace("Peak to check against is:")
-    Trace(peakTimeBetweenLines)
+    if debug then Trace("Begin parsing chart") end
+    if debug then Trace("Peak to check against is:") end
+    if debug then Trace(peakTimeBetweenLines) end
     linesInMeasure = GetLinesInMeasure(0)
     beatBetweenLines = GetBeatBetweenLines()
     --since we're keeping track of where streams are we may need to retroactively classify the first
@@ -232,8 +233,8 @@ local function ParseTech(lines)
         -- (Each measure is 4 beats evenly divided by the number of lines in the measure)
         if (chart[i]:match("^[,;]%s*")) then
             measure = measure + 1
-            Trace("New Measure: "..measure)
-            Trace("Beat is: "..beat.new)
+            if debug then Trace("New Measure: "..measure) end
+            if debug then Trace("Beat is: "..beat.new) end
             linesInMeasure = GetLinesInMeasure(i)
             beatBetweenLines = GetBeatBetweenLines()
         else
@@ -241,16 +242,16 @@ local function ParseTech(lines)
             if chart[i]:match("[124]") then
                 timeSinceLastNote = GetTimeBetweenLines()
                 beat.old = beat.new
-                Trace("Time since last note is: "..timeSinceLastNote)
-                Trace("(Beat "..beat.old..")")
+                if debug then Trace("Time since last note is: "..timeSinceLastNote) end
+                if debug then Trace("(Beat "..beat.old..")") end
                 --Ignore anything that's not a step (end of holds, fakes, mines, lifts) and convert all steps to taps
                 local sanitizedLine = chart[i]:gsub( "[3MKLF]", "0"):gsub("[24]","1")
                 -- we only care about patterns if they're greater than half the peak speed
                 -- (if the chart peaks at 200bpm 16ths then 8th note crossovers are kinda whatever)
                 if timeSinceLastNote >= peakTimeBetweenLines then
-                    Trace("Time since last note is: "..timeSinceLastNote.." which is greater than "..peakTimeBetweenLines)
+                    if debug then Trace("Time since last note is: "..timeSinceLastNote.." which is greater than "..peakTimeBetweenLines) end
                     checkingPattern = false
-                    Trace("resetting ambiguousStart because of time")
+                    if debug then Trace("resetting ambiguousStart because of time") end
                     ambiguousStart = nil
                 end
                 -- there's a new note so reset timeSinceLastNote
@@ -259,10 +260,10 @@ local function ParseTech(lines)
                 -- we'll check for crossovers/doublesteps
                 if select(2, string.gsub(sanitizedLine, "0", "")) == 3 then
                     GetNote(sanitizedLine)
-                    Trace("Note is: "..note.. "(Line "..i..")")
+                    if debug then Trace("Note is: "..note.. "(Line "..i..")") end
                     --if we're not currently checking a pattern then pick a foot to start with
                     if not checkingPattern then
-                        Trace("Begin new segment")
+                        if debug then Trace("Begin new segment") end
                         possibleStart = #parsedSteps+1
                         BeginNewSegment()
                         parsedSteps[#parsedSteps+1] = {Stream = false, Note = note, Foot = GetPreviousFoot(), TechType = "none"}
@@ -276,7 +277,7 @@ local function ParseTech(lines)
                         parsedSteps[#parsedSteps+1] = {Stream = checkingPattern,Foot = GetPreviousFoot(), TechType = techType, Note = note}
                     end
                 else
-                    Trace("Jump")
+                    if debug then Trace("Jump") end
                     parsedSteps[#parsedSteps+1] = {Stream = checkingPattern,Note = sanitizedLine, TechType = "Jump"}
                     if checkingPattern then jumpstream = jumpstream + 1 end
                 end
@@ -355,7 +356,7 @@ return function (steps, stepsType, difficulty)
             -- StepMania considers NOTES sections with greater than 7 sections valid.
             -- https://github.com/stepmania/stepmania/blob/master/src/NotesLoaderSM.cpp#L1072-L1079
             if #notes >= 7 and notes[2] == stepsType and difficulty == ToEnumShortString(OldStyleStringToDifficulty(notes[4])) then
-                Trace("PARSE TEST")
+                if debug then Trace("PARSE TEST") end
                 success = ParseTech(notes[7])
             end
         end

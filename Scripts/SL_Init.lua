@@ -133,6 +133,7 @@ local GlobalDefaults = {
 		ExperimentSave = true, --keep track of when we want to save custom scores
 		Scrolling = false, --keep track of when left or right is held down, set by ScreenSelectMusicExperiment/default.lua
 		HashLookup = {}, --hashes with corresponding song directories
+		StreamData = {},
 		-- We want an extra window for FAP (FA+) but when Simply Love is trying to map preferences
 		-- we'll get an error saying it can't map TimingWindowSecondsW0 to anything because it doesn't
 		-- use it. TO get around this we set it here

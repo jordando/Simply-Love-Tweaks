@@ -5,7 +5,7 @@ local zoom_factor = WideScale(0.8,0.9)
 
 local labelX_col1 = WideScale(-130,-70)
 
-local InitializeMeasureCounterAndModsLevel = LoadActor("./MeasureCounterAndModsLevel.lua")
+local InitializeMeasureCounterAndModsLevel = LoadActor(THEME:GetPathB("","_modules/MeasureCounterAndModsLevel.lua"))
 local TechParser
 if ThemePrefs.Get("EnableTechParser") then TechParser = LoadActor(THEME:GetPathB("","_modules/TechParser.lua")) end
 
