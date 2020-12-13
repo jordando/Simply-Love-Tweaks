@@ -66,6 +66,7 @@ return function(SongNumberInCourse)
 					SL[pn].Streams.Segments = segments
 					SL[pn].Streams.Breakdown1 = breakdown
 					if totalStreams ~= 0 then
+						SL[pn].Streams.TotalMeasures = streamsTable.Measures[lastSequence].streamEnd
 						local percent = totalStreams / streamsTable.Measures[lastSequence].streamEnd
 						percent = math.floor(percent*100)
 						SL[pn].Streams.Percent = percent

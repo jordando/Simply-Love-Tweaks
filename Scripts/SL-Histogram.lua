@@ -1,4 +1,4 @@
-local function gen_vertices(player, width, height, upColor, lowColor)
+local function gen_vertices(player, width, height, upColor, lowColor, peak, density)
 	local Song, Steps
 	local first_step_has_occurred = false
 
@@ -10,8 +10,13 @@ local function gen_vertices(player, width, height, upColor, lowColor)
 		Steps = GAMESTATE:GetCurrentSteps(player)
 		Song = GAMESTATE:GetCurrentSong()
 	end
-
-	local PeakNPS, NPSperMeasure = GetNPSperMeasure(Song, Steps)
+	--if we have peakNPS and density given use those instead of parsing
+	local PeakNPS, NPSperMeasure
+	if peak and density then
+		PeakNPS = peak
+		NPSperMeasure = density
+	else
+		PeakNPS, NPSperMeasure = GetNPSperMeasure(Song, Steps) end
 
 	-- store the PeakNPS in GAMESTATE:Env()[pn.."PeakNPS"] in case both players are joined
 	-- their charts may have different peak densities, and if they both want histograms,
@@ -51,7 +56,7 @@ local function gen_vertices(player, width, height, upColor, lowColor)
 		local upper
 		for i, nps in ipairs(NPSperMeasure) do
 
-			if nps > 0 then first_step_has_occurred = true end
+			if tonumber(nps) > 0 then first_step_has_occurred = true end
 
 			if first_step_has_occurred then
 				-- i will represent the current measure number but will be 1 larger than
@@ -114,12 +119,24 @@ function NPS_Histogram(player, width, height, upColor, lowColor)
 			end
 		end,
 		LessLagMessageCommand=function(self)
-			if GAMESTATE:IsHumanPlayer(player) then
-				self:playcommand("SetDensity")
+			if GAMESTATE:IsHumanPlayer(player) and GAMESTATE:GetCurrentSong() then
+				--check to see if we have the stream info for this song saved already
+				local hash = GetHash(player, GAMESTATE:GetCurrentSong(), GAMESTATE:GetCurrentSteps(player))
+				local streams = GetStreamData(hash)
+				if streams and streams.PeakNPS and streams.Density then
+					self:playcommand("SetDensity", {streams.PeakNPS, streams.Density})
+				else
+					self:playcommand("SetDensity")
+				end
 			end
 		end,
-		SetDensityCommand=function(self)					  
-			local verts = gen_vertices(player, width, height, upColor, lowColor)
+		SetDensityCommand=function(self, params)
+			local verts
+			if params then
+				verts = gen_vertices(player, width, height, upColor, lowColor, params[1], params[2])
+			else
+				verts = gen_vertices(player, width, height, upColor, lowColor)
+			end
 			self:SetNumVertices(#verts):SetVertices(verts)
 		end
 	}

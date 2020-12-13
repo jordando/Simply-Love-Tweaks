@@ -1,3 +1,7 @@
+
+
+-- helper functions ---------------------------------------------------------------------
+
 local function GetSongDirs()
 	local songs = SONGMAN:GetAllSongs()
 	local list = {}
@@ -7,213 +11,49 @@ local function GetSongDirs()
 	return list
 end
 
---- Looks through each song currently loaded in Stepmania and checks that we have an entry in the
----  hash lookup. If we don't we make a hash and add it to the lookup. On the first run this will be
---- every song
-local function AddToHashLookup()
-	local songs = GetSongDirs()
-	local newChartsFound = false
-	for dir,song in pairs(songs) do
-		if not SL.Global.HashLookup[dir] then SL.Global.HashLookup[dir] = {} end
-		local allSteps = song.song:GetAllSteps()
-		for _,steps in pairs(allSteps) do
-			SM(dir.."("..ToEnumShortString(steps:GetDifficulty()))
-			if string.find(SONGMAN:GetSongFromSteps(steps):GetSongFilePath(),".dwi$") then
-				Trace("Hashes can't be generated for .DWI files")
-				Trace("Could not generate hash for "..dir)
-			else
-				local stepsType = ToEnumShortString(steps:GetStepsType())
-				stepsType = string.lower(stepsType):gsub("_","-")
-				local difficulty = ToEnumShortString(steps:GetDifficulty())
-				if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
-					Trace("Adding hash for "..dir.."("..difficulty..")")
-					local hash = GenerateHash(steps,stepsType,difficulty)
-					if #hash > 0 then
-						Trace("Successly generated hash")
-						if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
-						SL.Global.HashLookup[dir][difficulty][stepsType] = hash
-						newChartsFound = true
-						Trace("Adding stream data for "..dir.."("..difficulty..")")
-						GetStreamData(steps, stepsType, difficulty, 16)
-					else
-						SM("WARNING: Could not generate hash for "..dir)
-					end
-					coroutine.yield() --resumed in ScreenLoadCustomScores.lua
-				end
-			end
-		end
-	end
-	if newChartsFound then SaveHashLookup() SaveStreamData() end
-end
-
---- Looks for a file in the "Other" folder of the theme called HashLookup.txt to load from.
---- The file should be tab delimited and each line should be either a song directory
---- or the difficulty, step type, and hash of the next highest song directory
--- Creates a table of the form {song directory
---								-->difficulty
---									-->step type = hash
---							  }
-function LoadHashLookup()
-	local contents
-	local hashLookup = SL.Global.HashLookup
-	local path = THEME:GetCurrentThemeDirectory() .. "Other/HashLookup.txt"
-	if FILEMAN:DoesFileExist(path) then
-		contents = GetFileContents(path)
-		local dir
-		for line in ivalues(contents) do
-			local item = Split(line,"\t")
-			if #item == 1 then
-				dir = item[1]
-				if not hashLookup[dir] then hashLookup[dir] = {} end
-			elseif #item == 3 then
-				if not hashLookup[dir][item[1]] then hashLookup[dir][item[1]] = {} end
-				hashLookup[dir][item[1]][item[2]] = item[3]
-			end
-		end
-	end
-	if ThemePrefs.Get("LoadCustomScoresUpfront") then AddToHashLookup() end
-end
-
---- Writes the hash lookup to disk.
-function SaveHashLookup()
-	local path = THEME:GetCurrentThemeDirectory() .. "Other/HashLookup.txt"
-	if SL.Global.HashLookup then
-		-- create a generic RageFile that we'll use to read the contents
-		local file = RageFileUtil.CreateRageFile()
-		-- the second argument here (the 2) signifies
-		-- that we are opening the file in write mode
-		if not file:Open(path, 2) then SM("Could not open HashLookup.txt") return end
-		for dir,charts in pairs(SL.Global.HashLookup) do
-			file:PutLine(dir)
-			for diff,stepTypes in pairs(charts) do
-				for stepType, hash in pairs(stepTypes) do
-					file:PutLine(diff.."\t"..stepType.."\t"..hash)
-				end
-			end
-		end
-		file:Close()
-		file:destroy()
-	end
-end
-
---- returns a hash from the lookup table or nil if none is found. uses current song/steps if they're not supplied
----@param player string
----@param inputSong Song
----@param inputSteps Steps
-function GetHash(player, inputSong, inputSteps)
-	local pn = assert(player,"GetHash requires a player") and ToEnumShortString(player)
-	local song = inputSong or GAMESTATE:GetCurrentSong()
-	local steps = inputSteps or GAMESTATE:GetCurrentSteps(pn)
-	local difficulty = ToEnumShortString(steps:GetDifficulty())
-	local stepsType = ToEnumShortString(GetStepsType()):gsub("_","-"):lower()
-	--if hashes aren't loaded up front there may not be a table.
-	if SL.Global.HashLookup[song:GetSongDir()] and
-	--if there's a table but we couldn't generate a hash it'll be empty. use next to make sure there's something there
-	next(SL.Global.HashLookup[song:GetSongDir()]) and
-	SL.Global.HashLookup[song:GetSongDir()][difficulty] then
-		return SL.Global.HashLookup[song:GetSongDir()][difficulty][stepsType]
-	else
-		return nil
-	end
-end
-
---- Overwrite the HashLookup table for the current song.
--- This is called in ScreenEvaluation Common when GenerateHash doesn't match the HashLookup
--- (indicates that the chart itself was changed while leaving the name/directory alone)
-function AddCurrentHash()
-	local song = GAMESTATE:GetCurrentSong()
-	local dir = song:GetSongDir()
-	SL.Global.HashLookup[dir] = {}
-	local allSteps = song:GetAllSteps()
-	for _,steps in pairs(allSteps) do
-		local stepsType = ToEnumShortString(steps:GetStepsType()):gsub("_","-"):lower()
-		local difficulty = ToEnumShortString(steps:GetDifficulty())
-		if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
-			Trace("Adding hash for "..dir.."("..difficulty..")")
-			local hash = GenerateHash(steps,stepsType,difficulty)
-			if #hash > 0 then
-				Trace("Success")
-				if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
-				SL.Global.HashLookup[dir][difficulty][stepsType] = hash
-				Trace("Adding stream data for "..dir.."("..difficulty..")")
-				GetStreamData(steps, stepsType, difficulty, 16)
-			end
-		end
-	end
-	SaveHashLookup()
-	SaveStreamData()
-end
-
--- Get the mode of a table.  Returns a table of values.
--- Works on anything (not just numbers).
+--- Get the mode of a table.  Returns a table of values.
+--- Works on anything (not just numbers).
 local function GetMode( t )
-  local counts={}
+local counts={}
 
-  for k, v in pairs( t ) do
-	if v ~= 0 then
-		if counts[v] == nil then
-		counts[v] = 1
-		else
-		counts[v] = counts[v] + 1
+	for k, v in pairs( t ) do
+		if v ~= 0 then
+			if counts[v] == nil then
+			counts[v] = 1
+			else
+			counts[v] = counts[v] + 1
+			end
 		end
 	end
-  end
 
-  local biggestCount = 0
+	local biggestCount = 0
 
-  for k, v  in pairs( counts ) do
-    if v > biggestCount then
-      biggestCount = v
-    end
-  end
-
-  local temp={}
-
-  for k,v in pairs( counts ) do
-    if v == biggestCount then
-      table.insert( temp, k )
-    end
-  end
-
-  return temp
-end
-
-local function CompressDensity( t )
-	local previous = round(t[1],2)
-	local count = 0
-	local results = {}
-	for density in ivalues(t) do
-		local current = round(density,2)
-		if current ~= previous then
-			table.insert(results,count.."x"..previous)
-			count = 1
-			previous = current
-		else
-			count = count + 1
+	for k, v  in pairs( counts ) do
+		if v > biggestCount then
+		biggestCount = v
 		end
 	end
-	table.insert(results, count.."x"..previous)
-	return results
-end
 
-local function UncompressDensity( t )
-	local results = {}
-	for density in ivalues(t) do
-		local count, value  = density:match("(%d+)x(%d+.?%d?%d?)")
-		for i=1, tonumber(count) do
-			table.insert(results,value)
+	local temp={}
+
+	for k,v in pairs( counts ) do
+		if v == biggestCount then
+		table.insert( temp, k )
 		end
 	end
-	return results
+
+	return temp
 end
 
-function GetStreamData(steps, stepsType, difficulty, notesPerMeasure)
+--- Add StreamData to the global table. If PeakNPS can't be determined it's set as -1
+--- If a density table can't be made it's set to {0} and NpsMode is set to -1
+local function AddToStreamData(steps, stepsType, difficulty, notesPerMeasure)
     local song = SONGMAN:GetSongFromSteps(steps)
     local hash = GetHash(PLAYER_1,song, steps) --TODO take out the player thing, only needed when we don't give a song/steps
     --exit out if we don't have a hash
 	if not hash then return end
 	local streamData = {}
-	local peakNPS, densityT = GetNPSperMeasure(song,steps)
+	local peakNPS, densityT = GetNPSperMeasure(song,steps) --returns nil if it can't get it
 	if not peakNPS then peakNPS = -1 end
 	if not densityT then
 		streamData.Density = {0}
@@ -221,7 +61,7 @@ function GetStreamData(steps, stepsType, difficulty, notesPerMeasure)
 	else
 		streamData.Density = densityT
 		local modeT = GetMode(densityT)
-		if next(modeT) then
+		if next(modeT) then --GetMode() ignores 0 so if densityT is a table with just 0 in it (happened before...) GetMode will return an empty table
 			if #modeT and #modeT > 1 then table.sort(modeT) end
 			streamData.NpsMode = modeT[#modeT]
 		else streamData.NpsMode = -1 end
@@ -301,6 +141,200 @@ function GetStreamData(steps, stepsType, difficulty, notesPerMeasure)
     end
 end
 
+--- Returns a table of StreamData given a hash or nil if there's nothing.
+--- Converts any fields we weren't able to parse to nil instead of the fake
+--- values stored for the sake of the load function.
+function GetStreamData(hash)
+	if not hash then return nil end
+	if not SL.Global.StreamData[hash] then return nil end
+	local results = DeepCopy(SL.Global.StreamData[hash])
+	if results.PeakNPS == -1 then results.PeakNPS = nil end
+	if results.NpsMode == -1 then results.NpsMode = nil end
+	if not next(results.Density) or #results.Density == 1 then
+		results.Density = nil
+	end
+	--if we don't have total measures then everything will be empty 0s
+	if results.TotalMeasures == 0 then
+		results.Percent, results.AdjustedPercent, results.TotalStreams,
+		results.TotalMeasures, results.Breakdown1, results.Breakdown2,
+		results.Breakdown3 = nil, nil, nil, nil, nil, nil, nil
+	end
+	return results
+end
+
+--- Looks through each song currently loaded in Stepmania and checks that we have an entry in the
+---  hash lookup. If we don't we make a hash and add it to the lookup. On the first run this will be
+--- every song
+local function AddToHashLookup()
+	local songs = GetSongDirs()
+	local newChartsFound = false
+	for dir,song in pairs(songs) do
+		if not SL.Global.HashLookup[dir] then SL.Global.HashLookup[dir] = {} end
+		local allSteps = song.song:GetAllSteps()
+		for _,steps in pairs(allSteps) do
+			SM(dir.."("..ToEnumShortString(steps:GetDifficulty()))
+			if string.find(SONGMAN:GetSongFromSteps(steps):GetSongFilePath(),".dwi$") then
+				Trace("Hashes can't be generated for .DWI files")
+				Trace("Could not generate hash for "..dir)
+			else
+				local stepsType = ToEnumShortString(steps:GetStepsType())
+				stepsType = string.lower(stepsType):gsub("_","-")
+				local difficulty = ToEnumShortString(steps:GetDifficulty())
+				if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
+					Trace("Adding hash for "..dir.."("..difficulty..")")
+					local hash = GenerateHash(steps,stepsType,difficulty)
+					if #hash > 0 then
+						Trace("Successly generated hash")
+						if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
+						SL.Global.HashLookup[dir][difficulty][stepsType] = hash
+						newChartsFound = true
+						Trace("Adding stream data for "..dir.."("..difficulty..")")
+						AddToStreamData(steps, stepsType, difficulty, 16)
+					else
+						SM("WARNING: Could not generate hash for "..dir)
+					end
+					coroutine.yield() --resumed in ScreenLoadCustomScores.lua
+				end
+			end
+		end
+	end
+	if newChartsFound then SaveHashLookup() SaveStreamData() end
+end
+
+--- Looks for a file in the "Other" folder of the theme called HashLookup.txt to load from.
+--- The file should be tab delimited and each line should be either a song directory
+--- or the difficulty, step type, and hash of the next highest song directory
+--- Creates a table of the form:
+---		--> {song directory
+---			-->difficulty
+---				-->step type = hash
+---							  }
+function LoadHashLookup()
+	local contents
+	local hashLookup = SL.Global.HashLookup
+	local path = THEME:GetCurrentThemeDirectory() .. "Other/HashLookup.txt"
+	if FILEMAN:DoesFileExist(path) then
+		contents = GetFileContents(path)
+		local dir
+		for line in ivalues(contents) do
+			local item = Split(line,"\t")
+			if #item == 1 then
+				dir = item[1]
+				if not hashLookup[dir] then hashLookup[dir] = {} end
+			elseif #item == 3 then
+				if not hashLookup[dir][item[1]] then hashLookup[dir][item[1]] = {} end
+				hashLookup[dir][item[1]][item[2]] = item[3]
+			end
+		end
+	end
+	if ThemePrefs.Get("LoadCustomScoresUpfront") then AddToHashLookup() end
+end
+
+--- Writes the hash lookup to disk.
+function SaveHashLookup()
+	local path = THEME:GetCurrentThemeDirectory() .. "Other/HashLookup.txt"
+	if SL.Global.HashLookup then
+		-- create a generic RageFile that we'll use to read the contents
+		local file = RageFileUtil.CreateRageFile()
+		-- the second argument here (the 2) signifies
+		-- that we are opening the file in write mode
+		if not file:Open(path, 2) then SM("Could not open HashLookup.txt") return end
+		for dir,charts in pairs(SL.Global.HashLookup) do
+			file:PutLine(dir)
+			for diff,stepTypes in pairs(charts) do
+				for stepType, hash in pairs(stepTypes) do
+					file:PutLine(diff.."\t"..stepType.."\t"..hash)
+				end
+			end
+		end
+		file:Close()
+		file:destroy()
+	end
+end
+
+--- Returns a hash from the lookup table or nil if none is found. uses current song/steps if they're not supplied
+---@param player string
+---@param inputSong Song
+---@param inputSteps Steps
+function GetHash(player, inputSong, inputSteps)
+	local pn = assert(player,"GetHash requires a player") and ToEnumShortString(player)
+	local song = inputSong or GAMESTATE:GetCurrentSong()
+	local steps = inputSteps or GAMESTATE:GetCurrentSteps(pn)
+	local difficulty = ToEnumShortString(steps:GetDifficulty())
+	local stepsType = ToEnumShortString(GetStepsType()):gsub("_","-"):lower()
+	--if hashes aren't loaded up front there may not be a table.
+	if SL.Global.HashLookup[song:GetSongDir()] and
+	--if there's a table but we couldn't generate a hash it'll be empty. use next to make sure there's something there
+	next(SL.Global.HashLookup[song:GetSongDir()]) and
+	SL.Global.HashLookup[song:GetSongDir()][difficulty] then
+		return SL.Global.HashLookup[song:GetSongDir()][difficulty][stepsType]
+	else
+		return nil
+	end
+end
+
+--- Overwrite the HashLookup table for the current song. Also redo StreamData for the song
+--- This is called in ScreenEvaluation Common when GenerateHash doesn't match the HashLookup
+--- (indicates that the chart itself was changed while leaving the name/directory alone)
+function AddCurrentHash()
+	local song = GAMESTATE:GetCurrentSong()
+	local dir = song:GetSongDir()
+	SL.Global.HashLookup[dir] = {}
+	local allSteps = song:GetAllSteps()
+	for _,steps in pairs(allSteps) do
+		local stepsType = ToEnumShortString(steps:GetStepsType()):gsub("_","-"):lower()
+		local difficulty = ToEnumShortString(steps:GetDifficulty())
+		if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
+			Trace("Adding hash for "..dir.."("..difficulty..")")
+			local hash = GenerateHash(steps,stepsType,difficulty)
+			if #hash > 0 then
+				Trace("Success")
+				if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
+				SL.Global.HashLookup[dir][difficulty][stepsType] = hash
+				Trace("Adding stream data for "..dir.."("..difficulty..")")
+				AddToStreamData(steps, stepsType, difficulty, 16)
+			end
+		end
+	end
+	SaveHashLookup()
+	SaveStreamData()
+end
+
+--- Full density tables are saved for the graph but it takes up a lot of space since each measure
+--- has a line. Convert the table so consecutive measures of the same density are combined.
+--- The result will be something like 5x10.15 indicating 5 consecutive measures of 10.15
+local function CompressDensity( t )
+	local previous = round(t[1],2)
+	local count = 0
+	local results = {}
+	for density in ivalues(t) do
+		local current = round(density,2)
+		if current ~= previous then
+			table.insert(results,count.."x"..previous)
+			count = 1
+			previous = current
+		else
+			count = count + 1
+		end
+	end
+	table.insert(results, count.."x"..previous)
+	return results
+end
+
+
+--- Uncompress the density so that each item in the table corresponds to a single measure.
+--- Takes the 5x10.15 format from CompressDensity() and undoes it.
+local function UncompressDensity( t )
+	local results = {}
+	for density in ivalues(t) do
+		local count, value  = density:match("(%d+)x(%d+.?%d?%d?)")
+		for i=1, tonumber(count) do
+			table.insert(results,value)
+		end
+	end
+	return results
+end
+
 --- Writes the stream data table to disk.
 function SaveStreamData()
 	Trace("Saving StreamData")
@@ -312,7 +346,6 @@ function SaveStreamData()
 		-- that we are opening the file in write mode
 		if not file:Open(path, 2) then SM("Could not open StreamData.txt") return end
 		for hash,data in pairs(SL.Global.StreamData) do
-			Trace("Saving "..data.Name)
 			file:PutLine(data.Name.."\t"..data.Difficulty.."\t"..data.StepsType.."\t"..hash)
 			file:PutLine(
 				data.PeakNPS.."\t"..data.NpsMode.."\t"..data.Percent.."\t"..

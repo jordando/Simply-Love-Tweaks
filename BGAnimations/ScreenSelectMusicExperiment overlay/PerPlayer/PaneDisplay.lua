@@ -69,23 +69,37 @@ local af = Def.ActorFrame{
 		--TODO right now we don't show any of this if two players are joined. I'd like to find a way for both to see it
 		self:stoptweening():linear(.3):diffusealpha(1)
 		local song = GAMESTATE:GetCurrentSong()
-		if not GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentSteps(player) and song and ThemePrefs.Get("ShowExtraSongInfo") and GAMESTATE:GetNumSidesJoined() < 2 then
-			InitializeMeasureCounterAndModsLevel(player)
-			if SL[pn].Streams.Measures then --used to be working without this... not sure what changed but don't run any of this stuff if measures is not filled in
+		local steps = GAMESTATE:GetCurrentSteps(player)
+		if not GAMESTATE:IsCourseMode() and steps and song and ThemePrefs.Get("ShowExtraSongInfo") and GAMESTATE:GetNumSidesJoined() < 2 then
+			local hash = GetHash(player, song, steps)
+			local streamData = GetStreamData(hash)
+			local non16thMeasureCounter = true
+			-- Saved data is in 16ths so check here that we're not trying to use 12ths or 24ths or anything
+			if SL[pn].ActiveModifiers.MeasureCounter == "None" or SL[pn].ActiveModifiers.MeasureCounter == "16th" then
+				non16thMeasureCounter = false
+			end
+			-- If we have stream data saved then we don't need to parse the chart to get it.
+			if streamData and streamData.TotalMeasures and not non16thMeasureCounter then
+				SL[pn].Streams = streamData
+			else
+				InitializeMeasureCounterAndModsLevel(player)
+			end
+			if SL[pn].Streams.TotalMeasures then --used to be working without this... not sure what changed but don't run any of this stuff if measures is not filled in
 				if SL[pn].Streams.TotalStreams == 0 then
-					self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "NoStream"))
+					self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "NoStream").." ("..SL[pn].ActiveModifiers.MeasureCounter..")")
 					self:GetChild("TotalStream"):settext("")
 				else
 					local toWrite = THEME:GetString("ScreenSelectMusicExperiment", "Total").." :"
-					local measureType = SL[pn].ActiveModifiers.MeasureCounter
+					local measureType = SL[pn].ActiveModifiers.MeasureCounter == "None" and "16th" or SL[pn].ActiveModifiers.MeasureCounter
 					toWrite = toWrite..SL[pn].Streams.TotalStreams.." ("..SL[pn].Streams.Percent.."%) (>="..measureType
 					toWrite = toWrite.." "..THEME:GetString("ScreenSelectMusicExperiment", "NoteStream")..")"
 					self:GetChild("Measures"):settext(toWrite)
-					if SL[pn].Streams.Segments > 15 then self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown3)
+					self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown2)
+					if string.len(SL[pn].Streams.Breakdown2) > 35 then self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown3)
 					else self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown2) end
 				end
 			else
-				if SL[pn].ActiveModifiers.MeasureCounter == "None" then 
+				if SL[pn].ActiveModifiers.MeasureCounter == "None" then
 					self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "StreamCounterOff"))
 				else
 					self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "UnableToParse"))
