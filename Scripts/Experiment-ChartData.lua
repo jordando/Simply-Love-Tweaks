@@ -17,6 +17,7 @@ local function AddToHashLookup()
 		if not SL.Global.HashLookup[dir] then SL.Global.HashLookup[dir] = {} end
 		local allSteps = song.song:GetAllSteps()
 		for _,steps in pairs(allSteps) do
+			SM(dir.."("..ToEnumShortString(steps:GetDifficulty()))
 			if string.find(SONGMAN:GetSongFromSteps(steps):GetSongFilePath(),".dwi$") then
 				Trace("Hashes can't be generated for .DWI files")
 				Trace("Could not generate hash for "..dir)
@@ -27,20 +28,22 @@ local function AddToHashLookup()
 				if not SL.Global.HashLookup[dir][difficulty] or not SL.Global.HashLookup[dir][difficulty][stepsType] then
 					Trace("Adding hash for "..dir.."("..difficulty..")")
 					local hash = GenerateHash(steps,stepsType,difficulty)
-					coroutine.yield() --resumed in ScreenLoadCustomScores.lua
 					if #hash > 0 then
-						Trace("Success")
+						Trace("Successly generated hash")
 						if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
 						SL.Global.HashLookup[dir][difficulty][stepsType] = hash
 						newChartsFound = true
+						Trace("Adding stream data for "..dir.."("..difficulty..")")
+						GetStreamData(steps, stepsType, difficulty, 16)
 					else
 						SM("WARNING: Could not generate hash for "..dir)
 					end
+					coroutine.yield() --resumed in ScreenLoadCustomScores.lua
 				end
 			end
 		end
 	end
-	if newChartsFound then SaveHashLookup() end
+	if newChartsFound then SaveHashLookup() SaveStreamData() end
 end
 
 --- Looks for a file in the "Other" folder of the theme called HashLookup.txt to load from.
@@ -52,7 +55,7 @@ end
 --							  }
 function LoadHashLookup()
 	local contents
-	local hashLookup = {}
+	local hashLookup = SL.Global.HashLookup
 	local path = THEME:GetCurrentThemeDirectory() .. "Other/HashLookup.txt"
 	if FILEMAN:DoesFileExist(path) then
 		contents = GetFileContents(path)
@@ -67,7 +70,6 @@ function LoadHashLookup()
 				hashLookup[dir][item[1]][item[2]] = item[3]
 			end
 		end
-		SL.Global.HashLookup = hashLookup
 	end
 	if ThemePrefs.Get("LoadCustomScoresUpfront") then AddToHashLookup() end
 end
@@ -133,10 +135,13 @@ function AddCurrentHash()
 				Trace("Success")
 				if not SL.Global.HashLookup[dir][difficulty] then SL.Global.HashLookup[dir][difficulty] = {} end
 				SL.Global.HashLookup[dir][difficulty][stepsType] = hash
+				Trace("Adding stream data for "..dir.."("..difficulty..")")
+				GetStreamData(steps, stepsType, difficulty, 16)
 			end
 		end
 	end
 	SaveHashLookup()
+	SaveStreamData()
 end
 
 -- Get the mode of a table.  Returns a table of values.
@@ -145,11 +150,13 @@ local function GetMode( t )
   local counts={}
 
   for k, v in pairs( t ) do
-    if counts[v] == nil then
-      counts[v] = 1
-    else
-      counts[v] = counts[v] + 1
-    end
+	if v ~= 0 then
+		if counts[v] == nil then
+		counts[v] = 1
+		else
+		counts[v] = counts[v] + 1
+		end
+	end
   end
 
   local biggestCount = 0
@@ -204,16 +211,27 @@ function GetStreamData(steps, stepsType, difficulty, notesPerMeasure)
     local song = SONGMAN:GetSongFromSteps(steps)
     local hash = GetHash(PLAYER_1,song, steps) --TODO take out the player thing, only needed when we don't give a song/steps
     --exit out if we don't have a hash
-    if not hash then return end
-    local peakNPS, densityT = GetNPSperMeasure(song,steps)
-    local streamData = {}
+	if not hash then return end
+	local streamData = {}
+	local peakNPS, densityT = GetNPSperMeasure(song,steps)
+	if not peakNPS then peakNPS = -1 end
+	if not densityT then
+		streamData.Density = {0}
+		streamData.NpsMode = -1
+	else
+		streamData.Density = densityT
+		local modeT = GetMode(densityT)
+		if next(modeT) then
+			if #modeT and #modeT > 1 then table.sort(modeT) end
+			streamData.NpsMode = modeT[#modeT]
+		else streamData.NpsMode = -1 end
+	end
+	streamData.Name = song:GetMainTitle()
+	streamData.Difficulty = difficulty
+	streamData.StepsType = stepsType
     streamData.PeakNPS = peakNPS
-	streamData.Density = densityT
-	local modeT = GetMode(densityT)
-	if #modeT and #modeT > 1 then modeT = table.sort(modeT) end
-	streamData.NpsMode = modeT[#modeT]
 	local measures = GetStreams(steps, stepsType, difficulty, notesPerMeasure)
-	if measures then
+	if measures and next(measures) then
 		streamData.TotalMeasures = measures[#measures].streamEnd
         local lastSequence = #measures
 		local totalStreams = 0
@@ -274,13 +292,18 @@ function GetStreamData(steps, stepsType, difficulty, notesPerMeasure)
         end
         SL.Global.StreamData[hash] = streamData
         return true
-    else
+	else
+		streamData.Percent, streamData.AdjustedPercent, streamData.TotalStreams,
+		streamData.TotalMeasures, streamData.Breakdown1, streamData.Breakdown2,
+		streamData.Breakdown3 = 0, 0, 0, 0, 0, 0, 0
+		SL.Global.StreamData[hash] = streamData
         return false
     end
 end
 
 --- Writes the stream data table to disk.
 function SaveStreamData()
+	Trace("Saving StreamData")
 	local path = THEME:GetCurrentThemeDirectory() .. "Other/StreamData.txt"
 	if SL.Global.StreamData then
 		-- create a generic RageFile that we'll use to read the contents
@@ -289,7 +312,8 @@ function SaveStreamData()
 		-- that we are opening the file in write mode
 		if not file:Open(path, 2) then SM("Could not open StreamData.txt") return end
 		for hash,data in pairs(SL.Global.StreamData) do
-			file:PutLine(hash)
+			Trace("Saving "..data.Name)
+			file:PutLine(data.Name.."\t"..data.Difficulty.."\t"..data.StepsType.."\t"..hash)
 			file:PutLine(
 				data.PeakNPS.."\t"..data.NpsMode.."\t"..data.Percent.."\t"..
 				data.AdjustedPercent.."\t"..data.TotalStreams.."\t"..
@@ -304,13 +328,17 @@ function SaveStreamData()
 end
 
 local function ParseLoad(results, input)
-	local hash = input[1]
+	local name, difficulty, stepsType, hash = unpack(Split(input[1], "\t"))
 	if not results[hash] then results[hash] = {} end
-	local splitInput = Split(input[2],"\t")
+	results[hash].Name = name
+	results[hash].Difficulty = difficulty
+	results[hash].StepsType = stepsType
+
 	results[hash].PeakNPS, results[hash].NpsMode, results[hash].Percent,
 	results[hash].AdjustedPercent, results[hash].TotalStreams,
 	results[hash].TotalMeasures, results[hash].Breakdown1, results[hash].Breakdown2,
-	results[hash].Breakdown3 = unpack(splitInput)
+	results[hash].Breakdown3 = unpack(Split(input[2],"\t"))
+
 	results[hash].Density = UncompressDensity(Split(input[3]," "))
 	--return results
 end

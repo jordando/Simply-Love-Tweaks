@@ -46,6 +46,8 @@ return Def.ActorFrame{
         InitCommand=function(self)
             self:diffusealpha(0):linear(tweentime):diffusealpha(1)
             self:x(WideScale(-250,-400)):horizalign(left):diffuse( ThemePrefs.Get("RainbowMode") and Color.White or Color.Black ):zoom(0.6)
+            --Load streamData
+            LoadStreamData()
             --Load scores from separate txt file (See /scripts/Experiment-Scores.lua)
             --only if we're in Experiment mode using custom scores
             for player in ivalues(GAMESTATE:GetHumanPlayers()) do
@@ -69,18 +71,24 @@ return Def.ActorFrame{
         SetupCoroutineCommand = function(self)
             self:stoptweening()
             if coroutine.status(co) == "suspended" then
+                Trace("COROUTINE SUSPENDED")
                 count = count + 1
                 self:settext(text..count)
                 Trace("COROUTINE: "..count)
                 coroutine.resume(co)
             end
+            Trace("Yielded, checking dead")
             if coroutine.status(co) ~= "dead" then
+                Trace("COROUTINE NOT DEAD")
                 self:sleep(.3):queuecommand("SetupCoroutine")
             else
+            Trace("DEAD")
                 self:settext("DONE")
                 if finish then
+                    Trace("FINISH")
                     self:queuecommand("Finish")
                 else
+                    Trace("LOAD HASH")
                     self:queuecommand("LoadHash")
                 end
             end
