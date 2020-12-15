@@ -3,7 +3,7 @@ local pn = ToEnumShortString(player)
 
 local zoom_factor = WideScale(0.8,0.9)
 
-local labelX_col1 = WideScale(-130,-70)
+local labelX_col1 = WideScale(-130,-90)
 
 local InitializeMeasureCounterAndModsLevel = LoadActor(THEME:GetPathB("","_modules/MeasureCounterAndModsLevel.lua"))
 local TechParser
@@ -82,6 +82,8 @@ local af = Def.ActorFrame{
 			if streamData and streamData.TotalMeasures and not non16thMeasureCounter then
 				SL[pn].Streams = streamData
 			else
+				--clear out whatever might have been in Streams and try to parse the chart
+				SL[pn].Streams = {}
 				InitializeMeasureCounterAndModsLevel(player)
 			end
 			if SL[pn].Streams.TotalMeasures then --used to be working without this... not sure what changed but don't run any of this stuff if measures is not filled in
@@ -91,12 +93,20 @@ local af = Def.ActorFrame{
 				else
 					local toWrite = THEME:GetString("ScreenSelectMusicExperiment", "Total").." :"
 					local measureType = SL[pn].ActiveModifiers.MeasureCounter == "None" and "16th" or SL[pn].ActiveModifiers.MeasureCounter
-					toWrite = toWrite..SL[pn].Streams.TotalStreams.." ("..SL[pn].Streams.Percent.."%) (>="..measureType
-					toWrite = toWrite.." "..THEME:GetString("ScreenSelectMusicExperiment", "NoteStream")..")"
+					toWrite = toWrite..SL[pn].Streams.TotalStreams
+					if SL[pn].Streams.TotalStreams ~= "0" then
+							toWrite = toWrite.." ("..SL[pn].Streams.Percent.."%)"
+						if SL[pn].Streams.Percent ~=  SL[pn].Streams.AdjustedPercent then
+							toWrite = toWrite.. " (adj. "..SL[pn].Streams.AdjustedPercent.."%)"
+						end
+						toWrite = toWrite.." ("..measureType.." "..THEME:GetString("ScreenSelectMusicExperiment", "Stream")..")"
+						self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown2)
+						if string.len(SL[pn].Streams.Breakdown2) > 35 then self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown3)
+						else self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown2) end
+					else
+						self:GetChild("TotalStream"):settext("")
+					end
 					self:GetChild("Measures"):settext(toWrite)
-					self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown2)
-					if string.len(SL[pn].Streams.Breakdown2) > 35 then self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown3)
-					else self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown2) end
 				end
 			else
 				if SL[pn].ActiveModifiers.MeasureCounter == "None" then
@@ -123,9 +133,18 @@ local af = Def.ActorFrame{
 		GAMESTATE:GetNumSidesJoined() < 2 and
 		GAMESTATE:Env()[pn.."CurrentSteps"] == GAMESTATE:GetCurrentSteps(player)
 		then
+			local hash = GetHash(player, GAMESTATE:GetCurrentSong(), GAMESTATE:GetCurrentSteps(player))
+			local streamData = GetStreamData(hash)
+			local mode
+			if streamData.NpsMode then mode = tonumber(streamData.NpsMode) end
 			local peak = GAMESTATE:Env()[pn.."PeakNPS"] * SL.Global.ActiveModifiers.MusicRate
 			local conversion = peak / 16 * 240
-			self:GetChild("PeakNPS"):settext( THEME:GetString("ScreenGameplay", "PeakNPS") .. ": " .. round(peak,2) .. " (" .. round(conversion,0) .. "BPM 16ths)")
+			if mode and round(peak,2) ~= round(mode,2) then
+				local modeConversion = mode / 16 * 240
+				self:GetChild("PeakNPS"):settext( "Peak Speed: " .. round(conversion,0) .." BPM / Mode Speed: "..round(modeConversion,0).. " BPM")
+			else
+				self:GetChild("PeakNPS"):settext("Peak Speed: " .. round(conversion,0) .. " BPM 16ths")
+			end
 			if ThemePrefs.Get("EnableTechParser") then
 				local tech = TechParser(GAMESTATE:GetCurrentSteps(player),"dance-single",ToEnumShortString(GAMESTATE:GetCurrentSteps(player):GetDifficulty()))
 				if tech then

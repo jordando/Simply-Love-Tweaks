@@ -77,9 +77,9 @@ local GroupNames = {
 -- For example: PreloadedGroups["Title"]["A"] contains an indexed table of all songs starting with A
 local PreloadedGroups = {}
 
--- When songs should be ordered by difficulty and then BPM keep track of them in this table since we need to split
+-- When songs should be ordered by something special keep track of them in this table since we need to split
 -- songs depending on the number of charts
- DifficultyBPM = {}
+SpecialOrder = {}
 
 -- A table of tagged songs loaded from Other/TaggedSongs.txt
 -- Each item in the table is a table with the following items: customGroup, title, actualGroup
@@ -585,16 +585,25 @@ function GetSortFunction()
 				return k1:GetDisplayBpms()[2] < k2:GetDisplayBpms()[2]
 			end
 		end
-	elseif SL.Global.Order == "Difficulty/BPM" then
+	elseif SL.Global.Order == "Difficulty/BPM" or SL.Global.Order == "Speed/BPM" then
+		local sortType = SL.Global.Order == "Difficulty/BPM" and "bpm" or "peak"
 		return function(k1,k2)
 			--Difficulty/BPM takes a normal songlist before adding additional params and sorting again
 			--So if there are no additional params set then just return a normal alphabetical sorted list
-			if not k1.song then return string.lower(k1:GetMainTitle()) < string.lower(k2:GetMainTitle()) end 
+			if not k1.song then return string.lower(k1:GetMainTitle()) < string.lower(k2:GetMainTitle()) end
 			if k1.difficulty == k2.difficulty then
-				if k1.bpm == k2.bpm then
+				--if one has a value but the other doesn't
+				if not k1[sortType] and k2[sortType] then
+					return k1.bpm < k2[sortType]
+				elseif k1[sortType] and not k2[sortType] then
+					return k1[sortType] < k2.bpm
+				elseif not k1[sortType] and not k2[sortType] then
 					return string.lower(k1.song:GetMainTitle()) < string.lower(k2.song:GetMainTitle())
-				else 
-					return k1.bpm < k2.bpm
+				end
+				if k1[sortType] == k2[sortType] then
+					return string.lower(k1.song:GetMainTitle()) < string.lower(k2.song:GetMainTitle())
+				else
+					return k1[sortType] < k2[sortType]
 				end
 			else
 				return k1.difficulty < k2.difficulty
@@ -633,24 +642,32 @@ end
 --- After splitting, GetSongList won't match up so we have to do something else. There's also a special table we put this in.
 function CreateSpecialSongList(inputSongList)
 	local songList = inputSongList
-	DifficultyBPM = {}
+	SpecialOrder = {}
 	for song in ivalues(songList) do
 		for i = 1,#song:GetStepsByStepsType(GetStepsType()) do
 			if ValidateChart(song,song:GetStepsByStepsType(GetStepsType())[i]) then
-				table.insert(DifficultyBPM,{song=song,difficulty=song:GetStepsByStepsType(GetStepsType())[i]:GetMeter(),bpm=song:GetDisplayBpms()[2]})
+				local steps = song:GetStepsByStepsType(GetStepsType())[i]
+				local hash = GetHash(PLAYER_1,song,steps)
+				local streamData
+				if hash then streamData = GetStreamData(hash) end
+				if streamData and streamData.PeakNPS then
+					table.insert(SpecialOrder,{song=song,difficulty=steps:GetMeter(),bpm=song:GetDisplayBpms()[2],peak=streamData.PeakNPS/16*240})
+				else
+					table.insert(SpecialOrder,{song=song,difficulty=song:GetStepsByStepsType(GetStepsType())[i]:GetMeter(),bpm=song:GetDisplayBpms()[2]})
+				end
 			end
 		end
 	end
-	table.sort(DifficultyBPM, GetSortFunction())
+	table.sort(SpecialOrder, GetSortFunction())
 	local specialList = {}
-	for item in ivalues(DifficultyBPM) do
+	for item in ivalues(SpecialOrder) do
 		specialList[#specialList+1] = item.song
 	end
 	return specialList
 end
 
-function GetDifficultyBPM(index)
-	return DifficultyBPM[index]
+function GetSpecialOrder(index)
+	return SpecialOrder[index]
 end
 
 --- Create groups for every possible group in the SortGroups table

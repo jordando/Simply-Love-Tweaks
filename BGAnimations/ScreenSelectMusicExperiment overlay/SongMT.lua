@@ -103,8 +103,15 @@ local song_mt = {
 						SlideBackIntoGridCommand=function(subself) 
 							if self.song  ~= "CloseThisFolder" then 
 								if SL.Global.Order == "Difficulty/BPM" then
-									local block = GetDifficultyBPM(self.index)
+									local block = GetSpecialOrder(self.index)
 									subself:settext( "["..block.difficulty.."]["..math.floor(block.bpm).."] "..self.song:GetDisplayMainTitle() ):maxwidth(200):zoom(1.2)
+								elseif SL.Global.Order == "Speed/BPM" then
+									local block = GetSpecialOrder(self.index)
+									if block.peak then
+										subself:settext( "["..block.difficulty.."]["..math.floor(block.peak).."] "..self.song:GetDisplayMainTitle() ):maxwidth(200):zoom(1.2)
+									else
+										subself:settext( self.song:GetDisplayMainTitle() ):maxwidth(190):zoom(1.2)
+									end
 								else
 									subself:settext( self.song:GetDisplayMainTitle() ):maxwidth(190):zoom(1.2)
 								end
@@ -312,8 +319,15 @@ local song_mt = {
 				self.song = item.song
 				self.index = item.index
 				if SL.Global.Order == "Difficulty/BPM" then
-					local block = GetDifficultyBPM(item.index)
-					self.title_bmt:settext( "["..block.difficulty.."]["..math.floor(block.bpm).."] "..self.song:GetDisplayMainTitle() )
+					local block = GetSpecialOrder(item.index)
+					self.title_bmt:settext( "["..block.difficulty.."] ["..math.floor(block.bpm).."] "..self.song:GetDisplayMainTitle() )
+				elseif SL.Global.Order == "Speed/BPM" then
+					local block = GetSpecialOrder(item.index)
+					if block.peak then
+						self.title_bmt:settext( "["..block.difficulty.."] ["..math.floor(block.peak).."] "..self.song:GetDisplayMainTitle() )
+					else
+						self.title_bmt:settext( "["..block.difficulty.."] "..self.song:GetDisplayMainTitle() )
+					end
 				else
 					self.title_bmt:settext( self.song:GetDisplayMainTitle() )
 					self.subtitle_bmt:settext(self.song:GetDisplaySubTitle())

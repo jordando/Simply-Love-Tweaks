@@ -16,12 +16,20 @@ return Def.ActorFrame {
 			--if order of songs is difficulty/bpm then we want to have the correct difficulty automatically selected
 			if SL.Global.Order == "Difficulty/BPM" and params.index then
 				for steps in ivalues(params.song:GetStepsByStepsType(GetStepsType())) do
-					if steps:GetMeter() == DifficultyBPM[params.index].difficulty then
+					if steps:GetMeter() == SpecialOrder[params.index].difficulty then
 						GAMESTATE:SetCurrentSteps(pn,steps)
 						params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]] = Difficulty:Reverse()[GAMESTATE:GetCurrentSteps(pn):GetDifficulty()]
 						break
 					end
 				end
+			elseif SL.Global.Order == "Speed/BPM" and params.index then
+					for steps in ivalues(params.song:GetStepsByStepsType(GetStepsType())) do
+						if steps:GetMeter() == SpecialOrder[params.index].difficulty then
+							GAMESTATE:SetCurrentSteps(pn,steps)
+							params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]] = Difficulty:Reverse()[GAMESTATE:GetCurrentSteps(pn):GetDifficulty()]
+							break
+						end
+					end
 			--if we're grouping by grade then we want to keep the chosen grade set for the next song. (only if at least one set of steps has a grade)
 			--note that we set params_for_input.DifficultyIndex manually here because we might be forcing the cursor to a different difficulty
 			elseif SL.Global.GroupType == "Grade" and SL.Global.GradeGroup ~= "No_Grade" then
