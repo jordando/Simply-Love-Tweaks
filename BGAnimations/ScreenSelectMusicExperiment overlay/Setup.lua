@@ -137,7 +137,7 @@ local GetGroupInfo = function()
 					if ValidateChart(song, steps, mpn) then
 						--add chart to info[group][difficultyBlock]
 						info[group]['UnsortedLevel'][tostring(steps:GetMeter())] = 1 + (tonumber(info[group]['UnsortedLevel'][tostring(steps:GetMeter())]) or 0)
-						local hash = GetHash(mpn,song,steps)
+						local hash = GetHash(steps)
 						if hash then
 							local highScore = GetScores(mpn,hash,false,true)
 							if highScore and highScore[1].grade ~= "Failed" then

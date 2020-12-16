@@ -50,7 +50,7 @@ local af =
 	SetCommand = function(self)
 		local player_score, player_date, first_pass, last_played, times_played
 		if GAMESTATE:GetCurrentSong() then --if there's no song there won't be a hash
-			local hash = GetHash(player)
+			local hash = GetCurrentHash(player)
 			if hash and SL[pn].Scores[hash] then
 				local scores = GetScores(player, hash)
 				if scores then
@@ -60,9 +60,9 @@ local af =
 					player_score = string.format("%.2f%%", 0)
 					player_date = "Never"
 				end
-				first_pass = FormatDate(Split(SL[pn].Scores[GetHash(player)].FirstPass)[1])
-				last_played = FormatDate(Split(SL[pn].Scores[GetHash(player)].LastPlayed)[1])
-				times_played = SL[pn].Scores[GetHash(player)].NumTimesPlayed
+				first_pass = FormatDate(Split(SL[pn].Scores[hash].FirstPass)[1])
+				last_played = FormatDate(Split(SL[pn].Scores[hash].LastPlayed)[1])
+				times_played = SL[pn].Scores[hash].NumTimesPlayed
 			else
 				player_score, _ , player_date = GetNameAndScoreAndDate(PROFILEMAN:GetProfile(player))
 				--if there's a player_score/date then the song is in stats.xml but we can't make a hash for whatever reason

@@ -27,6 +27,9 @@ local function input(event)
 
 			if focus.kind == "SortBy" then
 				SL.Global.GroupType = focus.sort_by
+				--if we're trying to sort by artist then make order type artist as well
+				--TODO when we come out it'll still be sorted by artist which is awkward
+				if SL.Global.GroupType == "Artist" then SL.Global.Order = "Artist" end
 				MESSAGEMAN:Broadcast("GroupTypeChanged")
 				overlay:queuecommand("DirectInputToEngine")
 			-- the player wants to adjust filters

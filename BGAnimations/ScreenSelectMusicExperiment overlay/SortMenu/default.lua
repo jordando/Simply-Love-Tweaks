@@ -94,6 +94,7 @@ local t = Def.ActorFrame {
 		local wheel_options = {
 			{"SortBy", "Group"},
 			{"SortBy", "Title"},
+			{"SortBy", "Artist"},
 			{"SortBy", "BPM"},
 			{"SortBy", "Length"},
 			{"SortBy", "Difficulty"},

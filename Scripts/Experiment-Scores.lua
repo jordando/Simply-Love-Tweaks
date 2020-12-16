@@ -20,7 +20,7 @@ function LoadNewFromStats(player)
 		for chart in ivalues(song:GetAllSteps()) do
 			local difficulty = ToEnumShortString(chart:GetDifficulty())
 			local stepsType = ToEnumShortString(chart:GetStepsType()):gsub("_","-"):lower()
-			local hash = GetHash(player,song,chart)
+			local hash = GetHash(chart)
 			--if there's a hash for the song and profile scores but no custom scores that means the
 			--song wasn't loaded when we did the original LoadFromStats. Add them in now. Ideally
 			--we would read stats.xml again to get things like numTimesPlayed but for now just pull
@@ -322,6 +322,7 @@ function AddScore(player, hash)
 		local number = pss:GetTapNoteScores( "TapNoteScore_"..window )
 		stats[window] = number
 	end
+	--W0 are FA+ blue fantastics and will necessarily be <= W1 (Normal fantastics)
 	stats['W0'] = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame].W0
 	for _, RCType in ipairs(RadarCategories.Types) do
 		local performance = pss:GetRadarActual():GetValue( "RadarCategory_"..RCType )
@@ -393,7 +394,7 @@ function GetBestPass(player, songParam, chartParam)
 	local pn = ToEnumShortString(player)
 	local song = songParam or GAMESTATE:GetCurrentSong()
 	local steps = chartParam or GAMESTATE:GetCurrentSteps(pn)
-	local hash = GetHash(player, song, steps)
+	local hash = GetHash(steps)
 	local chartStats
 	if hash then chartStats = GetChartStats(player,hash) end
 	if chartStats and tonumber(chartStats.BestPass) then
@@ -413,6 +414,7 @@ function GetBestPass(player, songParam, chartParam)
 		return award
 	end
 end
+
 --- Returns the top grade for a given song and chart or nil if there isn't a high score. First tries to
 --- use a custom score. If none is found it checks profile scores in stats.xml.
 --- Respects rate if rateParam is true.
@@ -425,7 +427,7 @@ function GetTopGrade(player, songParam, chartParam, rateParam)
 	local chart = chartParam or GAMESTATE:GetCurrentSteps(player)
 	local grade
 	local pn = ToEnumShortString(player)
-	local hash = GetHash(player,song, chart)
+	local hash = GetHash(chart)
 	if hash then
 		local scores = GetScores(player, hash, rateParam, true)
 		if scores then

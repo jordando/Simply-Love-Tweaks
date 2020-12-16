@@ -148,6 +148,7 @@ local t = Def.ActorFrame {
 			Input.WheelWithFocus = SongWheel
 			Input.WheelWithFocus.container:playcommand("Unhide")
 			SL.Global.GroupToSong = true
+			MESSAGEMAN:Broadcast("CurrentSongChanged",{song=GAMESTATE:GetCurrentSong()})
 		end
 	end,
 	-- Apply player modifiers from profile
@@ -211,8 +212,7 @@ local t = Def.ActorFrame {
 				else
 					num_songs = group_info[GetCurrentGroup()].num_songs
 				end
-				if SL.Global.Order == "Difficulty/BPM" then num_songs = #SpecialOrder end
-				if SL.Global.Order == "Speed/BPM" then num_songs = #SpecialOrder end
+				if IsSpecialOrder() then num_songs = #SpecialOrder end
 				local size = (_screen.h-64) / num_songs --header and footer are each 32
 				local position = params.index and params.index or 0
 				if position == 0 then self:visible(false) --if we're on the close folder option

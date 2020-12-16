@@ -45,6 +45,7 @@ local SortGroups = {
 	Group = {},
 	Tag = {"No Tags Set"}
 }
+SortGroups.Artist = SortGroups.Title
 
 local GroupNames = {
 	Grade = {
@@ -269,8 +270,7 @@ function PruneSongList(song_list)
 end
 
 --- For the groups that are just numbers (Length, BPM) or ugly enums (Grade) we want to give a more descriptive name.
---- Right now this affects Length, BPM, Difficulty, and Grade
--- called by GroupMT.lua
+--- Called by GroupMT.lua
 function GetGroupDisplayName(groupName)
 	local name
 	if SL.Global.GroupType == "Length" then
@@ -284,6 +284,8 @@ function GetGroupDisplayName(groupName)
 		if tonumber(groupName) == 25 then name = name.."+" end
 	elseif SL.Global.GroupType == "Grade" then
 		name = GroupNames["Grade"][groupName]
+	elseif SL.Global.GroupType == "Artist" then
+		name = "Artist: "..groupName
 	end
 	return name and name or groupName
 end
@@ -297,7 +299,7 @@ function GetGroups(inputGroup)
 	else return SortGroups[group] end
 end
 
--- Called by __index InitCommand in GroupMT.lua (ScreenSelectMusicExperiment overlay)
+--- Called by __index InitCommand in GroupMT.lua (ScreenSelectMusicExperiment overlay)
 --- Returns a string containing the group a song is part of. If no params are given then it uses the current song
 --- (or the last song seen if we're on "CloseThisFolder" or the groupwheel).
 --- For grade group it uses the MasterPlayer's scores (and completely ignores the other player)
@@ -306,7 +308,7 @@ function GetCurrentGroup(song)
 	--no song if we're on Close This Folder so use the last seen song
 	local current_song = song and song or GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
 	local starting_group = current_song:GetMainTitle()
-	if SL.Global.GroupType == "Title" then 
+	if SL.Global.GroupType == "Title" then
 		if string.find(starting_group, "^%d") then
 			starting_group = "Num"
 		elseif string.find(starting_group, "^%W") then
@@ -314,9 +316,18 @@ function GetCurrentGroup(song)
 		else
 			starting_group = string.sub(starting_group, 1, 1)
 		end
+	elseif SL.Global.GroupType == "Artist" then
+		local artist = current_song:GetDisplayArtist()
+			if string.find(artist, "^%d") then
+				starting_group = "Num"
+			elseif string.find(artist, "^%W") then
+				starting_group = "Other"
+			else
+				starting_group = string.sub(artist, 1, 1)
+			end
 	elseif SL.Global.GroupType == "Tag" then starting_group = GetTags(current_song) and GetTags(current_song)[1] or "No Tags Set" --TODO if song is in multiple tags this just grabs the first
 	elseif SL.Global.GroupType == "Group" then starting_group = current_song:GetGroupName()
-	elseif SL.Global.GroupType == "BPM" then 
+	elseif SL.Global.GroupType == "BPM" then
 		local speed = current_song:GetDisplayBpms()[2]
 		starting_group = speed - (speed % 10)
 		if starting_group > 300 then starting_group = 300
@@ -360,6 +371,12 @@ function GetGroupIndex(groups)
 			elseif group == "Other" then
 				if string.find(current_song:GetMainTitle(), "^%W") then group_index = k end
 			elseif string.sub(current_song:GetMainTitle(), 1, 1) == string.sub(group, 1, 1) then group_index = k end
+		elseif SL.Global.GroupType == "Artist" then
+			if group == "Num" then
+				 if string.find(current_song:GetDisplayArtist(), "^%d") then group_index = k end
+			elseif group == "Other" then
+				if string.find(current_song:GetDisplayArtist(), "^%W") then group_index = k end
+			elseif string.sub(current_song:GetDisplayArtist(), 1, 1) == string.sub(group, 1, 1) then group_index = k end
 		elseif SL.Global.GroupType == "BPM" then
 			if tonumber(group) == 100 then
 				 if current_song:GetDisplayBpms()[2] < 110 then
@@ -503,6 +520,31 @@ local CreateGroup = Def.ActorFrame{
 	--------------------------------------------------------------------------------------
 	--provided a group title as a string, make a list of songs that fit that group
 	--returns an indexed table of song objects
+	Artist = function(group)
+		local songs = {}
+		for song in ivalues(SONGMAN:GetAllSongs()) do
+			-- this should be guaranteed by this point, but better safe than segfault
+			if song:HasStepsType(GetStepsType()) then
+				if group == "Num" then
+					 if string.find(song:GetDisplayArtist(), "^%d") then
+						songs[#songs+1] = song
+					end
+				elseif group == "Other" then
+					if string.find(song:GetDisplayArtist(), "^%W") then
+						songs[#songs+1] = song
+					end
+				elseif group == string.sub(song:GetDisplayArtist(), 1, 1) then
+					songs[#songs+1] = song
+				end
+			end
+		end
+
+		return songs
+	end,
+
+	--------------------------------------------------------------------------------------
+	--provided a group title as a string, make a list of songs that fit that group
+	--returns an indexed table of song objects
 	Title = function(group)
 		local songs = {}
 		for song in ivalues(SONGMAN:GetAllSongs()) do
@@ -567,8 +609,16 @@ local CreateGroup = Def.ActorFrame{
 }
 
 ----------------------------------------------------------------------------------------------
--- Sorting
+-- Ordering how songs are displayed within groups
 ----------------------------------------------------------------------------------------------
+
+--- Returns the special field if it's an order that separates by chart or nil if a normal order
+function IsSpecialOrder()
+	local conversion = {}
+	conversion["Difficulty/Speed"] = "peak"
+	conversion["Difficulty/BPM"] = "bpm"
+	return conversion[SL.Global.Order]
+end
 
 --- Controls the order songs should be displayed from within a group.
 --- Default is alphabetical
@@ -576,6 +626,10 @@ function GetSortFunction()
 	if SL.Global.Order == "Alphabetical" then
 		return function(k1,k2)
 			return string.lower(k1:GetMainTitle()) < string.lower(k2:GetMainTitle())
+		end
+	elseif SL.Global.Order == "Artist" then
+		return function(k1,k2)
+			return string.lower(k1:GetDisplayArtist()) < string.lower(k2:GetDisplayArtist())
 		end
 	elseif SL.Global.Order == "BPM" then
 		return function(k1,k2)
@@ -585,10 +639,10 @@ function GetSortFunction()
 				return k1:GetDisplayBpms()[2] < k2:GetDisplayBpms()[2]
 			end
 		end
-	elseif SL.Global.Order == "Difficulty/BPM" or SL.Global.Order == "Speed/BPM" then
-		local sortType = SL.Global.Order == "Difficulty/BPM" and "bpm" or "peak"
+	elseif IsSpecialOrder() then
+		local sortType = IsSpecialOrder()
 		return function(k1,k2)
-			--Difficulty/BPM takes a normal songlist before adding additional params and sorting again
+			--Special orders take a normal songlist before adding additional params and sorting again
 			--So if there are no additional params set then just return a normal alphabetical sorted list
 			if not k1.song then return string.lower(k1:GetMainTitle()) < string.lower(k2:GetMainTitle()) end
 			if k1.difficulty == k2.difficulty then
@@ -647,7 +701,7 @@ function CreateSpecialSongList(inputSongList)
 		for i = 1,#song:GetStepsByStepsType(GetStepsType()) do
 			if ValidateChart(song,song:GetStepsByStepsType(GetStepsType())[i]) then
 				local steps = song:GetStepsByStepsType(GetStepsType())[i]
-				local hash = GetHash(PLAYER_1,song,steps)
+				local hash = GetHash(steps)
 				local streamData
 				if hash then streamData = GetStreamData(hash) end
 				if streamData and streamData.PeakNPS then

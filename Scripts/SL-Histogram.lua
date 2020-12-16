@@ -121,7 +121,7 @@ function NPS_Histogram(player, width, height, upColor, lowColor)
 		LessLagMessageCommand=function(self)
 			if GAMESTATE:IsHumanPlayer(player) and GAMESTATE:GetCurrentSong() then
 				--check to see if we have the stream info for this song saved already
-				local hash = GetHash(player, GAMESTATE:GetCurrentSong(), GAMESTATE:GetCurrentSteps(player))
+				local hash = GetCurrentHash(player)
 				local streams = GetStreamData(hash)
 				if streams and streams.PeakNPS and streams.Density then
 					self:playcommand("SetDensity", {streams.PeakNPS, streams.Density})

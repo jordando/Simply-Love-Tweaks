@@ -49,9 +49,9 @@ end
 --- If a density table can't be made it's set to {0} and NpsMode is set to -1
 local function AddToStreamData(steps, stepsType, difficulty, notesPerMeasure)
     local song = SONGMAN:GetSongFromSteps(steps)
-    local hash = GetHash(PLAYER_1,song, steps) --TODO take out the player thing, only needed when we don't give a song/steps
+    local hash = GetHash(steps)
     --exit out if we don't have a hash
-	if not hash then return end
+	if not hash then return false end
 	local streamData = {}
 	local peakNPS, densityT = GetNPSperMeasure(song,steps) --returns nil if it can't get it
 	if not peakNPS then peakNPS = -1 end
@@ -252,14 +252,28 @@ function SaveHashLookup()
 	end
 end
 
---- Returns a hash from the lookup table or nil if none is found. uses current song/steps if they're not supplied
----@param player string
----@param inputSong Song
+--- Returns a hash for the given steps from the lookup table or nil if none is found.
 ---@param inputSteps Steps
-function GetHash(player, inputSong, inputSteps)
-	local pn = assert(player,"GetHash requires a player") and ToEnumShortString(player)
-	local song = inputSong or GAMESTATE:GetCurrentSong()
-	local steps = inputSteps or GAMESTATE:GetCurrentSteps(pn)
+function GetHash(inputSteps)
+	local song = SONGMAN:GetSongFromSteps(inputSteps)
+	local difficulty = ToEnumShortString(inputSteps:GetDifficulty())
+	local stepsType = ToEnumShortString(GetStepsType()):gsub("_","-"):lower()
+	--if hashes aren't loaded up front there may not be a table.
+	if SL.Global.HashLookup[song:GetSongDir()] and
+	--if there's a table but we couldn't generate a hash it'll be empty. use next to make sure there's something there
+	next(SL.Global.HashLookup[song:GetSongDir()]) and
+	SL.Global.HashLookup[song:GetSongDir()][difficulty] then
+		return SL.Global.HashLookup[song:GetSongDir()][difficulty][stepsType]
+	else
+		return nil
+	end
+end
+
+--- Returns a hash from the lookup table or nil if none is found. Uses the current song/steps for the given player
+function GetCurrentHash(player)
+	local pn = assert(player,"GetCurrentHash requires a player") and ToEnumShortString(player)
+	local song = GAMESTATE:GetCurrentSong()
+	local steps = GAMESTATE:GetCurrentSteps(pn)
 	local difficulty = ToEnumShortString(steps:GetDifficulty())
 	local stepsType = ToEnumShortString(GetStepsType()):gsub("_","-"):lower()
 	--if hashes aren't loaded up front there may not be a table.

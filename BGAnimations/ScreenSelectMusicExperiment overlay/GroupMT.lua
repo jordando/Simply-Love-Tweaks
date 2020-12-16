@@ -12,8 +12,8 @@ local banner_directory = FILEMAN:DoesFileExist(path) and path or THEME:GetPathG(
 function switch_to_songs(group_name)
 	local songs = PruneSongList(GetSongList(group_name))
 	if #songs > 0 then --it's possible that filters can cause us to try and enter a group with no songs
-		if SL.Global.Order == "Difficulty/BPM" or SL.Global.Order == "Speed/BPM" then
-			songs = CreateSpecialSongList(songs) --TODO this should be pruned for filters
+		if IsSpecialOrder() then --If we're using a special order than we need to further split the song list
+			songs = CreateSpecialSongList(songs)
 		end
 		songs[#songs+1] = "CloseThisFolder"
 		local toAdd = {}
@@ -22,8 +22,8 @@ function switch_to_songs(group_name)
 		end
 		local current_song = GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
 		local index = SL.Global.LastSeenIndex
-		if SL.Global.Order == "Difficulty/BPM" or SL.Global.Order == "Speed/BPM" then
-			--since each song can show up multiple times in Difficulty/BPM we can't rely just on songs being the same
+		if IsSpecialOrder() then
+			--since each song can show up multiple times in special orders we can't rely just on songs being the same
 			index = SL.Global.LastSeenIndex
 		else
 			for k,song in pairs(songs) do

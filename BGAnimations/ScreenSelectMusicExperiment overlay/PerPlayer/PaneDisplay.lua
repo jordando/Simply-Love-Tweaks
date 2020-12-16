@@ -71,7 +71,7 @@ local af = Def.ActorFrame{
 		local song = GAMESTATE:GetCurrentSong()
 		local steps = GAMESTATE:GetCurrentSteps(player)
 		if not GAMESTATE:IsCourseMode() and steps and song and ThemePrefs.Get("ShowExtraSongInfo") and GAMESTATE:GetNumSidesJoined() < 2 then
-			local hash = GetHash(player, song, steps)
+			local hash = GetCurrentHash(player)
 			local streamData = GetStreamData(hash)
 			local non16thMeasureCounter = true
 			-- Saved data is in 16ths so check here that we're not trying to use 12ths or 24ths or anything
@@ -133,10 +133,10 @@ local af = Def.ActorFrame{
 		GAMESTATE:GetNumSidesJoined() < 2 and
 		GAMESTATE:Env()[pn.."CurrentSteps"] == GAMESTATE:GetCurrentSteps(player)
 		then
-			local hash = GetHash(player, GAMESTATE:GetCurrentSong(), GAMESTATE:GetCurrentSteps(player))
+			local hash = GetCurrentHash(player)
 			local streamData = GetStreamData(hash)
 			local mode
-			if streamData.NpsMode then mode = tonumber(streamData.NpsMode) end
+			if streamData and streamData.NpsMode then mode = tonumber(streamData.NpsMode) end
 			local peak = GAMESTATE:Env()[pn.."PeakNPS"] * SL.Global.ActiveModifiers.MusicRate
 			local conversion = peak / 16 * 240
 			if mode and round(peak,2) ~= round(mode,2) then

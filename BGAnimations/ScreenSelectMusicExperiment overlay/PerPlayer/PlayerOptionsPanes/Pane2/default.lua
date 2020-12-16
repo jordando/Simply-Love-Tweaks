@@ -67,7 +67,7 @@ pane[#pane+1] = LoadActor(THEME:GetPathB("", "_modules/HighScoreDisplay"), {play
 			Types = { 'Holds', 'Mines', 'Hands', 'Rolls' },
 		}
 
-		local hash = GetHash(player,GAMESTATE:GetCurrentSong(),GAMESTATE:GetCurrentSteps(player))
+		local hash = GetCurrentHash(player)
 
 		--check to see if we have a custom saved score
 		--if we do, it's ready to go

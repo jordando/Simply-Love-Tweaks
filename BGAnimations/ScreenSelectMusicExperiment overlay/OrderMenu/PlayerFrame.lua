@@ -81,10 +81,12 @@ return Def.ActorFrame{
 			local toWrite = "Order songs\nby difficulty\nand then BPM\n\nNote: Songs will\nbe duplicated for\neach chart."
 			toWrite = toWrite.."\n\n***EXAMPLE***\n[12][136] Song A\n[13][120] Song B\n[13][140] Song A\n[15][200] Song C"
 			descriptions[#descriptions+1] = toWrite
-			table.insert(scroller_data,{index = 4, displayname = "Speed/BPM"})
+			table.insert(scroller_data,{index = 4, displayname = "Difficulty/Speed"})
 			toWrite = "Order songs by difficulty\nand then peak stream speed\n\nNote: Songs will\nbe duplicated for\neach chart."
 				toWrite = toWrite.."\n\n*Like BPM sorting\nbut accounts for\n24th notes and such\n\n*Unparsable charts will\nuse bpm"
 			descriptions[#descriptions+1] = toWrite
+			table.insert(scroller_data,{index = 5, displayname = "Artist"})
+			descriptions[#descriptions+1] = "Order songs by artist\nalphabetically"
 			scroller.focus_pos = 5
 			scroller:set_info_set(scroller_data, 0)
 		end,

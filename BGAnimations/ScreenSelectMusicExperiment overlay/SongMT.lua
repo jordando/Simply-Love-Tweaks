@@ -101,14 +101,12 @@ local song_mt = {
 						SlideToTopCommand=function(subself)
 							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):maxwidth(125):settext( self.song:GetDisplayMainTitle()) end end,
 						SlideBackIntoGridCommand=function(subself) 
-							if self.song  ~= "CloseThisFolder" then 
-								if SL.Global.Order == "Difficulty/BPM" then
+							if self.song  ~= "CloseThisFolder" then
+								local special = IsSpecialOrder()
+								if special then
 									local block = GetSpecialOrder(self.index)
-									subself:settext( "["..block.difficulty.."]["..math.floor(block.bpm).."] "..self.song:GetDisplayMainTitle() ):maxwidth(200):zoom(1.2)
-								elseif SL.Global.Order == "Speed/BPM" then
-									local block = GetSpecialOrder(self.index)
-									if block.peak then
-										subself:settext( "["..block.difficulty.."]["..math.floor(block.peak).."] "..self.song:GetDisplayMainTitle() ):maxwidth(200):zoom(1.2)
+									if block[special] then
+										subself:settext( "["..block.difficulty.."]["..math.floor(block[special]).."] "..self.song:GetDisplayMainTitle() ):maxwidth(200):zoom(1.2)
 									else
 										subself:settext( self.song:GetDisplayMainTitle() ):maxwidth(190):zoom(1.2)
 									end
@@ -153,9 +151,7 @@ local song_mt = {
 			}
 			--Things we need two of
 			for pn in ivalues({'P1','P2'}) do
-				local side
-				if pn == 'P1' then side = -1
-				else side = 1 end
+				local side = pn == 'P1' and -1 or 1
 				local grade_position = WideScale(140,150)
 				local pass_position = 120
 				--A box for the pass type
@@ -318,13 +314,11 @@ local song_mt = {
 			else
 				self.song = item.song
 				self.index = item.index
-				if SL.Global.Order == "Difficulty/BPM" then
+				if IsSpecialOrder() then
 					local block = GetSpecialOrder(item.index)
-					self.title_bmt:settext( "["..block.difficulty.."] ["..math.floor(block.bpm).."] "..self.song:GetDisplayMainTitle() )
-				elseif SL.Global.Order == "Speed/BPM" then
-					local block = GetSpecialOrder(item.index)
+					local special = IsSpecialOrder()
 					if block.peak then
-						self.title_bmt:settext( "["..block.difficulty.."] ["..math.floor(block.peak).."] "..self.song:GetDisplayMainTitle() )
+						self.title_bmt:settext( "["..block.difficulty.."] ["..math.floor(block[special]).."] "..self.song:GetDisplayMainTitle() )
 					else
 						self.title_bmt:settext( "["..block.difficulty.."] "..self.song:GetDisplayMainTitle() )
 					end

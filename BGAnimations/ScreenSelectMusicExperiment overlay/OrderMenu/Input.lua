@@ -13,7 +13,6 @@ Handle.Start = function(event)
 		MESSAGEMAN:Broadcast("StartButton")
 		-- first figure out which group we're dealing with
 		local info = scrollers[mpn]:get_info_at_focus_pos()
-		local index = type(info)=="table" and info.index or 0
 		SL.Global.Order = info.displayname
 		MESSAGEMAN:Broadcast("GroupTypeChanged") --the order of songs in a group may have changed so reset it
 		-- and queue the Finish for the menu
@@ -52,7 +51,7 @@ Handle.MenuRight = function(event)
 		-- To get around that, each actual group has an index parameter that we set to be non zero
 		-- and then just don't scroll to 0 or lower
 		local index = type(info)=="table" and info.index or 0
-		if index + 1 <= 4 then
+		if index + 1 <= 5 then
 			MESSAGEMAN:Broadcast("DirectionButton")
 			scrollers[mpn]:scroll_by_amount(1)
 			local frame = af:GetChild(ToEnumShortString(mpn) .. 'Frame')

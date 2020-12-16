@@ -217,7 +217,7 @@ if playerStats then
 	for song in ivalues(songs) do
 		if song:HasStepsType(GetStepsType()) then
 			for steps in ivalues(song:GetStepsByStepsType(GetStepsType())) do
-				local hash = GetHash(player,song,steps)
+				local hash = GetHash(steps)
 				if hash then
 					local customScore = GetChartStats(player,hash)
 					if customScore and customScore.FirstPass ~= "Never" and customScore.FirstPass ~= "Unknown" then

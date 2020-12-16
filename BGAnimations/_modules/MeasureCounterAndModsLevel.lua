@@ -70,6 +70,20 @@ return function(SongNumberInCourse)
 						local percent = totalStreams / streamsTable.Measures[lastSequence].streamEnd
 						percent = math.floor(percent*100)
 						SL[pn].Streams.Percent = percent
+						local extraMeasures = 0
+						if streamsTable.Measures[1].isBreak then
+							extraMeasures = streamsTable.Measures[1].streamEnd - streamsTable.Measures[1].streamStart
+						end
+						if streamsTable.Measures[#streamsTable.Measures].isBreak then
+							extraMeasures = extraMeasures + streamsTable.Measures[lastSequence].streamEnd - streamsTable.Measures[lastSequence].streamStart
+						end
+						if extraMeasures > 0 then
+							local adjustedPercent = totalStreams / (streamsTable.Measures[lastSequence].streamEnd - extraMeasures)
+							adjustedPercent = math.floor(adjustedPercent*100)
+							SL[pn].Streams.AdjustedPercent = adjustedPercent
+						else
+							SL[pn].Streams.AdjustedPercent = percent
+						end
 						for stream in ivalues(Split(breakdown2,"/")) do
 							local combine = 0
 							local multiple = false
