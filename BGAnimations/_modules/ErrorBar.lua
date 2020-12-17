@@ -2,7 +2,13 @@ local player = ...
 local pn = ToEnumShortString(player)
 local playerString = "Player"..pn.."%sX"
 
-if SL[ToEnumShortString(player)].ActiveModifiers.HideErrorBar then return end
+local asJudgment = false
+if SL[ToEnumShortString(player)].ActiveModifiers.JudgmentGraphic == "ErrorBar" then asJudgment = true end
+if SL[ToEnumShortString(player)].ActiveModifiers.HideErrorBar and not asJudgment then return end
+
+local barY = -12
+if SL[ToEnumShortString(player)].ActiveModifiers.ErrorBarUp then barY = -69 end
+if asJudgment then barY = -40 end
 
 --Visual display of deviance values-- taken from Etterna and converted to run in SM5
 
@@ -31,7 +37,7 @@ end
 local barcount = 30 							-- Number of bars. Older bars will refresh if judgments/barDuration exceeds this value. You don't need more than 40.
 local frameX = CenterX				    		-- X Positon (Center of the bar)
 local frameY = SCREEN_CENTER_Y					-- Y Positon (Center of the bar)
-local frameHeight = 10 							-- Height of the bar
+local frameHeight = asJudgment and 30 or 10 	-- Height of the bar
 local frameWidth = 240                          -- Width of the bar
 local barWidth = 2								-- Width of the ticks.
 local barDuration = 0.75 						-- Time duration in seconds before the ticks fade out. Doesn't need to be higher than 1. Maybe if you have 300 bars I guess.
@@ -66,9 +72,7 @@ local e = Def.ActorFrame{
 		for i=1,barcount do
 			ingots[#ingots+1] = self:GetChild(i)
         end
-        if SL[ToEnumShortString(player)].ActiveModifiers.ErrorBarUp then
-            self:addy(-69)
-        else self:addy(-12) end
+        self:addy(barY)
     end,
     JudgmentMessageCommand=function(self, params)
 		if params.Player ~= player then return end

@@ -13,7 +13,7 @@ local available_judgments = GetJudgmentGraphics(SL.Global.GameMode)
 
 local file_to_load = (FindInTable(mods.JudgmentGraphic, available_judgments) ~= nil and mods.JudgmentGraphic or available_judgments[1]) or "None"
 
-if file_to_load == "None" then
+if file_to_load == "None" or file_to_load == "ErrorBar" then
 	return Def.Actor{ InitCommand=function(self) self:visible(false) end }
 end
 
@@ -74,6 +74,8 @@ return Def.ActorFrame{
 
 	end,
 
+	--used in FAP mode to add early/late to white fantastics so that we can use normal judgment
+	--fonts without needing special FAP ones
 	LoadFont("Common Normal")..{
 		Name = "EarlyLate",
 		Text = "-",

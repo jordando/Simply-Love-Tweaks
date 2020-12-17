@@ -452,7 +452,7 @@ StripSpriteHints = function(filename)
 end
 
 GetJudgmentGraphics = function(mode)
-	if mode == 'Casual' then mode = 'ITG' end
+	if mode == 'Casual' or mode == 'Experiment' then mode = 'ITG' end
 	local path = THEME:GetPathG('', '_judgments/' .. mode)
 	local files = FILEMAN:GetDirListing(path .. '/')
 	local judgment_graphics = {}
@@ -474,7 +474,9 @@ GetJudgmentGraphics = function(mode)
 			end
 		end
 	end
-
+	-- "ErrorBar" will put the error bar where judgments normally go so
+	--Player judgment.lua will return an empty Def.Actor
+	judgment_graphics[#judgment_graphics+1] = "ErrorBar"
 	-- "None" results in Player judgment.lua returning an empty Def.Actor
 	judgment_graphics[#judgment_graphics+1] = "None"
 
