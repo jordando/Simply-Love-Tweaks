@@ -612,7 +612,7 @@ local CreateGroup = Def.ActorFrame{
 -- Ordering how songs are displayed within groups
 ----------------------------------------------------------------------------------------------
 
---- Returns the special field if it's an order that separates by chart or nil if a normal order
+--- If ordering by two things return a table of the first and second sorts. Otherwise return nil
 function IsSpecialOrder()
 	local speed = ThemePrefs.Get("StreamSpeed")
 	local conversion = {}
@@ -656,15 +656,13 @@ function GetSortFunction()
 			elseif not k1[sortType[1]] and not k2[sortType[1]] then
 				return string.lower(k1.song:GetMainTitle()) < string.lower(k2.song:GetMainTitle())
 			elseif k1[sortType[1]] == k2[sortType[1]] then
-				--if one has a value but the other doesn't
 				if not k1[sortType[2]] and k2[sortType[2]] then
 					return true
 				elseif k1[sortType[2]] and not k2[sortType[2]] then
 					return false
 				elseif not k1[sortType[2]] and not k2[sortType[2]] then
 					return string.lower(k1.song:GetMainTitle()) < string.lower(k2.song:GetMainTitle())
-				end
-				if k1[sortType[2]] == k2[sortType[2]] then
+				elseif k1[sortType[2]] == k2[sortType[2]] then
 					return string.lower(k1.song:GetMainTitle()) < string.lower(k2.song:GetMainTitle())
 				else
 					return k1[sortType[2]] < k2[sortType[2]]
