@@ -32,9 +32,18 @@ if not sanitizedComparisonScore then
 	local song = GAMESTATE:GetCurrentSong()
 	local steps = GAMESTATE:GetCurrentSteps(player)
 	local highScores = PROFILEMAN:GetProfile(player):GetHighScoreList(song, steps):GetHighScores()
-	if #highScores > 0 then
-		if highScores[1]:GetPercentDP() > pss:GetPercentDancePoints() then comparisonScore = highScores[1]
-		elseif highScores[2] then comparisonScore = highScores[2] end
+	local rateHighScores = {}
+	local rate = SL.Global.ActiveModifiers.MusicRate
+	--check to make sure any scores in stats.xml are at the correct rate
+	for score in ivalues(highScores) do
+		local test = score:GetModifiers()
+		if tonumber(rate) == tonumber(string.find(test, "xMusic") and string.gsub(test,".*(%d.%d+)xMusic.*","%1") or 1) then
+			rateHighScores[#rateHighScores+1] = score
+		end
+	end
+	if #rateHighScores > 0 then
+		if rateHighScores[1]:GetPercentDP() > pss:GetPercentDancePoints() then comparisonScore = rateHighScores[1]
+		elseif rateHighScores[2] then comparisonScore = rateHighScores[2] end
 		sanitizedComparisonScore = {}
 	end
 end

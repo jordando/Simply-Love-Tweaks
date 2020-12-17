@@ -25,5 +25,5 @@ for judgment_filename in ivalues( GetJudgmentGraphics(mode) ) do
 		}
 	end
 end
-t[#t+1] = Def.Actor{ Name="JudgmentGraphic_ErrorBar", InitCommand=function(self) self:visible(false) end }
+t[#t+1] = LoadActor( THEME:GetPathG("", "ErrorBar.png") )..{ Name="JudgmentGraphic_ErrorBar", InitCommand=function(self) self:visible(false) end }
 t[#t+1] = Def.Actor{ Name="JudgmentGraphic_None", InitCommand=function(self) self:visible(false) end }
