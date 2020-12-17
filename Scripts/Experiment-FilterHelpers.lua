@@ -345,12 +345,16 @@ function GetActiveFiltersString()
 	local toPrint = "FILTERS:\n"
 	local numberFilters = {'Steps','Jumps','Difficulty', 'BPM'}
 	for filterType in ivalues(numberFilters) do
-		toPrint = toPrint..filterType.." - "
 		local foundFilter = false
-		if activeFilters['Min'..filterType] then toPrint = toPrint.."Min:"..activeFilters['Min'..filterType].." " foundFilter = true end
-		if activeFilters['Max'..filterType] then toPrint = toPrint.."Max:"..activeFilters['Max'..filterType] foundFilter = true end
-		if not foundFilter then toPrint = toPrint.."Off\n"
-		else toPrint = toPrint.."\n" end
+		if activeFilters['Min'..filterType] then 
+			toPrint = toPrint..filterType.." - Min:"..activeFilters['Min'..filterType].." "
+			foundFilter = true
+		end
+		if activeFilters['Max'..filterType] then
+			if not foundFilter then toPrint = toPrint..filterType.." - " end
+			toPrint = toPrint.."Max:"..activeFilters['Max'..filterType]
+		end
+		toPrint = toPrint.."\n"
 	end
 
 	if SL.Global.ActiveFilters["HidePassed"] or SL.Global.ActiveFilters["HideFailed"] or SL.Global.ActiveFilters["HideUnplayed"] then
@@ -358,12 +362,12 @@ function GetActiveFiltersString()
 		if activeFilters["HidePassed"] then toPrint = toPrint.."Passed Songs\n" end
 		if activeFilters["HideFailed"] then toPrint = toPrint.."Failed Songs\n" end
 		if activeFilters["HideUnplayed"] then toPrint = toPrint.."Unplayed Songs\n" end
-	else toPrint = toPrint.."Hide by Pass Status - Off\n" end
+	end
 	if #activeFilters["HideTags"] and #activeFilters["HideTags"] > 0 then
 		toPrint = toPrint.."-----Hide Tags-----\n"
 		for tagName in ivalues(activeFilters["HideTags"]) do
 			toPrint = toPrint..tagName.."\n"
 		end
-	else toPrint = toPrint.."Hide Tags - Off\n" end
+	end
 	return toPrint
 end
