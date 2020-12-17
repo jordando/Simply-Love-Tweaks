@@ -1,6 +1,5 @@
 return function(SongNumberInCourse)
 	for player in ivalues(GAMESTATE:GetHumanPlayers()) do
-
 		-- get the PlayerOptions string for any human players and store it now
 		-- we'll retrieve it the next time ScreenSelectMusic loads and re-apply those same mods
 		-- in this way, we can override the effects of songs that forced modifiers during gameplay
@@ -38,6 +37,14 @@ return function(SongNumberInCourse)
 				end
 				-- if we have measures (which means the stream was parsed) then we can get breakdowns and stuff
 				if SL[pn].Streams.Measures then
+					--if we don't have anything in the measures table that means there's no stream
+					--set some totals to let PaneDisplay know we parsed successfully then don't
+					--bother with everything else
+					if not next(SL[pn].Streams.Measures) then
+						SL[pn].Streams.TotalMeasures = 0
+						SL[pn].Streams.TotalStreams = 0
+						return
+					end
 					local lastSequence = #SL[pn].Streams.Measures
 					local streamsTable = SL[pn].Streams
 					local totalStreams = 0
@@ -62,12 +69,13 @@ return function(SongNumberInCourse)
 							previousSequence = previousSequence + sequence.streamEnd - sequence.streamStart
 						end
 					end
+					local totalMeasures = SL[pn].Streams.Measures[lastSequence].streamEnd
+					SL[pn].Streams.TotalMeasures = totalMeasures
 					SL[pn].Streams.TotalStreams = totalStreams
 					SL[pn].Streams.Segments = segments
 					SL[pn].Streams.Breakdown1 = breakdown
 					if totalStreams ~= 0 then
-						SL[pn].Streams.TotalMeasures = streamsTable.Measures[lastSequence].streamEnd
-						local percent = totalStreams / streamsTable.Measures[lastSequence].streamEnd
+						local percent = totalStreams / totalMeasures
 						percent = math.floor(percent*100)
 						SL[pn].Streams.Percent = percent
 						local extraMeasures = 0
@@ -75,10 +83,10 @@ return function(SongNumberInCourse)
 							extraMeasures = streamsTable.Measures[1].streamEnd - streamsTable.Measures[1].streamStart
 						end
 						if streamsTable.Measures[#streamsTable.Measures].isBreak then
-							extraMeasures = extraMeasures + streamsTable.Measures[lastSequence].streamEnd - streamsTable.Measures[lastSequence].streamStart
+							extraMeasures = extraMeasures + totalMeasures - streamsTable.Measures[lastSequence].streamStart
 						end
 						if extraMeasures > 0 then
-							local adjustedPercent = totalStreams / (streamsTable.Measures[lastSequence].streamEnd - extraMeasures)
+							local adjustedPercent = totalStreams / (totalMeasures - extraMeasures)
 							adjustedPercent = math.floor(adjustedPercent*100)
 							SL[pn].Streams.AdjustedPercent = adjustedPercent
 						else
