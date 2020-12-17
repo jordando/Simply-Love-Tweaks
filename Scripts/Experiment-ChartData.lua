@@ -148,13 +148,13 @@ function GetStreamData(hash)
 	if not hash then return nil end
 	if not SL.Global.StreamData[hash] then return nil end
 	local results = DeepCopy(SL.Global.StreamData[hash])
-	if results.PeakNPS == -1 then results.PeakNPS = nil end
-	if results.NpsMode == -1 then results.NpsMode = nil end
+	if results.PeakNPS == "-1" then results.PeakNPS = nil end
+	if results.NpsMode == "-1" then results.NpsMode = nil end
 	if not next(results.Density) or #results.Density == 1 then
 		results.Density = nil
 	end
 	--if we don't have total measures then everything will be empty 0s
-	if results.TotalMeasures == 0 then
+	if results.TotalMeasures == "0" then
 		results.Percent, results.AdjustedPercent, results.TotalStreams,
 		results.TotalMeasures, results.Breakdown1, results.Breakdown2,
 		results.Breakdown3 = nil, nil, nil, nil, nil, nil, nil

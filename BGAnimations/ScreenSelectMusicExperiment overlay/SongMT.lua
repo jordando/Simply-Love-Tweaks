@@ -96,7 +96,7 @@ local song_mt = {
 						Font="Common Normal",
 						InitCommand=function(subself)
 							self.title_bmt = subself
-							subself:zoom(1):y(-5):diffuse(Color.White):shadowlength(0.75):maxwidth(190)
+							subself:zoom(1):y(0):diffuse(Color.White):shadowlength(0.75):maxwidth(190)
 						end,
 						SlideToTopCommand=function(subself)
 							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):maxwidth(125):settext( self.song:GetDisplayMainTitle()) end end,
@@ -106,7 +106,7 @@ local song_mt = {
 								if special then
 									local block = GetSpecialOrder(self.index)
 									if block[special] then
-										subself:settext( "["..block.difficulty.."]["..math.floor(block[special]).."] "..self.song:GetDisplayMainTitle() ):maxwidth(200):zoom(1.2)
+										subself:settext( "["..block[special[1]].."]["..math.floor(block[special[2]]).."] "..self.song:GetDisplayMainTitle() ):maxwidth(200):zoom(1.2)
 									else
 										subself:settext( self.song:GetDisplayMainTitle() ):maxwidth(190):zoom(1.2)
 									end
@@ -134,7 +134,7 @@ local song_mt = {
 							if self.song ~= "CloseThisFolder" then subself:zoom(.8):y(17):maxwidth(250):settext( self.song:GetDisplaySubTitle()) end end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
-								subself:settext( self.song:GetDisplaySubTitle() ):y(11):maxwidth(190):zoom(.65)
+								subself:settext( self.song:GetDisplaySubTitle() ):y(11):maxwidth(250):zoom(.65)
 							end
 						end,
 						GainFocusCommand=function(subself) --make the words a little bigger to make it seem like they're popping out
@@ -304,7 +304,7 @@ local song_mt = {
 
 		set = function(self, item)
 			-- we are passed in a Song object as info
-			-- Set in "switch_to_songs" function in GroupMT.Lua
+			-- Set in "Switch_to_songs" function in GroupMT.Lua
 			if not item.song then return end
 			if type(item.song) == "string" then
 				self.song = item.song
@@ -317,10 +317,12 @@ local song_mt = {
 				if IsSpecialOrder() then
 					local block = GetSpecialOrder(item.index)
 					local special = IsSpecialOrder()
-					if block.peak then
-						self.title_bmt:settext( "["..block.difficulty.."] ["..math.floor(block[special]).."] "..self.song:GetDisplayMainTitle() )
+					if block[special[1]] and block[special[2]] then
+						self.title_bmt:settext( "["..round(block[special[1]],0).."] ["..round(block[special[2]],0).."] "..self.song:GetDisplayMainTitle() )
+					elseif block[special[1]] then
+						self.title_bmt:settext( "["..round(block[special[1]],0).."] [?] "..self.song:GetDisplayMainTitle() )
 					else
-						self.title_bmt:settext( "["..block.difficulty.."] "..self.song:GetDisplayMainTitle() )
+						self.title_bmt:settext( "[?] [?] "..self.song:GetDisplayMainTitle() )
 					end
 				else
 					self.title_bmt:settext( self.song:GetDisplayMainTitle() )

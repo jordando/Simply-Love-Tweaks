@@ -9,7 +9,7 @@ local max_chars = 64
 local path = "/"..THEME:GetCurrentThemeDirectory().."Graphics/_FallbackBanners/"..ThemePrefs.Get("VisualStyle")
 local banner_directory = FILEMAN:DoesFileExist(path) and path or THEME:GetPathG("","_FallbackBanners/Arrows")
 
-function switch_to_songs(group_name)
+function Switch_to_songs(group_name)
 	local songs = PruneSongList(GetSongList(group_name))
 	if #songs > 0 then --it's possible that filters can cause us to try and enter a group with no songs
 		if IsSpecialOrder() then --If we're using a special order than we need to further split the song list
@@ -22,8 +22,13 @@ function switch_to_songs(group_name)
 		end
 		local current_song = GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
 		local index = SL.Global.LastSeenIndex
-		if IsSpecialOrder() then
-			--since each song can show up multiple times in special orders we can't rely just on songs being the same
+		--since each song can show up multiple times in special orders we can't rely just on songs being the same
+		--however, when we first switch order the indexes won't match up so rather than get a random song we
+		--go to the first instance of the song.
+		--TODO: jump to correct difficulty
+		if IsSpecialOrder()
+		and SpecialOrder[SL.Global.LastSeenIndex]
+		and GAMESTATE:GetCurrentSong() == SpecialOrder[SL.Global.LastSeenIndex].song then
 			index = SL.Global.LastSeenIndex
 		else
 			for k,song in pairs(songs) do
@@ -44,7 +49,7 @@ function switch_to_songs(group_name)
 		local groups = PruneGroups(GetGroups())
 		-- if there's at least one group then jump in
 		if #groups >= 1 then
-			switch_to_songs(groups[1])
+			Switch_to_songs(groups[1])
 		end
 	end
 end
@@ -74,7 +79,7 @@ local item_mt = {
 							-- position this folder in the header and switch to the songwheel
 							subself:playcommand("GainFocus"):xy(70,28):zoom(0.35)
 							local starting_group = GetCurrentGroup()
-							switch_to_songs(starting_group)
+							Switch_to_songs(starting_group)
 							MESSAGEMAN:Broadcast("CurrentGroupChanged", {group=self.groupName})
 						end
 					end
@@ -111,7 +116,7 @@ local item_mt = {
 					subself:linear( 0.2 ):x( _screen.cx )
 					       :linear( 0.12 ):zoom( 0.9 ):y( _screen.cy-100 )
 				end,
-				SwitchCommand=function(subself) switch_to_songs(self.groupName) end,
+				SwitchCommand=function(subself) Switch_to_songs(self.groupName) end,
 
 				-- back of folder
 				LoadActor("./img/folderBack.png")..{

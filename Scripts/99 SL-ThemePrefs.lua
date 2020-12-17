@@ -39,6 +39,11 @@ SL_CustomPrefs.Get = function()
 			Choices = {  THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values = { true, false}
 		},
+		StreamSpeed = {
+			Default = "Mode",
+			Choices = {  THEME:GetString("ThemePrefs","Peak"), THEME:GetString("ThemePrefs", "Mode") },
+			Values = { "peak", "mode"}
+		},
 		GoStraightToGameplay =
 		{
 			Default = false,

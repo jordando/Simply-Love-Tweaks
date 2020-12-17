@@ -51,7 +51,7 @@ Handle.MenuRight = function(event)
 		-- To get around that, each actual group has an index parameter that we set to be non zero
 		-- and then just don't scroll to 0 or lower
 		local index = type(info)=="table" and info.index or 0
-		if index + 1 <= 5 then
+		if index + 1 <= SL.Global.OrderOptions then
 			MESSAGEMAN:Broadcast("DirectionButton")
 			scrollers[mpn]:scroll_by_amount(1)
 			local frame = af:GetChild(ToEnumShortString(mpn) .. 'Frame')

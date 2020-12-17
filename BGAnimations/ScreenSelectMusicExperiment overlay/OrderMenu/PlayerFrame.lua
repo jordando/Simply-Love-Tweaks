@@ -73,20 +73,35 @@ return Def.ActorFrame{
 			for i = 1,index_padding do
 				table.insert(scroller_data,{})
 			end
-			table.insert(scroller_data,{index = 1, displayname = "Alphabetical"})
-			descriptions[#descriptions+1] = "Order songs\nalphabetically"
-			table.insert(scroller_data,{index = 2, displayname = "BPM"})
-			descriptions[#descriptions+1] = "Order songs\nby BPM"
-			table.insert(scroller_data,{index = 3, displayname = "Difficulty/BPM"})
-			local toWrite = "Order songs\nby difficulty\nand then BPM\n\nNote: Songs will\nbe duplicated for\neach chart."
-			toWrite = toWrite.."\n\n***EXAMPLE***\n[12][136] Song A\n[13][120] Song B\n[13][140] Song A\n[15][200] Song C"
-			descriptions[#descriptions+1] = toWrite
-			table.insert(scroller_data,{index = 4, displayname = "Difficulty/Speed"})
-			toWrite = "Order songs by difficulty\nand then peak stream speed\n\nNote: Songs will\nbe duplicated for\neach chart."
-				toWrite = toWrite.."\n\n*Like BPM sorting\nbut accounts for\n24th notes and such\n\n*Unparsable charts will\nuse bpm"
-			descriptions[#descriptions+1] = toWrite
-			table.insert(scroller_data,{index = 5, displayname = "Artist"})
-			descriptions[#descriptions+1] = "Order songs by artist\nalphabetically"
+			local orderNames = {
+				"Alphabetical",
+				"BPM",
+				"Artist",
+				"Difficulty/BPM",
+			}
+			if ThemePrefs.Get("LoadCustomScoresUpfront") then
+				table.insert(orderNames, "Difficulty/Speed")
+				table.insert(orderNames, "BPM/Stream Total")
+				table.insert(orderNames, "Speed/Stream Total")
+			end
+			SL.Global.OrderOptions = #orderNames
+			local orderDescriptions = {
+				"Order songs\nalphabetically",
+				"Order songs\nby BPM",
+				"Order songs by artist\nalphabetically",
+				"Order songs\nby difficulty\nand then BPM\n\nNote: Songs will\nbe duplicated for\neach chart."..
+					"\n\n***EXAMPLE***\n[12][136] Song A\n[13][120] Song B\n[13][140] Song A\n[15][200] Song C",
+				"Order songs by difficulty\nand then peak stream speed\n\nNote: Songs will\nbe duplicated for"..
+					"\neach chart.\n\n*Like BPM sorting\nbut accounts for\n24th notes and such\n\n*Unparsable charts will\nuse bpm",
+				"Order songs by BPM\nand then number of\nstream measures\n\nNote: Songs will\nbe duplicated for\neach chart.",
+				"Order songs by stream speed\nand then number of\nstream measures\n\nNote: Songs will\nbe duplicated for\neach chart.",
+				}
+			for k, v in ipairs(orderNames) do
+				table.insert(scroller_data,{index = k, displayname = v})
+			end
+			for v in ivalues(orderDescriptions) do
+				table.insert(descriptions,v)
+			end
 			scroller.focus_pos = 5
 			scroller:set_info_set(scroller_data, 0)
 		end,

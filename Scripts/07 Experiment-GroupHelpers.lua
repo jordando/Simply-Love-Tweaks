@@ -614,9 +614,12 @@ local CreateGroup = Def.ActorFrame{
 
 --- Returns the special field if it's an order that separates by chart or nil if a normal order
 function IsSpecialOrder()
+	local speed = ThemePrefs.Get("StreamSpeed")
 	local conversion = {}
-	conversion["Difficulty/Speed"] = "peak"
-	conversion["Difficulty/BPM"] = "bpm"
+	conversion["Difficulty/Speed"] = {"difficulty",speed}
+	conversion["Difficulty/BPM"] = {"difficulty", "bpm"}
+	conversion["BPM/Stream Total"] = {"bpm", "totalStreams"}
+	conversion["Speed/Stream Total"] = {speed, "totalStreams"}
 	return conversion[SL.Global.Order]
 end
 
@@ -644,23 +647,30 @@ function GetSortFunction()
 		return function(k1,k2)
 			--Special orders take a normal songlist before adding additional params and sorting again
 			--So if there are no additional params set then just return a normal alphabetical sorted list
+			--Sort by sortType[1] then sortType[2] and finally by alphabet
 			if not k1.song then return string.lower(k1:GetMainTitle()) < string.lower(k2:GetMainTitle()) end
-			if k1.difficulty == k2.difficulty then
+			if k1[sortType[1]] and not k2[sortType[1]] then
+				return true
+			elseif not k1[sortType[1]] and k2[sortType[1]] then
+				return false
+			elseif not k1[sortType[1]] and not k2[sortType[1]] then
+				return string.lower(k1.song:GetMainTitle()) < string.lower(k2.song:GetMainTitle())
+			elseif k1[sortType[1]] == k2[sortType[1]] then
 				--if one has a value but the other doesn't
-				if not k1[sortType] and k2[sortType] then
-					return k1.bpm < k2[sortType]
-				elseif k1[sortType] and not k2[sortType] then
-					return k1[sortType] < k2.bpm
-				elseif not k1[sortType] and not k2[sortType] then
+				if not k1[sortType[2]] and k2[sortType[2]] then
+					return true
+				elseif k1[sortType[2]] and not k2[sortType[2]] then
+					return false
+				elseif not k1[sortType[2]] and not k2[sortType[2]] then
 					return string.lower(k1.song:GetMainTitle()) < string.lower(k2.song:GetMainTitle())
 				end
-				if k1[sortType] == k2[sortType] then
+				if k1[sortType[2]] == k2[sortType[2]] then
 					return string.lower(k1.song:GetMainTitle()) < string.lower(k2.song:GetMainTitle())
 				else
-					return k1[sortType] < k2[sortType]
+					return k1[sortType[2]] < k2[sortType[2]]
 				end
 			else
-				return k1.difficulty < k2.difficulty
+				return k1[sortType[1]] < k2[sortType[1]]
 			end
 		end
 	else
@@ -704,11 +714,19 @@ function CreateSpecialSongList(inputSongList)
 				local hash = GetHash(steps)
 				local streamData
 				if hash then streamData = GetStreamData(hash) end
-				if streamData and streamData.PeakNPS then
-					table.insert(SpecialOrder,{song=song,difficulty=steps:GetMeter(),bpm=song:GetDisplayBpms()[2],peak=streamData.PeakNPS/16*240})
-				else
-					table.insert(SpecialOrder,{song=song,difficulty=song:GetStepsByStepsType(GetStepsType())[i]:GetMeter(),bpm=song:GetDisplayBpms()[2]})
+				local toAdd = {
+					song=song,
+					difficulty=song:GetStepsByStepsType(GetStepsType())[i]:GetMeter(),
+					bpm=steps:GetDisplayBpms()[2]
+				}
+				if streamData then
+					if streamData.PeakNPS then toAdd["peak"] = tonumber(round(streamData.PeakNPS/16*240,0)) end
+					if streamData.TotalStreams then toAdd["totalStreams"] = tonumber(streamData.TotalStreams) end
+					if streamData.NpsMode then toAdd["mode"] = tonumber(round(streamData.NpsMode/16*240,0)) end
+					if streamData.Percent then toAdd["percent"] = tonumber(streamData.Percent) end
+					if streamData.AdjustedPercent then toAdd["adjustedPercent"] = tonumber(streamData.AdjustedPercent) end
 				end
+				table.insert(SpecialOrder, toAdd)
 			end
 		end
 	end
