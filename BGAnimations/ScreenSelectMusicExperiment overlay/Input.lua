@@ -148,6 +148,7 @@ Handler.ResetHeldButtons = function()
 	HeldButtons["MenuRight"] = false
 	HeldButtons["MenuUp"] = false
 	HeldButtons["MenuDown"] = false
+	HeldButtons["Ctrl"] = false
 end
 
 local saveOption = function(event)
@@ -433,6 +434,25 @@ end
 Handler['OptionsWheel'].Back = Handler['OptionsWheel'].Select
 
 Handler.Handler = function(event)
+	--Keep track of when Control is held down for the alphabet sorting
+	if event.DeviceInput.button == "DeviceButton_left ctrl" or event.DeviceInput.button == "DeviceButton_right ctrl" then
+		if ToEnumShortString(event.type) == "Release" then
+			HeldButtons['Ctrl'] = false
+		else
+			HeldButtons['Ctrl'] = true
+		end
+	else
+		--Ctrl-Alpha character switches sort to Title and jumps straight to that letter
+		local button = ToEnumShortString(event.DeviceInput.button)
+		if string.find(button,"^(%a)$") then
+			if HeldButtons['Ctrl'] then
+				SL.Global.GroupType = "Title"
+				Switch_to_songs(string.upper(button))
+				MESSAGEMAN:Broadcast("GroupTypeChanged")
+				MESSAGEMAN:Broadcast("SetSongViaSearch")
+			end
+		end
+	end
 	if Handler.Enabled == false or not event or not event.PlayerNumber or not event.button then return false end
 	if not GAMESTATE:IsSideJoined(event.PlayerNumber) then
 		if not Handler.AllowLateJoin() then return false end

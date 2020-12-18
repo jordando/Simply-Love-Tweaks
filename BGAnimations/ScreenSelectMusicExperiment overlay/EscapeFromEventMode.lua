@@ -46,11 +46,6 @@ local af = Def.ActorFrame{
 			choice_actors[1]:stoptweening():diffuse(1,1,1,1):zoom(0.5)
 			-- activate our Lua InputHandler
 			topscreen:AddInputCallback(InputHandler)
-
-			-- disable the engine's input handling
-			for player in ivalues(PlayerNumber) do
-				SCREENMAN:set_input_redirected(player, true)
-			end
 			-- make this overlay visible
 			self:visible(true)
 		end
