@@ -51,7 +51,7 @@ local t = Def.ActorFrame {
 		self:playcommand("ShowSortMenu")
 		self:queuecommand("Stall")
 	end,
-	StallCommand=function(self) 
+	StallCommand=function(self)
 		self:playcommand("AssessAvailableChoices")
 		self:visible(true):sleep(0.4):queuecommand("CaptureTest")
 	end,

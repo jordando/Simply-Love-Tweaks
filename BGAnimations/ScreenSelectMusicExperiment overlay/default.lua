@@ -294,10 +294,12 @@ local t = Def.ActorFrame {
 		self:playcommand("ShowEnteringOptions")
 	end,
 	-- Exit Code from normal Simply Love
-	-- TODO if you don't know about this it's hard to find, bad if you accidentally hit it. find a better way
+	-- a yes/no prompt overlay for backing out of SelectMusic when in EventMode can be
+	-- activated via "CodeEscapeFromEventMode" under [ScreenSelectMusic] in Metrics.ini
+	LoadActor("./EscapeFromEventMode.lua"),
 	CodeMessageCommand=function(self, params)
-		if params.Name == "Exit" then
-			SCREENMAN:GetTopScreen():SetNextScreenName( Branch.SSMCancel() ):StartTransitioningScreen("SM_GoToNextScreen")
+		if params.Name == "EscapeFromEventMode" then
+			Input.Enabled = false
 		end
 	end,
 }
