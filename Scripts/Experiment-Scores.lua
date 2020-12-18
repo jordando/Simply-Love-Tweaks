@@ -361,8 +361,8 @@ end
 ---Returns a table of scores for a player given a hash or nil if there are no high scores
 ---@param checkRate boolean only returns scores with the same rate as the current song
 ---@param checkFailed boolean only returns passing scores
---both of these default to false if not explicitly set which will return all scores regardless
---of rate or fail status.
+---both of these default to false if not explicitly set which will return all scores regardless
+---of rate or fail status.
 function GetScores(player, hash, checkRate, checkFailed)
 	if not hash then return nil end
 	local rate = SL.Global.ActiveModifiers.MusicRate
@@ -373,11 +373,11 @@ function GetScores(player, hash, checkRate, checkFailed)
 	if chartStats and chartStats['HighScores'] then
 		for score in ivalues(chartStats['HighScores']) do
 			if checkRate and not checkFailed then
-				if tonumber(score.rate) == rate then HighScores[#HighScores+1] = score end
+				if tostring(score.rate) == tostring(rate) then HighScores[#HighScores+1] = score end
 			elseif not checkRate and checkFailed then
 				if score.grade ~= "Failed" then HighScores[#HighScores+1] = score end
 			elseif checkRate and checkFailed then
-				if tonumber(score.rate) == rate and score.grade ~= "Failed" then HighScores[#HighScores+1] = score end
+				if tostring(score.rate) == tostring(rate) and score.grade ~= "Failed" then HighScores[#HighScores+1] = score end
 			else
 				HighScores[#HighScores+1] = score
 			end

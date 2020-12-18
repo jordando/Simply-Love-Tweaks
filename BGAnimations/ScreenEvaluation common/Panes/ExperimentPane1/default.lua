@@ -26,6 +26,7 @@ if RateScores then
 		sanitizedComparisonScore.W1 = sanitizedComparisonScore.W1 - sanitizedComparisonScore.W0
 	end
 end
+
 --if we don't, check if there's a highscore in the normal highscores (stats.xml)
 --if we find one then throw set it to comparisonScore (need to change formatting so judgment numbers can read it)
 if not sanitizedComparisonScore then
@@ -37,7 +38,7 @@ if not sanitizedComparisonScore then
 	--check to make sure any scores in stats.xml are at the correct rate
 	for score in ivalues(highScores) do
 		local test = score:GetModifiers()
-		if tonumber(rate) == tonumber(string.find(test, "xMusic") and string.gsub(test,".*(%d.%d+)xMusic.*","%1") or 1) then
+		if tostring(rate) == tostring(string.find(test, "xMusic") and string.gsub(test,".*(%d.%d+)xMusic.*","%1") or 1) then
 			rateHighScores[#rateHighScores+1] = score
 		end
 	end
@@ -64,8 +65,8 @@ for RCType in ivalues(RadarCategories.Types) do
 	currentScore['possible'..RCType] = pss:GetRadarPossible():GetValue( "RadarCategory_"..RCType )
 	if comparisonScore then
 		sanitizedComparisonScore[RCType] = comparisonScore:GetRadarValues():GetValue(RCType)
+		sanitizedComparisonScore['possible'..RCType] = currentScore['possible'..RCType]
 	end
-	sanitizedComparisonScore['possible'..RCType] = currentScore['possible'..RCType]
 end
 if comparisonScore then
 	sanitizedComparisonScore.score = comparisonScore:GetPercentDP()
@@ -93,7 +94,7 @@ local comparisonT = Def.ActorFrame{
 	end
 }
 
-if sanitizedComparisonScore.score then
+if sanitizedComparisonScore and sanitizedComparisonScore.score then
 
 	comparisonT[#comparisonT+1] = LoadActor(THEME:GetPathB("", "_modules/HighScoreDisplay"), {player, sanitizedComparisonScore, otherSide[controller]})
 
