@@ -46,6 +46,7 @@ extraControl["rate"] = {
 	ExportOnChange = true,
 	LayoutType = "ShowOneInRow",
 	OnLoad = function(actor, pn, choices, values)
+		SL.Global.QuickRateChanged = false
 		local needle = tostring(SL.Global.ActiveModifiers.MusicRate)
 		for i = 1, #choices do
 			if needle == tostring(choices[i]) then
@@ -55,9 +56,10 @@ extraControl["rate"] = {
 		end
 	end,
 	OnSave=function(self, pn, choice, choices, values)
+		SL.Global.QuickRateChanged = true
 		local mods = SL.Global.ActiveModifiers
 		local index = FindInTable(choice, choices)
-		mods.MusicRate = self:Values()[index]
+		mods.MusicRate = tonumber(self:Values()[index])
 		GAMESTATE:GetSongOptionsObject("ModsLevel_Preferred"):MusicRate( mods.MusicRate )
 		MESSAGEMAN:Broadcast("MusicRateChanged")
 	end,

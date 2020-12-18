@@ -194,6 +194,7 @@ Handler.Init = function()
 			-- ensure that this player's OptionsWheel understands it has been reset
 			Handler.WheelWithFocus[pn]:scroll_to_pos(#OptionRows)
 		end
+		if SL.Global.QuickRateChanged then MESSAGEMAN:Broadcast("PeakNPSUpdated") end
 		MESSAGEMAN:Broadcast("SingleSongCanceled")
 		Handler.WheelWithFocus = SongWheel
 		Handler.WheelWithFocus.container:queuecommand("Unhide")

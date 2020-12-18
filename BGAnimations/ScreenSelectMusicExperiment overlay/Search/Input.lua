@@ -20,7 +20,7 @@ Handle.Start = function(event)
 			MESSAGEMAN:Broadcast("GroupTypeChanged")
 		end
 		MESSAGEMAN:Broadcast("StartButton")
-		topscreen:queuecommand("Off"):sleep(0.4)
+		topscreen:sleep(.2):queuecommand("Off"):sleep(0.4)
 	end
 end
 

@@ -136,7 +136,7 @@ local af = Def.ActorFrame{
 			local hash = GetCurrentHash(player)
 			local streamData = GetStreamData(hash)
 			local mode
-			if streamData and streamData.NpsMode then mode = tonumber(streamData.NpsMode) end
+			if streamData and streamData.NpsMode then mode = tonumber(streamData.NpsMode) * SL.Global.ActiveModifiers.MusicRate end
 			local peak = GAMESTATE:Env()[pn.."PeakNPS"] * SL.Global.ActiveModifiers.MusicRate
 			local conversion = peak / 16 * 240
 			if mode and round(peak,2) ~= round(mode,2) then

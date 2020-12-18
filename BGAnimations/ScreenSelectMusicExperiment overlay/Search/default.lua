@@ -128,7 +128,7 @@ local t = Def.ActorFrame {
 		--self:visible(true):sleep(.5):queuecommand("CaptureTest")
 		--Tentative fix for computers take more than .3 seconds to load search.
 		--Test on slow computer
-		self:visible(true):sleep(.8):queuecommand("WaitForSearch")
+		self:sleep(.5):visible(true):sleep(.5):queuecommand("WaitForSearch")
 	end,
 	WaitForSearchCommand = function(self)
 		if ready then self:queuecommand("CaptureTest")
