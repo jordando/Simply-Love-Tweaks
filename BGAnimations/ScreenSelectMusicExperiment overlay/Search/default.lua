@@ -112,7 +112,7 @@ local TextEntrySettings = {
 
 -- ----------------------------------------------------
 local invalid_count = 0
-local ready = false
+SL.Global.SearchReady = false
 local t = Def.ActorFrame {
 
 	ShowCustomSongMenuCommand=function(self) self:visible(true) end,
@@ -123,23 +123,17 @@ local t = Def.ActorFrame {
 	InitCommand=function(self)
 		self:visible(false)
 		searchMenu_input = LoadActor("./Input.lua", {af=self, Scrollers=scrollers})
+		self:queuecommand("Stall") --Leave the inputcallback in permanently and only accept input when SL.Global.SearchReady
 	end,
-	SetSearchWheelMessageCommand=function(self)
-		--self:visible(true):sleep(.5):queuecommand("CaptureTest")
-		--Tentative fix for computers take more than .3 seconds to load search.
-		--Test on slow computer
-		self:sleep(.5):visible(true):sleep(.5):queuecommand("WaitForSearch")
-	end,
-	WaitForSearchCommand = function(self)
-		if ready then self:queuecommand("CaptureTest")
-		else self:sleep(.1):queuecommand("WaitForSearch")
-		end
+	StallCommand=function(self)
+		self:sleep(0.5):queuecommand("CaptureTest")
 	end,
 	CaptureTestCommand=function(self)
 		SCREENMAN:GetTopScreen():AddInputCallback( searchMenu_input )
 	end,
-	SearchCaptureReadyMessageCommand=function()
-		ready = true
+	SearchCaptureReadyMessageCommand=function(self)
+		SL.Global.SearchReady = true
+		self:visible(true)
 	end,
 	DirectInputToSearchMenuCommand=function(self)
 		SCREENMAN:AddNewScreenToTop("ScreenTextEntry")
@@ -156,9 +150,9 @@ local t = Def.ActorFrame {
 	end,
 	FinishCommand=function(self)
 		self:visible(false)
+		SL.Global.SearchReady = false
 		local screen   = SCREENMAN:GetTopScreen()
 		local overlay  = screen:GetChild("Overlay")
-		screen:RemoveInputCallback( searchMenu_input)
 		overlay:queuecommand("DirectInputToEngine")
 	end,
 	WhatMessageCommand=function(self) self:runcommandsonleaves(function(subself) if subself.distort then subself:distort(0.5) end end):sleep(4):queuecommand("Undistort") end,

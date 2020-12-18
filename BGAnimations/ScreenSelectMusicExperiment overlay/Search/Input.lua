@@ -79,7 +79,8 @@ end
 Handle.Select = Handle.Back
 
 local InputHandler = function(event)
-	if not event or not event.button then return false end
+	--this is always on so only accept input when SL.Global.SearchReady
+	if not event or not event.button or not SL.Global.SearchReady then return false end
 	if event.type ~= "InputEventType_Release" then
 		if Handle[event.GameButton] then Handle[event.GameButton](event) end
 	end
