@@ -20,7 +20,8 @@ local PlayerDefaults = {
 				HideScore = false,
 				HideDanger = false,
 				HideComboExplosions = false,
-				HideErrorBar = true,
+				HideErrorBar = false,
+				HideTestInput = true,
 
 				ColumnFlashOnMiss = false,
 				SubtractiveScoring = false,
