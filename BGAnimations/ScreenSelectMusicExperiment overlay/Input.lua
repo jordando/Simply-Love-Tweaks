@@ -91,7 +91,7 @@ DifficultyExists = function(player, validate, difficulty)
 	local validate = validate or false
 	local song = GAMESTATE:GetCurrentSong()
 	local diff = difficulty or args['DifficultyIndex'..PlayerNumber:Reverse()[pn]] --use DifficultyIndex from params_for_input if no difficulty is supplied
-	if song then 
+	if song then
 		if validate then if song:GetOneSteps(GetStepsType(),diff) and ValidateChart(song,song:GetOneSteps(GetStepsType(),diff)) then 
 			return true end
 		elseif song:GetOneSteps(GetStepsType(),diff) then 
@@ -103,19 +103,18 @@ end
 -- Looks for the next easiest difficulty. Returns nil if none can be found
 -- If validate is true then it checks that the chart also passes all filters 
 -- (used to automatically select a valid chart when switching songs if filters are enabled)
-NextEasiest = function(player, validate, difficulty)
+NextEasiest = function(player, val, difficulty)
 	local pn = player
-	local validate = validate or false
+	local validate = val or false
 	local song = GAMESTATE:GetCurrentSong()
 	local diff = difficulty or args['DifficultyIndex'..PlayerNumber:Reverse()[pn]] --use DifficultyIndex from params_for_input if no difficulty is supplied
 	diff = diff - 1 --the current difficulty will always be there so we want to start from the next lowest
 	if song then
-	local t = {}
 		for i=diff,0,-1 do
 			if validate then if song:GetOneSteps(GetStepsType(),i) and ValidateChart(song,song:GetOneSteps(GetStepsType(),i)) then 
 				return song:GetOneSteps(GetStepsType(),i) end
-			elseif song:GetOneSteps(GetStepsType(),i) then 
-				return song:GetOneSteps(GetStepsType(),i) 
+			elseif song:GetOneSteps(GetStepsType(),i) then
+				return song:GetOneSteps(GetStepsType(),i)
 			end
 		end
 		return nil
@@ -123,11 +122,11 @@ NextEasiest = function(player, validate, difficulty)
 end
 
 -- Looks for the next hardest difficulty. Returns nil if none can be found
--- If validate is true then it checks that the chart also passes all filters 
+-- If validate is true then it checks that the chart also passes all filters
 -- (used to automatically select a valid chart when switching songs if filters are enabled)
-NextHardest = function(player, validate, difficulty)
+NextHardest = function(player, val, difficulty)
 	local pn = player
-	local validate = validate or false
+	local validate = val or false
 	local song = GAMESTATE:GetCurrentSong()
 	local diff = difficulty or args['DifficultyIndex'..PlayerNumber:Reverse()[pn]] --use DifficultyIndex from params_for_input if no difficulty is supplied
 	diff = diff + 1 --the current difficulty will always be there so we want to start from the next highest
@@ -340,7 +339,7 @@ Handler['OptionsWheel'].MenuRight = function(event)
 	end
 	return false
 end
-		
+
 Handler['OptionsWheel'].MenuLeft = function(event)
 	if not args.EnteringSong then
 		local index = ActiveOptionRow[event.PlayerNumber]

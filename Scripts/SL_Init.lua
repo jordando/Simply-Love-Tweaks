@@ -122,6 +122,7 @@ local GlobalDefaults = {
 		-- These values outside initialize() won't be reset each game cycle,
 		-- but are rather manipulated as needed by the theme.
 		ActiveColorIndex = ThemePrefs.Get("SimplyLoveColor") or 1,
+
 		----------------------Experiment only values----------------------------------------------
 		DifficultyGroup = 1, --used when we're in difficulty sort to keep the correct difficulty defaulted
 		GradeGroup = "No_Grade", --used when we're in grade sort to keep the correct grade defaulted
@@ -131,7 +132,9 @@ local GlobalDefaults = {
 		LastSongPlayedGroup = nil,--set by SongMT.lua and used to remember what song to start on
 		ExperimentScreen = false, --keep track of when we're on ScreenSelectMusicExperiment TODO figure out why SCREENMAN:GetTopScreen() returns nil sometimes
 		ExperimentSave = true, --keep track of when we want to save custom scores
+		SearchReady = false, --search menu is always on so keep track of when we want to accept input
 		Scrolling = false, --keep track of when left or right is held down, set by ScreenSelectMusicExperiment/default.lua
+		QuickRateChanged = false, --if we change the rate in a selectmusic pane then update the bpm and peak immediately
 		HashLookup = {}, --hashes with corresponding song directories
 		StreamData = {},
 		-- We want an extra window for FAP (FA+) but when Simply Love is trying to map preferences

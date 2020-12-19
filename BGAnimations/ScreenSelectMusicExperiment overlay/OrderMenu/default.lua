@@ -16,7 +16,7 @@ local t = Def.ActorFrame {
 		orderMenu_input = LoadActor("./Input.lua", {af=self, Scrollers=scrollers})
 	end,
 	DirectInputToOrderMenuCommand=function(self) self:playcommand("ShowOrderMenu"):queuecommand("Stall") end,
-	StallCommand=function(self) 
+	StallCommand=function(self)
 		self:visible(true):sleep(0.25):queuecommand("CaptureTest")
 	end,
 	CaptureTestCommand=function(self) SCREENMAN:GetTopScreen():AddInputCallback( orderMenu_input ) end,

@@ -354,7 +354,7 @@ function GetActiveFiltersString()
 			if not foundFilter then toPrint = toPrint..filterType.." - " end
 			toPrint = toPrint.."Max:"..activeFilters['Max'..filterType]
 		end
-		toPrint = toPrint.."\n"
+		if foundFilter then toPrint = toPrint.."\n" end
 	end
 
 	if SL.Global.ActiveFilters["HidePassed"] or SL.Global.ActiveFilters["HideFailed"] or SL.Global.ActiveFilters["HideUnplayed"] then

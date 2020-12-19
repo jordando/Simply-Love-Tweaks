@@ -198,7 +198,7 @@ af[#af+1] = Def.ActorFrame{
 		end,
 		CurrentGroupChangedMessageCommand=function(self, params)
 			if group_info[params.group] then
-				local num_charts,num_passed,median, mode = 0,0,{}
+				local num_charts,num_passed,median, mode = 0,0,{},""
 				for k,v in pairs(group_info[params.group]["Level"]) do
 					for i = 1,v.num_songs do
 						median[#median+1] = v.difficulty
