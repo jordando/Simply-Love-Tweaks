@@ -240,6 +240,50 @@ local Overrides = {
 		end
 	},
 	-------------------------------------------------------------------------
+	Fail = {
+		Choices = {
+			'Immediate',
+			'ImmediateContinue',
+			'EndOfSong',
+			'Off',
+		},
+		Values = {
+			'FailType_Immediate',
+			'FailType_ImmediateContinue',
+			'FailType_EndOfSong',
+			'FailType_Off',
+		},
+		ExportOnChange = false,
+		OneChoiceForAllPlayers = true,
+		LoadSelections = function(self, list, pn)
+			local mods, playeroptions = GetModsAndPlayerOptions(pn)
+			local i = FindInTable(playeroptions:FailSetting(), self.Values) or 1
+			list[i] = true
+			return list
+		end,
+		SaveSelections = function(self, list, pn)
+			local mods, playeroptions = GetModsAndPlayerOptions(pn)
+			for i=1,#self.Values do
+				if list[i] then
+					--set the fail type for player options
+					playeroptions:FailSetting(self.Values[i] )
+					--set the default fail type so it saves
+					local defaultMods = PREFSMAN:GetPreference("DefaultModifiers")
+					local replacement = {
+						FailType_Immediate = "",
+						FailType_ImmediateContinue = ",FailImmediateContinue,",
+						FailType_EndOfSong = ",FailAtEnd,",
+						FailType_Off = ",Failoff,",
+					}
+					if not defaultMods:find("Fail") then defaultMods = defaultMods..","..replacement[self.Values[i]]
+					else defaultMods = defaultMods:gsub(",*Fail%w+,*",replacement[self.Values[i]]) end
+					PREFSMAN:SetPreference("DefaultModifiers",defaultMods)
+					PREFSMAN:SavePreferences()
+				end
+			end
+		end
+	},
+	-------------------------------------------------------------------------
 	MusicRate = {
 		Choices = function()
 			local first	= 0.05
