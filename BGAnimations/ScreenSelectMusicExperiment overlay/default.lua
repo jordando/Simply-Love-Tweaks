@@ -1,6 +1,7 @@
 ---------------------------------------------------------------------------
 -- do as much setup work as possible in another file to keep default.lua
 -- from becoming overly cluttered
+
 local setup = LoadActor("./Setup.lua")
 if setup == nil then
 	return LoadActor(THEME:GetPathB("ScreenSelectMusicCasual", "overlay/NoValidSongs.lua"))
@@ -39,6 +40,8 @@ local optionrow_mt = LoadActor("./OptionRowMT.lua")
 local optionrow_item_mt = LoadActor("./OptionRowItemMT.lua")
 
 ---------------------------------------------------------------------------
+-- Setup and enable input
+---------------------------------------------------------------------------
 
 local t = Def.ActorFrame {
 	InitCommand=function(self)
@@ -58,6 +61,7 @@ local t = Def.ActorFrame {
 		MESSAGEMAN:Broadcast("UpdateGroupInfo", {group_info, GroupWheel:get_actor_item_at_focus_pos().groupName})
 		MESSAGEMAN:Broadcast("LessLag")
 	end,
+
 	OnCommand=function(self)
 		if PREFSMAN:GetPreference("MenuTimer") then self:queuecommand("Listen") end
 	end,
@@ -89,6 +93,7 @@ local t = Def.ActorFrame {
 			self:sleep(0.5):queuecommand("Listen")
 		end
 	end,
+
 	CaptureCommand=function(self)
 		-- One element of the Input table is an internal function, Handler
 		SCREENMAN:GetTopScreen():AddInputCallback( Input.Handler )
@@ -97,30 +102,97 @@ local t = Def.ActorFrame {
 		-- It should be safe to enable input for players now
 		self:queuecommand("EnableMainInput")
 	end,
+
+	EnableMainInputCommand=function(self)
+		Input.Enabled = true
+	end,
+
+	-- Apply player modifiers from profile
+	LoadActor("./PlayerModifiers.lua"),
+
+---------------------------------------------------------------------------
+-- Commands controlling behavior
+---------------------------------------------------------------------------
+
 	-- a hackish solution to prevent users from button-spamming and breaking input :O
 	SwitchFocusToSongsMessageCommand=function(self)
 		self:stoptweening():sleep(TransitionTime):queuecommand("EnableMainInput")
 	end,
+
 	SwitchFocusToGroupsMessageCommand=function(self)
 		self:stoptweening():sleep(TransitionTime):queuecommand("EnableMainInput")
 	end,
+
 	SwitchFocusToSingleSongMessageCommand=function(self)
 		setup.InitOptionRowsForSingleSong()
 		self:stoptweening():sleep(TransitionTime):queuecommand("EnableMainInput")
 	end,
-	EnableMainInputCommand=function(self)
-		Input.Enabled = true
+
+	-- Broadcast by SortMenu_InputHandler when a player chooses a sort type
+	GroupTypeChangedMessageCommand=function(self)
+		-- we have to figure out what group we're supposed to be in now depending on the current song
+		-- if they entered the sort menu while on "Close This Folder" then GetCurrentSong() will return nil
+		-- in that case grab the last seen song (set by SongMT)
+		local current_song = GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
+		local mpn = GAMESTATE:GetMasterPlayerNumber()
+		--set global variables for the difficulty group and grade group so we can keep the scroll on the correct one when CurrentSongChangedMessageCommand is called
+		SL.Global.DifficultyGroup = GAMESTATE:GetCurrentSteps(mpn):GetMeter()
+		local highScore = PROFILEMAN:GetProfile(mpn):GetHighScoreList(current_song,GAMESTATE:GetCurrentSteps(mpn)):GetHighScores()[1] --TODO this only works for master player
+		if highScore then SL.Global.GradeGroup = highScore:GetGrade()
+		else SL.Global.GradeGroup = "No_Grade" end
+		setup.InitGroups() --this prunes out groups with no songs in them (or resets filters if we have 0 songs) and resets GroupWheel
+		group_info = setup.GetGroupInfo()
+		-- Broadcast to GroupWheelShared letting it know to reset all its information
+		MESSAGEMAN:Broadcast("UpdateGroupInfo", {group_info, GroupWheel:get_actor_item_at_focus_pos().groupName})
 	end,
-	--tells the songwheel to transform itself thereby updating the pass type and grades.
-	--Broadcasted from ./PerPlayer/SongSelect.lua
+
+	--tells the songwheel to transform itself without changing songs to update the
+	--pass type and grades on the song wheel. Used when players switch difficulties
+	--Broadcast from ./PerPlayer/SongSelect.lua.
 	Transform0MessageCommand = function(self)
 		if Input.WheelWithFocus then Input.WheelWithFocus:scroll_by_amount(0) end
 	end,
+
+	--if we choose a song in Search then we want to jump straight to it even if we're on the group wheel
+	SetSongViaSearchMessageCommand=function(self)
+		if Input.WheelWithFocus == GroupWheel then --going from group to song
+			Input.WheelWithFocus.container:playcommand("Start")
+			SOUND:PlayOnce( THEME:GetPathS("MusicWheel", "expand.ogg") )
+			Input.WheelWithFocus = SongWheel
+			Input.WheelWithFocus.container:playcommand("Unhide")
+			SL.Global.GroupToSong = true
+			MESSAGEMAN:Broadcast("CurrentSongChanged",{song=GAMESTATE:GetCurrentSong()})
+		end
+	end,
+
+	-- Code for exiting the game for those without a back button.
+	-- If the player decides not to, then EscapeFromEventMode.lua
+	-- will broadcast DirectInputToEngine
+	CodeMessageCommand=function(self, params)
+		if params.Name == "EscapeFromEventMode" then
+			Input.Enabled = false
+		end
+	end,
+
+	-- Broadcast when we enter the Sort Menu. Don't want to let input touch the normal screen
+	DirectInputToSortMenuMessageCommand=function(self)
+		Input.Enabled = false
+	end,
+
+	-- Broadcast when coming out of other menus that disabled main input
+	DirectInputToEngineMessageCommand=function(self)
+		self:queuecommand("EnableMainInput")
+		if Input.WheelWithFocus == SongWheel then
+			play_sample_music()
+		end
+	end,
+
+	-- Anti lag measures while scrolling through song wheel
 	--Wrap this in an actor so stoptweening doesn't affect everything else
 	Def.Actor{
 		-- Called by SongMT when changing songs. Updating the histogram and the stream breakdown lags SM if players hold down left or right
-		-- and the wheel scrolls too quickly. To alleviate this, instead of using CurrentSongChanged, we wait for .08 seconds to have
-		-- passed without changing songs before broadcasting "LessLag" which PaneDisplay receives. 
+		-- and the wheel scrolls too quickly. To alleviate this, instead of using CurrentSongChanged, we wait for .06 seconds to have
+		-- passed without changing songs before broadcasting "LessLag" which PaneDisplay receives.
 		BeginSongTransitionMessageCommand=function(self)
 			self:stoptweening()	--TODO if you press enter while holding left or right you can break input
 			scroll = scroll + 1
@@ -140,128 +212,10 @@ local t = Def.ActorFrame {
 			end
 		end
 	},
-	--if we choose a song in Search then we want to jump straight to it even if we're on the group wheel
-	SetSongViaSearchMessageCommand=function(self)
-		if Input.WheelWithFocus == GroupWheel then --going from group to song
-			Input.WheelWithFocus.container:playcommand("Start")
-			SOUND:PlayOnce( THEME:GetPathS("MusicWheel", "expand.ogg") )
-			Input.WheelWithFocus = SongWheel
-			Input.WheelWithFocus.container:playcommand("Unhide")
-			SL.Global.GroupToSong = true
-			MESSAGEMAN:Broadcast("CurrentSongChanged",{song=GAMESTATE:GetCurrentSong()})
-		end
-	end,
-	-- Apply player modifiers from profile
-	LoadActor("./PlayerModifiers.lua"),
-	-- Shared items on the OptionWheel GUI
-	LoadActor("./PlayerOptionsShared.lua", {row, col, Input}),
-	-- elements we need two of - panes for the OptionWheel GUI
-	LoadActor("./PerPlayer/PlayerOptionsPanes/default.lua"),
-	-- right now this just has the black rectangle going across the screen.
-	-- there's also a different style of text that are disabled
-	LoadActor("./SongWheelShared.lua", {row, col, songwheel_y_offset}), 
-	-- create a sickwheel metatable for songs
-	SongWheel:create_actors( "SongWheel", 13, song_mt, WideScale(25,0), songwheel_y_offset - 40),
-	-- the grey bar at the top as well as total time since start
-	LoadActor("./Header.lua", row),
-	-- profile information and time spent in game
-	-- note that this covers the footer in graphics
-	LoadActor("Footer.lua"),
-	-- this has information about the groups - number of songs/charts/filters/# of passed charts
-	LoadActor("./GroupWheelShared.lua", {row, col, group_info}),
-	-- create a sickwheel metatable for groups
-	GroupWheel:create_actors( "GroupWheel", row.how_many * col.how_many, group_mt, 0, 0, true), 
-	-- Graphical Banner
-	LoadActor("./Banner.lua"), -- the big banner above song information
-	-- CD Title
-	LoadActor("./CdTitle.lua"),
-	
-	--All of this stuff is put in an AF because we hide and show it together
-	--Information about the song - including the grid/stream info, nps histogram, and step information
-	Def.ActorFrame{
-		SwitchFocusToGroupsMessageCommand=function(self) self:stoptweening():queuecommand("Hide") end,
-		SwitchFocusToSingleSongMessageCommand=function(self) self:stoptweening():queuecommand("Hide") end,
-		SwitchFocusToSongsMessageCommand = function(self) self:stoptweening():queuecommand("Show") end,
-		CloseThisFolderHasFocusMessageCommand = function(self) self:stoptweening():queuecommand("Hide") end, --don't display any of this when we're on the close folder item
-		CurrentSongChangedMessageCommand = function(self, params) --brings things back after CloseThisFolderHasFocusMessageCommand runs
-			if params.song and self:GetDiffuseAlpha() == 0 and Input.WheelWithFocus == SongWheel then self:stoptweening():queuecommand("Show") end end,
-		CurrentCourseChangedMessageCommand = function(self)  end,
-		HideCommand = function(self) self:linear(.3):diffusealpha(0):visible(false) end,
-		ShowCommand = function(self) self:visible(true):linear(.3):diffusealpha(1) end,
 
-		-- elements we need two of (one for each player) that draw underneath the StepsDisplayList
-		-- this includes the stepartist boxes and the PaneDisplays (number of steps, jumps, holds, etc.)
-		LoadActor("./PerPlayer/Under.lua"),
-		-- grid of Difficulty Blocks (normal) or CourseContentsList (CourseMode)
-		LoadActor("./StepsDisplayList/default.lua"),
-		-- elements we need two of that draw over the StepsDisplayList (cursor and function to automatically jump to a valid chart when changing songs)
-		LoadActor("./PerPlayer/Over.lua", params_for_input),
-		-- Song Artist, BPM, Duration (Referred to in other themes as "PaneDisplay")
-		LoadActor("./songDescription.lua"),
-		-- Scroll bar
-		Def.Quad{
-			InitCommand=function(self)
-				self:x(_screen.w-10):valign(0):visible(false)
-			end,
-			CurrentSongChangedMessageCommand=function(self,params)
-				-- if we're coming here because the sort changed then we need to pull the current group
-				-- otherwise we can use group_info to figure out how many songs there are
-				local num_songs
-				if not group_info[GetCurrentGroup()] then
-					num_songs = #PruneSongList(GetSongList(SL.Global.CurrentGroup))
-				else
-					num_songs = group_info[GetCurrentGroup()].num_songs
-				end
-				if IsSpecialOrder() then num_songs = #SpecialOrder end
-				local size = (_screen.h-64) / num_songs --header and footer are each 32
-				local position = params.index and params.index or 0
-				if position == 0 then self:visible(false) --if we're on the close folder option
-				else self:visible(true):zoomto(20,size):y(position*size-size+32) end
-			end
-		}
-	},
-	-- finally, load the overlay used for sorting the MusicWheel (and more), hidden by default
-	LoadActor("./SortMenu/default.lua"),
-	-- a Test Input overlay can (maybe) be accessed from the SortMenu
-	LoadActor("./TestInput.lua"),
-	-- The menu for adding/removing tags
-	LoadActor("./TagMenu/default.lua"),
-	-- The menu for changing the order songs display in
-	LoadActor("./OrderMenu/default.lua"),
-	--Stuff related to searching
-	LoadActor("./Search/default.lua"),
-	--Panel showing player stats
-	LoadActor("./PlayerStats/default.lua"),
-	-- Broadcast when we enter the Sort Menu. Don't want to let input touch the normal screen
-	DirectInputToSortMenuMessageCommand=function(self)
-		Input.Enabled = false
-	end,
-	-- Broadcast when coming out of the Sort Menu.
-	DirectInputToEngineMessageCommand=function(self)
-		self:queuecommand("EnableMainInput")
-		if Input.WheelWithFocus == SongWheel then
-			play_sample_music()
-		end
-	end,
-	-- Broadcast by SortMenu_InputHandler when someone chooses a sort type
-	GroupTypeChangedMessageCommand=function(self)
-		-- we have to figure out what group we're supposed to be in now depending on the current song
-		-- if they entered the sort menu while on "Close This Folder" then GetCurrentSong() will return nil
-		-- in that case grab the last seen song (set by SongMT)
-		local current_song = GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
-		local mpn = GAMESTATE:GetMasterPlayerNumber()
-		--set global variables for the difficulty group and grade group so we can keep the scroll on the correct one when CurrentSongChangedMessageCommand is called
-		SL.Global.DifficultyGroup = GAMESTATE:GetCurrentSteps(mpn):GetMeter()
-		local highScore = PROFILEMAN:GetProfile(mpn):GetHighScoreList(current_song,GAMESTATE:GetCurrentSteps(mpn)):GetHighScores()[1] --TODO this only works for master player
-		if highScore then SL.Global.GradeGroup = highScore:GetGrade()
-		else SL.Global.GradeGroup = "No_Grade" end
-		setup.InitGroups() --this prunes out groups with no songs in them (or resets filters if we have 0 songs) and resets GroupWheel
-		group_info = setup.GetGroupInfo()
-		-- Broadcast to GroupWheelShared letting it know to reset all its information
-		MESSAGEMAN:Broadcast("UpdateGroupInfo", {group_info, GroupWheel:get_actor_item_at_focus_pos().groupName})
-	end,
-	
-	--Screen Transition stuff
+---------------------------------------------------------------------------
+-- Screen Transition Commands
+---------------------------------------------------------------------------
 
 	-- This command is broadcast by input.handler when it tries to start a song.
 	-- Emulates the "Press START for options that native screenselectmusic has
@@ -279,7 +233,7 @@ local t = Def.ActorFrame {
 			self:sleep(.3):queuecommand("GoToNextScreen")
 		end
 	end,
-	
+
 	-- ScreenTransitionMessageCommand waits two seconds for the user to hit start again - then goes to either options or gameplay
 	GoToNextScreenCommand=function(self)
 		SL.Global.ExperimentScreen = false
@@ -288,30 +242,87 @@ local t = Def.ActorFrame {
 			topscreen:StartTransitioningScreen("SM_GoToNextScreen")
 		end
 	end,
+
 	-- If someone presses start then we set a flag telling us where to go next and change from "Press Start..." to "Entering Options"
 	GoToOptionsMessageCommand=function(self)
 		SL.Global.GoToOptions = true
 		self:playcommand("ShowEnteringOptions")
 	end,
-	-- Exit Code from normal Simply Love
-	-- a yes/no prompt overlay for backing out of SelectMusic when in EventMode can be
-	-- activated via "CodeEscapeFromEventMode" under [ScreenSelectMusic] in Metrics.ini
-	LoadActor("./EscapeFromEventMode.lua"),
-	CodeMessageCommand=function(self, params)
-		if params.Name == "EscapeFromEventMode" then
-			Input.Enabled = false
-		end
-	end,
 }
 
+---------------------------------------------------------------------------
+-- Visual elements
+---------------------------------------------------------------------------
+
+-- If the players want a black background, set it here. TODO: would be better to disable the actual background
 if ThemePrefs.Get("BlackBackground") then
-	table.insert(t,1,LoadActor( THEME:GetPathB("", "_black")))
+	t[#t+1] = table.insert(t,1,LoadActor( THEME:GetPathB("", "_black")))
 end
+--Information about the song - including the grid/stream info, nps histogram, and step information
+--Shows on song select screen but not invididual song or group menus so add them in to an actor
+--frame so we can hide/show them all at once.
+t[#t+1] = Def.ActorFrame{
+	SwitchFocusToGroupsMessageCommand=function(self) self:stoptweening():queuecommand("Hide") end,
+	SwitchFocusToSingleSongMessageCommand=function(self) self:stoptweening():queuecommand("Hide") end,
+	SwitchFocusToSongsMessageCommand = function(self) self:stoptweening():queuecommand("Show") end,
+	CloseThisFolderHasFocusMessageCommand = function(self) self:stoptweening():queuecommand("Hide") end, --don't display any of this when we're on the close folder item
+	CurrentSongChangedMessageCommand = function(self, params) --brings things back after CloseThisFolderHasFocusMessageCommand runs
+		if params.song and self:GetDiffuseAlpha() == 0 and Input.WheelWithFocus == SongWheel then self:stoptweening():queuecommand("Show") end end,
+	CurrentCourseChangedMessageCommand = function(self)  end,
+	HideCommand = function(self) self:linear(.3):diffusealpha(0):visible(false) end,
+	ShowCommand = function(self) self:visible(true):linear(.3):diffusealpha(1) end,
+
+	-- elements we need two of (one for each player) that draw underneath the StepsDisplayList
+	-- this includes the stepartist boxes and the PaneDisplays (number of steps, jumps, holds, etc.)
+	LoadActor("./PerPlayer/Under.lua"),
+	-- grid of Difficulty Blocks (normal) or CourseContentsList (CourseMode)
+	LoadActor("./StepsDisplayList/default.lua"),
+	-- elements we need two of that draw over the StepsDisplayList (cursor and function to automatically jump to a valid chart when changing songs)
+	LoadActor("./PerPlayer/Over.lua", params_for_input),
+	-- Song Artist, BPM, Duration (Referred to in other themes as "PaneDisplay")
+	LoadActor("./songDescription.lua"),
+	-- Scroll bar
+	Def.Quad{
+		InitCommand=function(self)
+			self:x(_screen.w-10):valign(0):visible(false)
+		end,
+		CurrentSongChangedMessageCommand=function(self,params)
+			-- if we're coming here because the sort changed then we need to pull the current group
+			-- otherwise we can use group_info to figure out how many songs there are
+			local num_songs
+			if IsSpecialOrder() then num_songs = #SpecialOrder
+			elseif not group_info[GetCurrentGroup()] then
+				num_songs = #PruneSongList(GetSongList(SL.Global.CurrentGroup))
+			else
+				num_songs = group_info[GetCurrentGroup()].num_songs
+			end
+			local size = (_screen.h-64) / num_songs --header and footer are each 32
+			local position = params.index and params.index or 0
+			if position == 0 then self:visible(false) --if we're on the close folder option
+			else self:visible(true):zoomto(20,size):y(position*size-size+32) end
+		end
+	}
+}
+-- Shared items on the OptionWheel GUI
+t[#t+1] = LoadActor("./PlayerOptionsShared.lua", {row, col, Input})
+-- right now this just has the black rectangle going across the screen.
+-- there's also a different style of text that are disabled
+t[#t+1] = LoadActor("./SongWheelShared.lua", {row, col, songwheel_y_offset})
+-- this has information about the groups - number of songs/charts/filters/# of passed charts
+t[#t+1] = LoadActor("./GroupWheelShared.lua", {row, col, group_info})
+-- elements we need two of - panes for the OptionWheel GUI
+t[#t+1] = LoadActor("./PerPlayer/PlayerOptionsPanes/default.lua")
+
+--All of the wheels are created using Consensual-sick_wheel.lua in Scripts
+-- Songwheel
+t[#t+1] = SongWheel:create_actors( "SongWheel", 13, song_mt, WideScale(25,0), songwheel_y_offset - 40)
+-- Groupwheel
+t[#t+1] = GroupWheel:create_actors( "GroupWheel", row.how_many * col.how_many, group_mt, 0, 0, true)
 -- Add player options ActorFrames to our primary ActorFrame
 for pn in ivalues( {PLAYER_1, PLAYER_2} ) do
 	local x_offset = (pn==PLAYER_1 and -1) or 1
 
-	-- create an optionswheel that has enough items to handle the number of optionrows necessary
+	-- Optionwheels that have enough items to handle the number of optionrows necessary
 	t[#t+1] = OptionsWheel[pn]:create_actors("OptionsWheel"..ToEnumShortString(pn), #OptionRows, optionrow_mt, _screen.cx - 100 + 140 * x_offset, _screen.cy - 30)
 
 	local height = 200
@@ -326,21 +337,51 @@ for pn in ivalues( {PLAYER_1, PLAYER_2} ) do
 	OptionsWheel[pn].focus_pos = #OptionRows --start with the bottom (Start) selected
 end
 
+-- the grey bar at the top as well as total time since start
+t[#t+1] = LoadActor("./Header.lua", row)
+-- profile information and time spent in game
+-- note that this covers the footer in graphics
+t[#t+1] = LoadActor("Footer.lua")
+-- the big banner above song information
+t[#t+1] = LoadActor("./Banner.lua")
+-- CD Title
+t[#t+1] = LoadActor("./CdTitle.lua")
+
+
+-- finally, load the additional menus used for sorting the MusicWheel (and more)
+--hidden by default
+t[#t+1] = LoadActor("./SortMenu/default.lua")
+-- a Test Input overlay can (maybe) be accessed from the SortMenu
+t[#t+1] = LoadActor("./TestInput.lua")
+-- The menu for adding/removing tags
+t[#t+1] = LoadActor("./TagMenu/default.lua")
+-- The menu for changing the order songs display in
+t[#t+1] = LoadActor("./OrderMenu/default.lua")
+--Stuff related to searching
+t[#t+1] = LoadActor("./Search/default.lua")
+--Panel showing player stats
+t[#t+1] = LoadActor("./PlayerStats/default.lua")
+-- a yes/no prompt overlay for backing out of SelectMusic when in EventMode can be
+-- activated via "CodeEscapeFromEventMode" under [ScreenSelectMusic] in Metrics.ini
+t[#t+1] = LoadActor("./EscapeFromEventMode.lua")
+
 -- FIXME: This is dumb.  Add the player option StartButton visual last so it
 --  draws over everything else and we can hide cusors behind it when needed...
 t[#t+1] = LoadActor("./StartButton.lua")
 
-----------------------------------------------------------
--- More Screen Transition stuff----------------------------------
--- This is added last so the black quad covers everything up
+---------------------------------------------------------------------------
+-- More Screen Transition
+---------------------------------------------------------------------------
 
+--This quad is added last so it covers everything
 t[#t+1] = Def.Quad{
 	InitCommand=function(self) self:diffuse(0,0,0,0):FullScreen():cropbottom(1) end,
-	TransitionQuadOffCommand=function(self) 
+	TransitionQuadOffCommand=function(self)
 		self:linear(0.3):cropbottom(0):diffusealpha(1)
 	end
 }
 
+--If two tap is enabled have some text helpers letting people know what to do
 t[#t+1] = LoadFont("Common Normal")..{
 		Name="TextDisplay",
 		Text=THEME:GetString("ScreenSelectMusicExperiment", "Press Start for Options"),

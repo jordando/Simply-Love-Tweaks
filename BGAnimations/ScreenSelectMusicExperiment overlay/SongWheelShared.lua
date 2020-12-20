@@ -10,9 +10,14 @@ local af = Def.ActorFrame{
 
 -----------------------------------------------------------------
 -- black background quad
+-- this is useful when the background is very light but kinda unnecessary when it's dark
+-- so if holiday cheer is on just turn it off
 af[#af+1] = Def.Quad{
 	Name="SongWheelBackground",
-	InitCommand=function(self) self:zoomto(_screen.w, _screen.h/2.25 - 3):diffuse(0,0,0,1):cropbottom(1) end,
+	InitCommand=function(self)
+		if HolidayCheer() then self:visible(false) end
+		self:zoomto(_screen.w, _screen.h/2.25 - 3):diffuse(0,0,0,1):cropbottom(1) 
+	end,
 	OnCommand=function(self)
 		self:xy(_screen.cx, math.ceil((row.how_many-2)/2) * row.h + 36):finishtweening()
 		    :accelerate(0.2):cropbottom(0)

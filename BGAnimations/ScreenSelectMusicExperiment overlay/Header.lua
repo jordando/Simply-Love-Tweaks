@@ -17,13 +17,6 @@ end
 local af = Def.ActorFrame{
 	InitCommand=function(self)
 		if PREFSMAN:GetPreference("EventMode") and SL.Global.GameMode ~= "Casual" then
-			-- TimeAtSessionStart will be reset to nil between game sesssions
-			-- thus, if it's currently nil, we're loading ScreenSelectMusic
-			-- for the first time this particular game session
-			if SL.Global.TimeAtSessionStart == nil then
-				SL.Global.TimeAtSessionStart = GetTimeSinceStart()
-			end
-
 			self:SetUpdateFunction( Update )
 		end
 	end,

@@ -18,6 +18,13 @@ local margin = {
 local numCols = 3
 local numRows = 5
 
+-- TimeAtSessionStart will be reset to nil between game sesssions
+-- thus, if it's currently nil, we're loading ScreenSelectMusic
+-- for the first time this particular game session
+if SL.Global.TimeAtSessionStart == nil then
+	SL.Global.TimeAtSessionStart = GetTimeSinceStart()
+end
+
 ---------------------------------------------------------------------------
 -- variables that are to be passed between files
 local OptionsWheel = {}
@@ -195,6 +202,7 @@ else
 -- TODO right now this doesn't check if they got a highscore, it just makes new groups.
 	UpdateGradeGroups(GAMESTATE:GetCurrentSong())
 end
+
 
 return {
 	group_info=GetGroupInfo(),

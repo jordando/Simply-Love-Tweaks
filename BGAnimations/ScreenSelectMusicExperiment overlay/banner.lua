@@ -33,7 +33,7 @@ local t = Def.ActorFrame{
 	Def.ActorFrame{
 		CurrentSongChangedMessageCommand=function(self,params) if params.song then self:playcommand("SetBanner") end end,
 		CurrentCourseChangedMessageCommand=function(self) self:playcommand("SetBanner") end,
-		CloseThisFolderHasFocusMessageCommand=function(self) 
+		CloseThisFolderHasFocusMessageCommand=function(self)
 			self:GetChild("Banner"):LoadFromSongGroup(SL.Global.CurrentGroup)
 			:stoptweening():zoom(.5):linear(.125):zoomto(418,164)
 			GAMESTATE:SetCurrentSong(nil) -- TODO This is a bad place to put this. But we want to clear out the current song and need to set the banner first

@@ -1,6 +1,3 @@
--- the metatable for an item in songDescription.lua's sick_wheel tagItem
-local w, h = 80, 25
-
 return {
 	__index = {
 		create_actors = function(self, name)
@@ -48,11 +45,11 @@ return {
 			if not tag then 
 				self.bmt:settext("") 
 				self.glowBorder:visible(false)
-				self.box:visible(false) 
+				self.box:visible(false)
 				return 
 			end
 			self.bmt:settext(tag.displayName or "")
-			self.glowBorder:visible(true) 
+			self.glowBorder:visible(true)
 			self.box:visible(true)
 			if tag.displayName == "BPM Changes" or tag.displayName == "Filters Active" then self.box:diffuse(Color.Red)
 			elseif tag.displayName == "No Tags Set" then self.box:diffuse(Color.Black)
