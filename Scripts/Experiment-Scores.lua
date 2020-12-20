@@ -284,14 +284,38 @@ function SaveScores(pn)
 		if not file:Open(PROFILEMAN:GetProfileDir(profileDir).."/Scores.txt", 2) then SM("Could not open HashLookup.txt") return end
 		for _,hash in pairs(SL[pn]['Scores']) do --TODO don't type this out manually
 			if hash.hash then
-				file:PutLine(hash.title.."\t"..hash.group.."\t"..hash.Difficulty.."\t"..hash.StepsType.."\t"..hash.LastPlayed.."\t"..hash.NumTimesPlayed.."\t"
-					..hash.FirstPass.."\t"..hash.BestPass.."\t"..hash.hash)
+				local toWrite = {
+					hash.title,
+					hash.group,
+					hash.Difficulty,
+					hash.StepsType,
+					hash.LastPlayed,
+					hash.NumTimesPlayed,
+					hash.FirstPass,
+					hash.BestPass,
+					hash.hash
+				}
+				file:PutLine(table.concat(toWrite,"\t"))
 				if hash["HighScores"] then
 					for score in ivalues(hash["HighScores"]) do
-						file:PutLine(score.rate.."\t"..score.score.."\t"..score.W0.."\t"
-						..score.W1.."\t"..score.W2.."\t"..score.W3.."\t"..score.W4.."\t"..score.W5.."\t"..score.Miss.."\t"
-						..score.Holds.."\t"..score.Mines.."\t"..score.Hands.."\t"..score.Rolls.."\t"
-						..score.grade.."\t"..score.dateTime)
+						local add = {
+							score.rate,
+							score.score,
+							score.W0,
+							score.W1,
+							score.W2,
+							score.W3,
+							score.W4,
+							score.W5,
+							score.Miss,
+							score.Holds,
+							score.Mines,
+							score.Hands,
+							score.Rolls,
+							score.grade,
+							score.dateTime
+						}
+						file:PutLine(table.concat(add,"\t"))
 					end
 				end
 			end

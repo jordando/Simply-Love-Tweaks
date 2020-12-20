@@ -719,10 +719,17 @@ function CreateSpecialSongList(inputSongList)
 				}
 				if streamData then
 					if streamData.PeakNPS then toAdd["peak"] = tonumber(round(streamData.PeakNPS/16*240,0)) end
-					if streamData.TotalStreams then toAdd["totalStreams"] = tonumber(streamData.TotalStreams) end
+					if streamData.TotalStreams then 
+						toAdd["totalStreams"] = tonumber(streamData.TotalStreams)
+					else toAdd["totalStreams"] = 0 end
 					if streamData.NpsMode then toAdd["mode"] = tonumber(round(streamData.NpsMode/16*240,0)) end
 					if streamData.Percent then toAdd["percent"] = tonumber(streamData.Percent) end
 					if streamData.AdjustedPercent then toAdd["adjustedPercent"] = tonumber(streamData.AdjustedPercent) end
+					if streamData.NpsMode and streamData.PeakNPS then
+						if round(streamData.PeakNPS/16*240,0) < (steps:GetDisplayBpms()[2] *.9) then
+							toAdd["smart"] = round(streamData.PeakNPS/16*240,0)
+						else toAdd["smart"] = round(streamData.NpsMode/16*240,0) end
+					end
 				end
 				table.insert(SpecialOrder, toAdd)
 			end
