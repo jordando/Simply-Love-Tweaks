@@ -316,6 +316,15 @@ t[#t+1] = LoadActor("./PerPlayer/PlayerOptionsPanes/default.lua")
 --All of the wheels are created using Consensual-sick_wheel.lua in Scripts
 -- Songwheel
 t[#t+1] = SongWheel:create_actors( "SongWheel", 13, song_mt, WideScale(25,0), songwheel_y_offset - 40)
+
+-- the grey bar at the top as well as total time since start
+-- we want these after the songwheel so they cut off the songs but before the group wheel
+-- so you can see the group name
+t[#t+1] = LoadActor("./Header.lua", row)
+-- profile information and time spent in game
+-- note that this covers the footer in graphics
+t[#t+1] = LoadActor("Footer.lua")
+
 -- Groupwheel
 t[#t+1] = GroupWheel:create_actors( "GroupWheel", row.how_many * col.how_many, group_mt, 0, 0, true)
 -- Add player options ActorFrames to our primary ActorFrame
@@ -337,11 +346,6 @@ for pn in ivalues( {PLAYER_1, PLAYER_2} ) do
 	OptionsWheel[pn].focus_pos = #OptionRows --start with the bottom (Start) selected
 end
 
--- the grey bar at the top as well as total time since start
-t[#t+1] = LoadActor("./Header.lua", row)
--- profile information and time spent in game
--- note that this covers the footer in graphics
-t[#t+1] = LoadActor("Footer.lua")
 -- the big banner above song information
 t[#t+1] = LoadActor("./Banner.lua")
 -- CD Title

@@ -49,8 +49,8 @@ setmetatable(position,mt)
 
 position["Step Statistics"] = {
     zoom = .5,
-    x = player == PLAYER_1 and 95 or -95,
-    y = 25,
+    x = player == PLAYER_1 and -40 or -95,
+    y = -70,
 }
 position["Alt. Step Statistics"] = {
     zoom = .5,
@@ -65,6 +65,11 @@ position["Target Score Graph"] = {
 
 if NoteFieldIsCentered and IsUsingWideScreen() then
     position["Target Score Graph"].x = 50
+    position["Step Statistics"].x = -600
+    position["Step Statistics"].zoom = .75
+    position["Alt. Step Statistics"].x = -600
+    position["Alt. Step Statistics"].y = -70
+    position["Alt. Step Statistics"].zoom = .75
 end
 
 local adjust = position[SL[pn].ActiveModifiers.DataVisualizations]

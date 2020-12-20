@@ -6,7 +6,7 @@ local show_player_label = args.ShowPlayerLabel
 local pad_img = GAMESTATE:GetCurrentGame():GetName()
 
 -- this handles user input while in SelectMusic's TestInput overlay
-local function input(self, event)
+local function input(event)
 	if not (event and event.PlayerNumber and event.button) then
 		return false
 	end
@@ -127,7 +127,7 @@ for panel,values in pairs(Highlights) do
 	}
 	pad[#pad+1] = Def.Quad{
 		InitCommand=function(self)
-			self:xy(values.x, values.y):rotationz(values.rotationz):zoom(25)
+			self:xy(values.x, values.y):rotationz(values.rotationz):zoom(40)
 			:visible(false):diffuse(Color.Red)
 		end,
 		JudgmentMessageCommand=function(self, params)
