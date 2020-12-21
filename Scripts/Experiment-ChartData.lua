@@ -172,7 +172,6 @@ local function AddToHashLookup()
 		if not SL.Global.HashLookup[dir] then SL.Global.HashLookup[dir] = {} end
 		local allSteps = song.song:GetAllSteps()
 		for _,steps in pairs(allSteps) do
-			SM(dir.."("..ToEnumShortString(steps:GetDifficulty()))
 			if string.find(SONGMAN:GetSongFromSteps(steps):GetSongFilePath(),".dwi$") then
 				Trace("Hashes can't be generated for .DWI files")
 				Trace("Could not generate hash for "..dir)

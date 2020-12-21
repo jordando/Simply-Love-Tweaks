@@ -8,6 +8,7 @@
 GAMESTATE:SetCurrentPlayMode(0)
 
 ---------------------------------------------------------------------------
+
 -- local junk
 local margin = {
 	w = WideScale(54,72),
@@ -24,6 +25,11 @@ local numRows = 5
 if SL.Global.TimeAtSessionStart == nil then
 	SL.Global.TimeAtSessionStart = GetTimeSinceStart()
 end
+
+SL.Global.Debug = true
+local startTime, endTime
+startTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+if SL.Global.Debug then Trace("Running setup") end
 
 ---------------------------------------------------------------------------
 -- variables that are to be passed between files
@@ -98,6 +104,9 @@ end
 -- heard by default.lua (for ScreenSelectMusicExperiment overlay)
 
 local InitGroups = function()
+	local s, e
+	s = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	if SL.Global.Debug then Trace("Running InitGroups") end
 	local groups = PruneGroups(GetGroups())
 	if #groups == 0 then
 		SM("WARNING: ALL SONGS WERE FILTERED. RESETTING FILTERS")
@@ -106,6 +115,9 @@ local InitGroups = function()
 	end
 	local group_index = GetGroupIndex(groups)
 	GroupWheel:set_info_set(groups, group_index)
+	e = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	if SL.Global.Debug then Trace("Finish InitGroups") end
+	if SL.Global.Debug then Trace("Runtime: "..e - s) end
 end
 
 ---------------------------------------------------------------------------
@@ -121,6 +133,9 @@ end
 -- info[group].charts = String listing number of charts per difficulty level
 
 local GetGroupInfo = function()
+	local s, e
+	s = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	if SL.Global.Debug then Trace("Running GetGroupInfo") end
 	local groups = PruneGroups(GetGroups())
 	local info = {}
 	local songs
@@ -181,6 +196,9 @@ local GetGroupInfo = function()
 		end
 		info[group].max_num = max_num
 	end
+	e = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	if SL.Global.Debug then Trace("Finish GetGroupInfo") end
+	if SL.Global.Debug then Trace("Runtime: "..e - s) end
 	return info
 end
 
@@ -203,6 +221,9 @@ else
 	UpdateGradeGroups(GAMESTATE:GetCurrentSong())
 end
 
+endTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+if SL.Global.Debug then Trace("Finish Setup") end
+if SL.Global.Debug then Trace("Runtime: "..endTime - startTime) end
 
 return {
 	group_info=GetGroupInfo(),

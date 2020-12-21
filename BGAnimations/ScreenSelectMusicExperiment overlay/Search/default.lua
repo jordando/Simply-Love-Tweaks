@@ -31,6 +31,7 @@ end
 conversions[">"] = function(type,result)
 	return "Min", result + 1
 end
+
 local QuickFilter = function(input)
 	local filters = {"jumps","steps","bpm","diff"}
 	local category, result, type
@@ -50,6 +51,10 @@ local QuickFilter = function(input)
 		if result then type = firstToUpper(type) break end
 		type, result = string.lower(input):match("^(max)"..filter.."%s*=%s*(%d*)$")
 		if result then type = firstToUpper(type) break end
+	end
+	if string.lower(input):match("^filters?%s*=%s*off$") then
+		ResetFilters()
+		return true
 	end
 	if result then
 		if type == "both" then

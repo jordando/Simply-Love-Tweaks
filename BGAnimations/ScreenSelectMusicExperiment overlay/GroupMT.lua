@@ -9,7 +9,11 @@ local max_chars = 64
 local path = "/"..THEME:GetCurrentThemeDirectory().."Graphics/_FallbackBanners/"..ThemePrefs.Get("VisualStyle")
 local banner_directory = FILEMAN:DoesFileExist(path) and path or THEME:GetPathG("","_FallbackBanners/Arrows")
 
+local startTime, endTime
+
 function Switch_to_songs(group_name)
+	startTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	if SL.Global.Debug then  Trace("Running Switch_to_songs: "..group_name) end
 	local songs = PruneSongList(GetSongList(group_name))
 	if #songs > 0 then --it's possible that filters can cause us to try and enter a group with no songs
 		if IsSpecialOrder() then --If we're using a special order than we need to further split the song list
@@ -52,6 +56,9 @@ function Switch_to_songs(group_name)
 			Switch_to_songs(groups[1])
 		end
 	end
+	endTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	if SL.Global.Debug then Trace("Finish Switch_to_songs: "..group_name) end
+	if SL.Global.Debug then Trace("Runtime: "..endTime - startTime) end
 end
 
 local item_mt = {

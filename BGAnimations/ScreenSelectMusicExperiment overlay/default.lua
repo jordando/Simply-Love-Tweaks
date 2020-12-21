@@ -6,7 +6,7 @@ local setup = LoadActor("./Setup.lua")
 if setup == nil then
 	return LoadActor(THEME:GetPathB("ScreenSelectMusicCasual", "overlay/NoValidSongs.lua"))
 end
---Used to keep track of when we're changing songs
+-- Used to keep track of when we're changing songs
 local timeToGo = 0
 local scroll = 0
 
@@ -130,6 +130,7 @@ local t = Def.ActorFrame {
 
 	-- Broadcast by SortMenu_InputHandler when a player chooses a sort type
 	GroupTypeChangedMessageCommand=function(self)
+		if SL.Global.Debug then Trace("Running GroupTypeChangedMessageCommand") end
 		-- we have to figure out what group we're supposed to be in now depending on the current song
 		-- if they entered the sort menu while on "Close This Folder" then GetCurrentSong() will return nil
 		-- in that case grab the last seen song (set by SongMT)
@@ -155,6 +156,7 @@ local t = Def.ActorFrame {
 
 	--if we choose a song in Search then we want to jump straight to it even if we're on the group wheel
 	SetSongViaSearchMessageCommand=function(self)
+		if SL.Global.Debug then Trace("Running SetSongViaSearchMessageCommand") end
 		if Input.WheelWithFocus == GroupWheel then --going from group to song
 			Input.WheelWithFocus.container:playcommand("Start")
 			SOUND:PlayOnce( THEME:GetPathS("MusicWheel", "expand.ogg") )

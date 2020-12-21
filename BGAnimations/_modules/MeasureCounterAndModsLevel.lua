@@ -1,4 +1,8 @@
+local startTime, endTime
+
 return function(SongNumberInCourse)
+	startTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	if SL.Global.Debug then  Trace("Running MeasureCounterAndModsLevel") end
 	for player in ivalues(GAMESTATE:GetHumanPlayers()) do
 		-- get the PlayerOptions string for any human players and store it now
 		-- we'll retrieve it the next time ScreenSelectMusic loads and re-apply those same mods
@@ -108,4 +112,7 @@ return function(SongNumberInCourse)
 			end
 		end
 	end
+	endTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	if SL.Global.Debug then Trace("Finish MeasureCounterAndModsLevel") end
+	if SL.Global.Debug then Trace("Runtime: "..endTime - startTime) end
 end

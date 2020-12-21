@@ -5,6 +5,7 @@ local jumpstream
 local parsedSteps
 local ambiguousStartPosition
 local ambiguousDoublestepPosition
+local startTime, endTime
 
 local debug = false
 local safe = true --if there are no warps or negative bpms we can easily calculate time at beat manually
@@ -305,6 +306,8 @@ local function NormalizeFloatDigits(param)
 end
 
 return function (steps, stepsType, difficulty)
+        startTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	    if SL.Global.Debug then  Trace("Running TechParser") end
         local msdFile = ParseMsdFile(steps)
         if #msdFile == 0 then return nil	end
         local songBpms = ''
@@ -360,6 +363,10 @@ return function (steps, stepsType, difficulty)
                 success = ParseTech(notes[7])
             end
         end
+
+        endTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+        if SL.Global.Debug then  Trace("Finish TechParser") end
+        if SL.Global.Debug then Trace("Runtime: "..endTime - startTime) end
 
         if success then return {
             doublestep = doublestep,

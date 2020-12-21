@@ -64,6 +64,7 @@ local af = Def.ActorFrame{
 	-- This is set separately because it lags SM if players hold down left or right (to scroll quickly). LessLag will trigger after .15 seconds
 	-- with no new song changes.
 	LessLagMessageCommand=function(self)
+		if SL.Global.Debug then Trace("Running LessLagMessageCommand") end
 		-- ---------------------Extra Song Information------------------------------------------
 		if not GAMESTATE:IsHumanPlayer(player) then return end
 		--TODO right now we don't show any of this if two players are joined. I'd like to find a way for both to see it
@@ -84,6 +85,7 @@ local af = Def.ActorFrame{
 			else
 				--clear out whatever might have been in Streams and try to parse the chart
 				SL[pn].Streams = {}
+				if SL.Global.Debug then SM("Generating stream info") end
 				InitializeMeasureCounterAndModsLevel(player)
 			end
 			if SL[pn].Streams.TotalMeasures then --used to be working without this... not sure what changed but don't run any of this stuff if measures is not filled in
@@ -127,6 +129,7 @@ local af = Def.ActorFrame{
 	--TODO part of the pane that gets hidden if two players are joined. i'd like to display this somewhere though
 	PeakNPSUpdatedMessageCommand=function(self)
 		if not GAMESTATE:IsHumanPlayer(player) then return end
+		if SL.Global.Debug then Trace("Running PeakNPSUpdatedMessageCommand") end
 		if GAMESTATE:GetCurrentSong() and
 		GAMESTATE:Env()[pn.."PeakNPS"] and
 		ThemePrefs.Get("ShowExtraSongInfo") and

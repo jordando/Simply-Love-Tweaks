@@ -611,15 +611,16 @@ local CreateGroup = Def.ActorFrame{
 ----------------------------------------------------------------------------------------------
 -- Ordering how songs are displayed within groups
 ----------------------------------------------------------------------------------------------
+local speed
+local conversion = {}
+conversion["Difficulty/Speed"] = {"difficulty",speed}
+conversion["Difficulty/BPM"] = {"difficulty", "bpm"}
+conversion["BPM/Stream Total"] = {"bpm", "totalStreams"}
+conversion["Speed/Stream Total"] = {speed, "totalStreams"}
 
 --- If ordering by two things return a table of the first and second sorts. Otherwise return nil
 function IsSpecialOrder()
-	local speed = ThemePrefs.Get("StreamSpeed")
-	local conversion = {}
-	conversion["Difficulty/Speed"] = {"difficulty",speed}
-	conversion["Difficulty/BPM"] = {"difficulty", "bpm"}
-	conversion["BPM/Stream Total"] = {"bpm", "totalStreams"}
-	conversion["Speed/Stream Total"] = {speed, "totalStreams"}
+	speed = ThemePrefs.Get("StreamSpeed")
 	return conversion[SL.Global.Order]
 end
 
@@ -703,6 +704,8 @@ end
 --- Currently only used when we want to order by Difficulty/BPM. This requires splitting songs so each chart gets its own song.
 --- After splitting, GetSongList won't match up so we have to do something else. There's also a special table we put this in.
 function CreateSpecialSongList(inputSongList)
+	local startTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	if SL.Global.Debug then  Trace("CreateSpecialSongList") end
 	local songList = inputSongList
 	SpecialOrder = {}
 	for song in ivalues(songList) do
@@ -740,6 +743,9 @@ function CreateSpecialSongList(inputSongList)
 	for item in ivalues(SpecialOrder) do
 		specialList[#specialList+1] = item.song
 	end
+	local endTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
+	if SL.Global.Debug then  Trace("Finish CreateSpecialSonglist") end
+	if SL.Global.Debug then Trace("Runtime: "..endTime - startTime) end
 	return specialList
 end
 
