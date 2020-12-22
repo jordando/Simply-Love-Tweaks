@@ -325,6 +325,7 @@ local song_mt = {
 					else
 						self.title_bmt:settext( "[?] [?] "..self.song:GetDisplayMainTitle() )
 					end
+					self.subtitle_bmt:settext(self.song:GetDisplaySubTitle())
 				else
 					self.title_bmt:settext( self.song:GetDisplayMainTitle() )
 					self.subtitle_bmt:settext(self.song:GetDisplaySubTitle())
