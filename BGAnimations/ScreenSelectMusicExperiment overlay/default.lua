@@ -163,8 +163,9 @@ local t = Def.ActorFrame {
 			Input.WheelWithFocus = SongWheel
 			Input.WheelWithFocus.container:playcommand("Unhide")
 			SL.Global.GroupToSong = true
-			MESSAGEMAN:Broadcast("CurrentSongChanged",{song=GAMESTATE:GetCurrentSong()})
 		end
+		setup.InitGroups() --this prunes out groups with no songs in them (or resets filters if we have 0 songs) and resets GroupWheel
+		MESSAGEMAN:Broadcast("UpdateGroupInfo", {group_info, GroupWheel:get_actor_item_at_focus_pos().groupName})
 	end,
 
 	-- Code for exiting the game for those without a back button.

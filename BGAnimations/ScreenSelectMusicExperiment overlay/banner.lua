@@ -36,6 +36,7 @@ local t = Def.ActorFrame{
 		CloseThisFolderHasFocusMessageCommand=function(self)
 			self:GetChild("Banner"):LoadFromSongGroup(SL.Global.CurrentGroup)
 			:stoptweening():zoom(.5):linear(.125):zoomto(418,164)
+			if SL.Global.Debug then Trace("Banner setting current song: nil") end
 			GAMESTATE:SetCurrentSong(nil) -- TODO This is a bad place to put this. But we want to clear out the current song and need to set the banner first
 		end,
 		SetBannerCommand=function(self)

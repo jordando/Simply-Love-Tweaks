@@ -49,7 +49,7 @@ local af = Def.ActorFrame{
 			:zoom(0):croptop(0):bounceend(0.3):zoom(1)
 			:playcommand("Set")
 		self:GetChild("Measures"):settext("")
-		self:GetChild("TotalStream"):settext("")
+		self:GetChild("Breakdown"):settext("")
 		self:GetChild("PeakNPS"):settext("")
 	end,
 	PlayerUnjoinedMessageCommand=function(self, params)
@@ -85,30 +85,47 @@ local af = Def.ActorFrame{
 			else
 				--clear out whatever might have been in Streams and try to parse the chart
 				SL[pn].Streams = {}
-				if SL.Global.Debug then SM("Generating stream info") end
 				InitializeMeasureCounterAndModsLevel(player)
 			end
+			self:GetChild("Measures"):ClearAttributes()
+			self:GetChild("Breakdown"):diffuse(Color.White)
 			if SL[pn].Streams.TotalMeasures then --used to be working without this... not sure what changed but don't run any of this stuff if measures is not filled in
 				if SL[pn].Streams.TotalStreams == 0 then
 					self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "NoStream").." ("..SL[pn].ActiveModifiers.MeasureCounter..")")
-					self:GetChild("TotalStream"):settext("")
+					self:GetChild("Breakdown"):settext("")
 				else
+					-- check if streams are at a higher quantization. right now we're just doing
+					-- basic testing. if the mode NPS is 1.25, 1.5, 1.75, or 2x higher than display
+					-- then we'll assume it's 20ths, 24ths, etc etc. and adjust the stream data
+					-- to reflect that.
+					local multiplier = GetNoteQuantization(steps)
 					local toWrite = THEME:GetString("ScreenSelectMusicExperiment", "Total").." :"
+					local begin = toWrite:len()
+					local begin2
+					local length = tostring(round(SL[pn].Streams.TotalStreams * multiplier,0)):len()
 					local measureType = SL[pn].ActiveModifiers.MeasureCounter == "None" and "16th" or SL[pn].ActiveModifiers.MeasureCounter
-					toWrite = toWrite..SL[pn].Streams.TotalStreams
+					local breakdown
+					toWrite = toWrite..(round(SL[pn].Streams.TotalStreams * multiplier, 0))
 					if SL[pn].Streams.TotalStreams ~= "0" then
 							toWrite = toWrite.." ("..SL[pn].Streams.Percent.."%)"
 						if SL[pn].Streams.Percent ~=  SL[pn].Streams.AdjustedPercent then
 							toWrite = toWrite.. " (adj. "..SL[pn].Streams.AdjustedPercent.."%)"
 						end
-						toWrite = toWrite.." ("..measureType.." "..THEME:GetString("ScreenSelectMusicExperiment", "Stream")..")"
-						self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown2)
-						if string.len(SL[pn].Streams.Breakdown2) > 35 then self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown3)
-						else self:GetChild("TotalStream"):settext(SL[pn].Streams.Breakdown2) end
+						begin2 = toWrite:len()
+						toWrite = toWrite.." ("..(measureType:match("%d+") * multiplier).."th "..THEME:GetString("ScreenSelectMusicExperiment", "Stream")..")"
+						breakdown = SL[pn].Streams.Breakdown2
+						if string.len(breakdown) > 35 then breakdown = SL[pn].Streams.Breakdown3 end
+						self:GetChild("Breakdown"):settext(breakdown)
 					else
-						self:GetChild("TotalStream"):settext("")
+						self:GetChild("Breakdown"):settext("")
 					end
 					self:GetChild("Measures"):settext(toWrite)
+					if multiplier > 1 then
+						self:GetChild("Measures"):AddAttribute(begin, { Length = length; Diffuse = Color.Red })
+						self:GetChild("Measures"):AddAttribute(begin2,{ Length = -1,Diffuse = Color.Red })
+						breakdown = breakdown:gsub("(%d+)",function(x) return round(x * multiplier,0) end)
+						self:GetChild("Breakdown"):settext(breakdown):diffuse(Color.Red)
+					end
 				end
 			else
 				if SL[pn].ActiveModifiers.MeasureCounter == "None" then
@@ -116,12 +133,12 @@ local af = Def.ActorFrame{
 				else
 					self:GetChild("Measures"):settext(THEME:GetString("ScreenSelectMusicExperiment", "UnableToParse"))
 				end
-				self:GetChild("TotalStream"):settext("")
+				self:GetChild("Breakdown"):settext("")
 				self:GetChild("PeakNPS"):settext("")
 			end
 		else
 			self:GetChild("Measures"):settext("")
-			self:GetChild("TotalStream"):settext("")
+			self:GetChild("Breakdown"):settext("")
 			self:GetChild("PeakNPS"):settext("")
 			self:GetChild("Tech"):settext("")
 		end
@@ -181,9 +198,9 @@ af[#af+1] = LoadFont("Common Normal")..{
 	InitCommand=function(self) self:xy(labelX_col1+20, _screen.h/8 - 30):zoom(zoom_factor):diffuse(Color.White):halign(0) end,
 }
 
---Total Stream
+--Breakdown
 af[#af+1] = LoadFont("Common Normal")..{
-	Name="TotalStream",
+	Name="Breakdown",
 	InitCommand=function(self) self:xy(labelX_col1+20, _screen.h/8 + 10):zoom(zoom_factor):diffuse(Color.White):halign(0) end,
 }
 

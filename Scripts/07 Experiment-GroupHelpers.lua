@@ -621,6 +621,8 @@ conversion["Speed/Stream Total"] = {speed, "totalStreams"}
 --- If ordering by two things return a table of the first and second sorts. Otherwise return nil
 function IsSpecialOrder()
 	speed = ThemePrefs.Get("StreamSpeed")
+	conversion["Difficulty/Speed"] = {"difficulty", speed}
+	conversion["Speed/Stream Total"] = {speed, "totalStreams"}
 	return conversion[SL.Global.Order]
 end
 
@@ -721,15 +723,16 @@ function CreateSpecialSongList(inputSongList)
 					bpm=steps:GetDisplayBpms()[2]
 				}
 				if streamData then
+					local multiplier = GetNoteQuantization(steps)
 					if streamData.PeakNPS then toAdd["peak"] = tonumber(round(streamData.PeakNPS/16*240,0)) end
-					if streamData.TotalStreams then 
-						toAdd["totalStreams"] = tonumber(streamData.TotalStreams)
+					if streamData.TotalStreams then
+						toAdd["totalStreams"] = tonumber(streamData.TotalStreams) * multiplier
 					else toAdd["totalStreams"] = 0 end
 					if streamData.NpsMode then toAdd["mode"] = tonumber(round(streamData.NpsMode/16*240,0)) end
 					if streamData.Percent then toAdd["percent"] = tonumber(streamData.Percent) end
 					if streamData.AdjustedPercent then toAdd["adjustedPercent"] = tonumber(streamData.AdjustedPercent) end
 					if streamData.NpsMode and streamData.PeakNPS then
-						if round(streamData.PeakNPS/16*240,0) < (steps:GetDisplayBpms()[2] *.9) then
+						if round(streamData.NpsMode/16*240,0) < (steps:GetDisplayBpms()[2] *.9) then
 							toAdd["smart"] = round(streamData.PeakNPS/16*240,0)
 						else toAdd["smart"] = round(streamData.NpsMode/16*240,0) end
 					end

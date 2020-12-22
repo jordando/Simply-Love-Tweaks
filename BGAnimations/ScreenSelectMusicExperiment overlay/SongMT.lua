@@ -100,7 +100,7 @@ local song_mt = {
 						end,
 						SlideToTopCommand=function(subself)
 							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):maxwidth(125):settext( self.song:GetDisplayMainTitle()) end end,
-						SlideBackIntoGridCommand=function(subself) 
+						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
 								local special = IsSpecialOrder()
 								if special then
@@ -202,6 +202,7 @@ local song_mt = {
 					--so check here that transform was called because we're moving to a new song
 					--or because we're initializing ScreenSelectMusicExperiment
 					if self.song ~= GAMESTATE:GetCurrentSong() or SL.Global.GroupToSong or SL.Global.LastSeenIndex ~= self.index then
+						if SL.Global.Debug then  Trace("SongMT setting current song: "..self.song:GetMainTitle()) end
 						GAMESTATE:SetCurrentSong(self.song)
 						SL.Global.GroupToSong = false
 						SL.Global.LastSeenIndex = self.index

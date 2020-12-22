@@ -402,3 +402,26 @@ function LoadStreamData()
 		SL.Global.StreamData = streamData
 	end
 end
+
+--- Check if the NpsMode for a song is 1.25, 1.5, 1.75, or 2x higher than the display bpm.
+--- If it is, return the multiplier so we can use 16th stream equivalent numbers.
+function GetNoteQuantization(steps)
+	local bpm = steps:GetDisplayBpms()[2]
+	local hash = GetHash(steps)
+	local streamData = hash and GetStreamData(hash) or nil
+	if not streamData or not streamData.NpsMode then return 1 end
+
+	local convert = {}
+	convert["1.25"] = bpm * 1.25
+	convert["1.5"] = bpm * 1.5
+	convert["1.75"] = bpm * 1.75
+	convert["2"] = bpm * 2
+	if streamData.NpsMode then
+		for k,v in pairs(convert) do
+			if math.abs( (streamData.NpsMode * 240 / 16) - v) < 1 then
+				return tonumber(k)
+			end
+		end
+	end
+	return 1
+end

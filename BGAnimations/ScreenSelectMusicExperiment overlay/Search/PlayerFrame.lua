@@ -2,6 +2,7 @@ local args = ...
 local player = args.Player
 local scroller = args.Scroller
 local scroller_item_mt = LoadActor("./ScrollerItemMT.lua")
+local steps_type = GAMESTATE:GetCurrentStyle():GetStepsType()
 
 -- I tried really hard to use size + position variables instead of hardcoded numbers all over
 -- the place, but gave up after an hour of questioning my sanity due to sub-pixel overlap
@@ -17,7 +18,7 @@ local FrameBackground = function(c, player, w)
 	w = w or 1
 
 	return Def.ActorFrame {
-		InitCommand=function(self) self:zoomto(w, 1) end,
+		InitCommand=function(self) self:zoomto(w, 1.5) end,
 
 		-- a lightly styled png asset that is not so different than a Quad
 		-- currently inherited from _fallback
@@ -54,7 +55,7 @@ return Def.ActorFrame{
 			self:bouncebegin(0.35):zoom(0)
 		end
 	end,
-	
+
 	-- colored frame that contains the profile scroller and DataFrame
 	Def.ActorFrame {
 		Name='ScrollerFrame',
@@ -78,20 +79,48 @@ return Def.ActorFrame{
 					table.insert(scroller_data,{index=#scroller_data,displayname=GetGroupDisplayName(group),type="group",group=group})
 					local toWrite = "Song Group\n---------------\n"
 					for k,song in pairs(GetSongList(group)) do
-						if k < 12 then
+						if k < 20 then
 							toWrite = toWrite..song:GetDisplayMainTitle().."\n"
 						end
 					end
-					if #GetSongList(group) > 12 then
-						local remainder = #GetSongList(group) - 11
+					if #GetSongList(group) > 20 then
+						local remainder = #GetSongList(group) - 19
 						toWrite = toWrite.."and "..remainder.." other songs"
 					end
 					descriptions[#descriptions+1] = toWrite
 				end
 				for song in ivalues(PruneSongList(GetSongList(group))) do
 					if string.find(string.lower(song:GetDisplayMainTitle()),string.lower(params.searchTerm),1,true) then
-						table.insert(scroller_data,{index=#scroller_data,displayname=song:GetDisplayMainTitle(),type="song",group=group,song=song})
-						descriptions[#descriptions+1] = "Group: "..GetGroupDisplayName(group).."\nLoaded from: "..song:GetGroupName()
+						table.insert(scroller_data,{
+							index=#scroller_data,
+							displayname=song:GetDisplayMainTitle(),
+							type="song",group=group,song=song
+						})
+						local songDescription = {}
+						songDescription[#songDescription+1] = "Group: "..GetGroupDisplayName(group).."\nLoaded from: "..song:GetGroupName()
+						songDescription[#songDescription+1] = "Artist: "..song:GetDisplayArtist()
+						local bpm = song:GetDisplayBpms()[2]
+						songDescription[#songDescription+1] = "BPM: ".. bpm
+						songDescription[#songDescription+1] = ""
+						local extraInfo = #song:GetStepsByStepsType(steps_type) < 5 and true or false
+						for steps in ivalues(song:GetStepsByStepsType(steps_type)) do
+							songDescription[#songDescription+1] = ToEnumShortString(steps:GetDifficulty())..": ".. steps:GetRadarValues(player):GetValue("RadarCategory_TapsAndHolds").. " steps"
+							if tostring(steps:GetDisplayBpms()[2]) ~= tostring(bpm) then songDescription[#songDescription] = songDescription[#songDescription].." ("..steps:GetDisplayBpms()[2].." BPM)" end
+							local credit = {}
+							if steps:GetAuthorCredit() ~= "" then credit[steps:GetAuthorCredit()] = steps:GetAuthorCredit() end
+							if steps:GetDescription() ~= "" then credit[steps:GetDescription()] = steps:GetDescription() end
+							if steps:GetChartName() ~= "" then credit[steps:GetChartName()] = steps:GetChartName() end
+							for k, v in pairs(credit) do songDescription[#songDescription+1] = k end
+							if extraInfo then
+								local hash = GetHash(steps)
+								local streamData = hash and GetStreamData(hash) or nil
+								if streamData then
+									songDescription[#songDescription+1] = "Total Stream: "..(streamData.TotalStreams and streamData.TotalStreams or "0")
+								end
+							end
+							songDescription[#songDescription+1] = ""
+						end
+						descriptions[#descriptions+1] = table.concat(songDescription,"\n")
 					end
 				end
 			end
@@ -103,7 +132,7 @@ return Def.ActorFrame{
 			MESSAGEMAN:Broadcast("SearchCaptureReady")
 		end,
 		
-		FrameBackground(PlayerColor(player), player, 2)..{InitCommand = function(self) self:x(50) end},
+		FrameBackground(PlayerColor(player), player, 2)..{InitCommand = function(self) self:xy(50,54.5) end},
 
 		-- semi-transparent Quad used to indicate location in SelectProfile scroller
 		Def.Quad {
@@ -113,7 +142,7 @@ return Def.ActorFrame{
 		},
 
 		-- sick_wheel scroller containing search results as choices
-		scroller:create_actors( "Scroller", 9, scroller_item_mt, scroller_x, scroller_y ),
+		scroller:create_actors( "Scroller", 12, scroller_item_mt, scroller_x, scroller_y ),
 
 		-- description of the results
 		Def.ActorFrame{
@@ -122,7 +151,7 @@ return Def.ActorFrame{
 
 			-- semi-transparent Quad to the right of this colored frame to present song or group info
 			Def.Quad {
-				InitCommand=function(self) self:vertalign(top):diffuse(0,0,0,0):zoomto(235,221):xy(-57,-111):halign(0) end,
+				InitCommand=function(self) self:vertalign(top):diffuse(0,0,0,0):zoomto(235,330):xy(-57,-111):halign(0) end,
 				SetSearchWheelMessageCommand=function(self) self:sleep(0.3):linear(0.1):diffusealpha(0.5) end,
 				OffCommand=function(self) self:sleep(.4):diffusealpha(0) end,
 			},
@@ -143,15 +172,15 @@ return Def.ActorFrame{
 				LoadFont("Common Normal")..{
 					Name='Number of Results',
 					InitCommand=function(self)
-						self:y(160):zoom(1.35):shadowlength(ThemePrefs.Get("RainbowMode") and 0.5 or 0):cropright(1)
+						self:y(-140):zoom(1.35):shadowlength(ThemePrefs.Get("RainbowMode") and 0.5 or 0):cropright(1)
 					end,
 					SetSearchWheelMessageCommand=function(self) self:sleep(0.2):smooth(0.2):cropright(0) end,
 					OffCommand=function(self) self:sleep(.35):cropright(1) end,
 					SetCommand=function(self, params)
 						local plural
 						if params and params.searchTerm then
-							plural = #descriptions > 6 and "s" or ""
-							if #descriptions > 5 then self:settext(#descriptions-5 .. " result"..plural.. " found") 
+							plural = #descriptions > 6 and "es" or ""
+							if #descriptions > 5 then self:settext(#descriptions-5 .. " match"..plural.. " found") 
 							else self:settext("No results found") end
 						end
 					end
@@ -159,11 +188,11 @@ return Def.ActorFrame{
 				LoadFont("Common Normal")..{
 					Name='SearchTerm',
 					InitCommand=function(self)
-						self:y(-160):zoom(1.35):shadowlength(ThemePrefs.Get("RainbowMode") and 0.5 or 0):cropright(1)
+						self:y(-170):zoom(1.35):shadowlength(ThemePrefs.Get("RainbowMode") and 0.5 or 0):cropright(1)
 					end,
 					SetSearchWheelMessageCommand=function(self, params)
 						self:settext("Search results for: "..params.searchTerm)
-						self:sleep(0.2):smooth(0.2):cropright(0) 
+						self:sleep(0.2):smooth(0.2):cropright(0)
 					end,
 					OffCommand=function(self) self:sleep(.35):cropright(1) end,
 					SetCommand=function(self, params)

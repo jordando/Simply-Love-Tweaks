@@ -99,9 +99,9 @@ local GetDefaultSong = function()
 end
 
 ---------------------------------------------------------------------------
--- initializes sick_wheel groups
--- this function is called as a result of GroupTypeChangedMessageCommand broadcast by SortMenu_InputHandler.lua and
--- heard by default.lua (for ScreenSelectMusicExperiment overlay)
+--- initializes sick_wheel groups
+--- this function is called as a result of GroupTypeChangedMessageCommand broadcast by SortMenu_InputHandler.lua and
+--- heard by default.lua (for ScreenSelectMusicExperiment overlay)
 
 local InitGroups = function()
 	local s, e
@@ -207,6 +207,7 @@ end
 -- If there's no song set that means we're entering the screen for the first time, grab the default song and set up the groups
 if not GAMESTATE:GetCurrentSong() then
 	local current_song = GetDefaultSong()
+	if SL.Global.Debug then Trace("Setup setting current song: "..current_song:GetMainTitle()) end
 	GAMESTATE:SetCurrentSong(current_song)
 	InitPreloadedGroups()
 	for player in ivalues(GAMESTATE:GetHumanPlayers()) do

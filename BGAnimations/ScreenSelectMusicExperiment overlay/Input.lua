@@ -256,9 +256,9 @@ Handler.MenuUp=function(event)
 end
 
 Handler.MenuDown=function(event)
---change difficulty with down	
+--change difficulty with down
 --TODO doesn't work well with edits
-	local song = GAMESTATE:GetCurrentSong() 
+	local song = GAMESTATE:GetCurrentSong()
 	-- do nothing if there's no harder difficulty or we're not on the songwheel or we're on Close This Folder
 	if Handler.WheelWithFocus==SongWheel and song and NextHardest(event.PlayerNumber) then
 		SOUND:PlayOnce( THEME:GetPathS("ScreenSelectMusic", "difficulty harder.redir") )

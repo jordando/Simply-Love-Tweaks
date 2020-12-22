@@ -26,6 +26,8 @@ function Switch_to_songs(group_name)
 		end
 		local current_song = GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
 		local index = SL.Global.LastSeenIndex
+		if SL.Global.Debug then  Trace("Current song is: "..current_song:GetMainTitle()) end
+
 		--since each song can show up multiple times in special orders we can't rely just on songs being the same
 		--however, when we first switch order the indexes won't match up so rather than get a random song we
 		--go to the first instance of the song.
@@ -38,6 +40,7 @@ function Switch_to_songs(group_name)
 			for k,song in pairs(songs) do
 				if song == current_song then
 					index = k
+					if SL.Global.Debug then  Trace("Found: "..song:GetMainTitle()) end
 					break
 				end
 			end
@@ -97,10 +100,17 @@ local item_mt = {
 						-- slide the chosen Actor into place
 						subself:queuecommand("SlideToTop")
 						MESSAGEMAN:Broadcast("SwitchFocusToSongs")
-						MESSAGEMAN:Broadcast("LessLag")
 					else
 						-- hide everything else
 						subself:linear(0.2):diffusealpha(0)
+					end
+				end,
+				-- if we come straight here because of a search, make sure that the group title
+				-- moves to the top
+				SetSongViaSearchMessageCommand=function(subself)
+					if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
+						-- slide the chosen Actor into place
+						subself:queuecommand("SlideToTop")
 					end
 				end,
 				UnhideCommand=function(subself)

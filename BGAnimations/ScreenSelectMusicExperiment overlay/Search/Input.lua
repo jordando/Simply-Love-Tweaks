@@ -12,12 +12,21 @@ Handle.Start = function(event)
 	local topscreen = SCREENMAN:GetTopScreen()
 	if GAMESTATE:IsHumanPlayer(event.PlayerNumber) then
 		local info = scrollers[mpn]:get_info_at_focus_pos()
-		if info.type == "group" then GAMESTATE:SetCurrentSong(PruneSongList(GetSongList(info.group))[1])
-		elseif info.type == "song" and GAMESTATE:GetCurrentSong() ~= info.song then GAMESTATE:SetCurrentSong(info.song) end
+		if SL.Global.Debug then  Trace("Search.Start: "..info.type) end
+		if info.type == "group" then 
+			if SL.Global.Debug then Trace("Search setting current song according to group") end
+			GAMESTATE:SetCurrentSong(PruneSongList(GetSongList(info.group))[1])
+		elseif info.type == "song" and GAMESTATE:GetCurrentSong() ~= info.song then
+			if SL.Global.Debug then  Trace("Search setting current song: "..info.song:GetMainTitle()) end
+			GAMESTATE:SetCurrentSong(info.song) end
 		if info.type ~= "exit" then
-			MESSAGEMAN:Broadcast("SetSongViaSearch") --heard by ScreenSelectMusicExperiment default.lua. Jumps straight into the song folder
 			SL.Global.CurrentGroup = info.group
-			MESSAGEMAN:Broadcast("GroupTypeChanged")
+			if SL.Global.Debug then
+				Trace("Broadcast SetSongViaSearch")
+				Trace("Group: "..SL.Global.CurrentGroup)
+				Trace("Song: "..GAMESTATE:GetCurrentSong():GetMainTitle())
+			end
+			MESSAGEMAN:Broadcast("SetSongViaSearch") --heard by ScreenSelectMusicExperiment default.lua. Jumps straight into the song folder
 		end
 		MESSAGEMAN:Broadcast("StartButton")
 		topscreen:sleep(.2):queuecommand("Off"):sleep(0.4)
