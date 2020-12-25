@@ -8,6 +8,25 @@ table.insert(awards,Color.Green)
 table.insert(awards,Color.Yellow)
 table.insert(awards,Color.Blue)
 
+local GetSongDisplayName = function(song, index)
+	local main, sub
+	if IsSpecialOrder() and index then
+		local block = GetSpecialOrder(index)
+		local special = IsSpecialOrder()
+		if block[special[1]] and block[special[2]] then
+			main = "["..round(block[special[1]],0).."] ["..round(block[special[2]],0).."] "..song:GetDisplayMainTitle()
+		elseif block[special[1]] then
+			main = "["..round(block[special[1]],0).."] [?] "..song:GetDisplayMainTitle()
+		else
+			main = "[?] [?] "..song:GetDisplayMainTitle()
+		end
+		sub = song:GetDisplaySubTitle()
+	else
+		main = song:GetDisplayMainTitle()
+		sub = song:GetDisplaySubTitle()
+	end
+	return main, sub
+end
 local songWidth = WideScale(250,250)
 
 local song_mt = {
@@ -102,17 +121,9 @@ local song_mt = {
 							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):maxwidth(125):settext( self.song:GetDisplayMainTitle()) end end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
-								local special = IsSpecialOrder()
-								if special then
-									local block = GetSpecialOrder(self.index)
-									if block[special] then
-										subself:settext( "["..block[special[1]].."]["..math.floor(block[special[2]]).."] "..self.song:GetDisplayMainTitle() ):maxwidth(200):zoom(1.2)
-									else
-										subself:settext( self.song:GetDisplayMainTitle() ):maxwidth(190):zoom(1.2)
-									end
-								else
-									subself:settext( self.song:GetDisplayMainTitle() ):maxwidth(190):zoom(1.2)
-								end
+								local main, sub = GetSongDisplayName(self.song, self.index)
+								self.title_bmt:settext(main):maxwidth(190):zoom(1.2)
+								self.subtitle_bmt:settext(sub):maxwidth(190):zoom(1.2)
 							end
 						end,
 						GainFocusCommand=function(subself) --make the words a little bigger to make it seem like they're popping out
@@ -315,22 +326,9 @@ local song_mt = {
 			else
 				self.song = item.song
 				self.index = item.index
-				if IsSpecialOrder() then
-					local block = GetSpecialOrder(item.index)
-					local special = IsSpecialOrder()
-					if block[special[1]] and block[special[2]] then
-						self.title_bmt:settext( "["..round(block[special[1]],0).."] ["..round(block[special[2]],0).."] "..self.song:GetDisplayMainTitle() )
-					elseif block[special[1]] then
-						self.title_bmt:settext( "["..round(block[special[1]],0).."] [?] "..self.song:GetDisplayMainTitle() )
-					else
-						self.title_bmt:settext( "[?] [?] "..self.song:GetDisplayMainTitle() )
-					end
-					self.subtitle_bmt:settext(self.song:GetDisplaySubTitle())
-				else
-					self.title_bmt:settext( self.song:GetDisplayMainTitle() )
-					self.subtitle_bmt:settext(self.song:GetDisplaySubTitle())
-				end
-
+				local main, sub = GetSongDisplayName(self.song, self.index)
+				self.title_bmt:settext(main)
+				self.subtitle_bmt:settext(sub)
 			end
 		end
 	}
