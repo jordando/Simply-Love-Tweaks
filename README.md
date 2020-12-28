@@ -5,7 +5,7 @@ NOTE-The first load will be VERY slow (the more songs you have the slower it'll 
 
 Requirements:
 
-Simply Love 4.8.7 and a version of Stepmania that works with Simply Love
+Simply Love 4.9.1 and a version of Stepmania that works with Simply Love
 
 Installation:
 
@@ -34,12 +34,6 @@ Charts are tracked by hash - if you have duplicates of a song you'll see your sc
 
 Known Issues:
 
-There are a couple blank places that will eventually be filled in when I decide what to put there.
-
 If you don't have a select button once you enter the options pane you have to either go to normal player options or start a song. 
-
-I haven't tested different resolutions so probably doesn't work super well on widescreen.
-
-Initial load is extremely slow
 
 If you have tagged songs and then delete the tag, the tagged songs won't show up in the untagged group. Once you add the tag back in they'll all reappear.
