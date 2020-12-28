@@ -64,9 +64,9 @@ local af = Def.ActorFrame{
 	-- This is set separately because it lags SM if players hold down left or right (to scroll quickly). LessLag will trigger after .15 seconds
 	-- with no new song changes.
 	LessLagMessageCommand=function(self)
-		if SL.Global.Debug then Trace("Running LessLagMessageCommand") end
 		-- ---------------------Extra Song Information------------------------------------------
 		if not GAMESTATE:IsHumanPlayer(player) then return end
+		if SL.Global.Debug then Trace("Running LessLagMessageCommand") end
 		--TODO right now we don't show any of this if two players are joined. I'd like to find a way for both to see it
 		self:stoptweening():linear(.3):diffusealpha(1)
 		local song = GAMESTATE:GetCurrentSong()

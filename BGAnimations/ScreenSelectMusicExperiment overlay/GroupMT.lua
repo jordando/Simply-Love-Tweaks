@@ -110,7 +110,7 @@ local item_mt = {
 				SetSongViaSearchMessageCommand=function(subself)
 					if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
 						-- slide the chosen Actor into place
-						subself:queuecommand("SlideToTop")
+						subself:sleep(.1):queuecommand("SlideToTop")
 					end
 				end,
 				UnhideCommand=function(subself)

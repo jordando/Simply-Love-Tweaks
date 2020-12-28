@@ -166,6 +166,7 @@ local t = Def.ActorFrame {
 		end
 		setup.InitGroups() --this prunes out groups with no songs in them (or resets filters if we have 0 songs) and resets GroupWheel
 		MESSAGEMAN:Broadcast("UpdateGroupInfo", {group_info, GroupWheel:get_actor_item_at_focus_pos().groupName})
+		MESSAGEMAN:Broadcast("LessLag")
 	end,
 
 	-- Code for exiting the game for those without a back button.
