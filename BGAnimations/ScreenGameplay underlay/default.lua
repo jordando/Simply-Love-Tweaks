@@ -24,6 +24,7 @@ for player in ivalues(Players) do
 	if SL[ToEnumShortString(player)].ActiveModifiers.ErrorBarBehind then
 		t[#t+1] = LoadActor(THEME:GetPathB("","_modules/ErrorBar.lua"), player)
 	end
+	t[#t+1] = LoadActor("./PerPlayer/FFBattle/default.lua", player)
 	t[#t+1] = LoadActor("./PerPlayer/Score.lua", player)
 	t[#t+1] = LoadActor("./PerPlayer/DifficultyMeter.lua", player)
 	t[#t+1] = LoadActor("./PerPlayer/LifeMeter/default.lua", player)
@@ -32,6 +33,7 @@ for player in ivalues(Players) do
 	t[#t+1] = LoadActor("./PerPlayer/TargetScore/default.lua", player)
 	t[#t+1] = LoadActor("./PerPlayer/SubtractiveScoring.lua", player)
 	t[#t+1] = LoadActor("./PerPlayer/TestInputGameplay.lua", player)
+
 end
 
 -- add to the ActorFrame last; overlapped by StepStatistics otherwise

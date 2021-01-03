@@ -27,7 +27,8 @@ local GetSongDisplayName = function(song, index)
 	end
 	return main, sub
 end
-local songWidth = WideScale(250,250)
+local songWidth = WideScale(250,350)
+local songHeight = 40
 
 local song_mt = {
 	__index = {
@@ -75,7 +76,7 @@ local song_mt = {
 					subself:visible(true):sleep(0.3):linear(0.2):diffusealpha(1)
 				end,
 				SlideToTopCommand=function(subself) subself:linear(0.2):xy(_screen.cx + 150, row.h+43) end,
-				SlideBackIntoGridCommand=function(subself) subself:linear(0.2):y( math.floor(13/2)*47 ):x( _screen.w/1.5+25 )end, --y = num_items/2 * 47
+				SlideBackIntoGridCommand=function(subself) subself:linear(0.2):y( math.floor(14/2)*(songHeight + 1) ):x( _screen.w/1.5+25 )end, --y = num_items/2 * 47
 
 				-- wrap the function that plays the preview music in its own Actor so that we can
 				-- call sleep() and queuecommand() and stoptweening() on it and not mess up other Actors
@@ -88,7 +89,26 @@ local song_mt = {
 					GainFocusCommand=function(subself) subself:y(0) end,
 					LoseFocusCommand=function(subself) subself:y(0) end,
 					SlideBackIntoGridCommand=function(subself) subself:linear(0.12):diffusealpha(1) end,
-
+					Def.ActorMultiVertex{
+						InitCommand=function(self)
+							local verts = {}
+							table.insert(verts,{{0,0,0}, color("#23279e")})
+							table.insert(verts,{{0,songHeight-2,0}, color("#23279e")})
+							table.insert(verts,{{songWidth,songHeight-2,0}, Color.Black})
+							table.insert(verts,{{songWidth,0,0}, Color.Black})
+							self:SetNumVertices(#verts):SetVertices(verts)
+							self:SetDrawState({Mode="DrawMode_Quads"})
+							self:xy(-175,-20)
+						end
+					},
+					--box behind song name
+					Def.ActorFrame {
+						InitCommand = function(subself) self.song_box = subself end,
+						Def.Quad { InitCommand=function(self) self:zoomto(songWidth, songHeight):diffuseleftedge(color("#23279e")):diffuserightedge(Color.Black) end },
+						Def.Quad { InitCommand=function(self) self:zoomto(songWidth-2, songHeight-2*2):MaskSource(true) end },
+						Def.Quad { InitCommand=function(self) self:zoomto(songWidth,songHeight):MaskDest() end },
+						Def.Quad { InitCommand=function(self) self:diffusealpha(0):clearzbuffer(true) end },
+					},
 					-- blinking quad behind focus box
 					Def.Quad{
 						InitCommand=function(subself) subself:diffuse(0,0,0,0):zoomto(0,0) end,
@@ -100,30 +120,21 @@ local song_mt = {
 						SlideToTopCommand=function(subself) subself:visible( false) end,
 						SlideBackIntoGridCommand=function(subself) subself:visible( true) end,
 					},
-					--box behind song name
-					Def.ActorFrame {
-						InitCommand = function(subself) self.song_box = subself end,
-						SlideToTopCommand=function(subself) subself:linear(.12):diffusealpha(0):visible(false) end,
-						SlideBackIntoGridCommand=function(subself) subself:linear(.12):diffusealpha(1):visible( true) end,
-						Def.Quad { InitCommand=function(subself) subself:zoomto(songWidth,40):diffuse(.5,.5,.5,.5):diffusealpha(.5) end },
-						Def.Quad { InitCommand=function(self) self:zoomto(songWidth-2, 40-2*2):MaskSource(true) end },
-						Def.Quad { InitCommand=function(self) self:zoomto(songWidth,40):MaskDest() end },
-						Def.Quad { InitCommand=function(self) self:diffusealpha(0):clearzbuffer(true) end },
-					},
 					-- title
 					Def.BitmapText{
 						Font="Common Normal",
 						InitCommand=function(subself)
 							self.title_bmt = subself
-							subself:zoom(1):y(0):diffuse(Color.White):shadowlength(0.75):maxwidth(190)
+							subself:zoom(1):x(-100):diffuse(Color.White):shadowlength(0.75):maxwidth(200):horizalign(left)
 						end,
 						SlideToTopCommand=function(subself)
-							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):maxwidth(125):settext( self.song:GetDisplayMainTitle()) end end,
+							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):halign(.18):maxwidth(200):settext( self.song:GetDisplayMainTitle()) end end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
+								subself:horizalign(left)
 								local main, sub = GetSongDisplayName(self.song, self.index)
-								self.title_bmt:settext(main):maxwidth(190):zoom(1.2)
-								self.subtitle_bmt:settext(sub):maxwidth(190):zoom(1.2)
+								self.title_bmt:settext(main):maxwidth(200):zoom(1.2)
+								self.subtitle_bmt:settext(sub):maxwidth(200):zoom(1.2)
 							end
 						end,
 						GainFocusCommand=function(subself) --make the words a little bigger to make it seem like they're popping out
@@ -139,10 +150,10 @@ local song_mt = {
 						Font="Common Normal",
 						InitCommand=function(subself)
 							self.subtitle_bmt = subself
-							subself:zoom(.5):diffuse(.9,.9,.9,1):shadowlength(0.75):maxwidth(190):xy(100,12):halign(1)
+							subself:zoom(.5):diffuse(.9,.9,.9,1):shadowlength(0.75):maxwidth(200):xy(50,12):halign(1)
 						end,
 						SlideToTopCommand=function(subself)
-							if self.song ~= "CloseThisFolder" then subself:zoom(.8):y(17):maxwidth(250):settext( self.song:GetDisplaySubTitle()) end end,
+							if self.song ~= "CloseThisFolder" then subself:zoom(.8):y(30):maxwidth(250):settext( self.song:GetDisplaySubTitle()) end end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
 								subself:settext( self.song:GetDisplaySubTitle() ):y(11):maxwidth(250):zoom(.65)
@@ -164,7 +175,7 @@ local song_mt = {
 			for pn in ivalues({'P1','P2'}) do
 				local side = pn == 'P1' and -1 or 1
 				local grade_position = WideScale(140,150)
-				local pass_position = 120
+				local pass_position = 180
 				--A box for the pass type
 				--TODO this might be better as an AMV
 				af[#af+1] = Def.ActorFrame {
@@ -173,9 +184,9 @@ local song_mt = {
 					Def.ActorFrame{
 						SlideToTopCommand=function(subself) subself:linear(.12):diffusealpha(0) end,
 						SlideBackIntoGridCommand=function(subself) subself:linear(.12):diffusealpha(1) end,
-						Def.Quad { InitCommand=function(self) self:zoomto(10,40):x(side*pass_position):diffuse(.25,.25,.25,.25):diffusealpha(.5) end, },
-						Def.Quad { InitCommand=function(self) self:zoomto(10-2, 40-2*2):x(side*pass_position):MaskSource(true) end },
-						Def.Quad { InitCommand=function(self) self:zoomto(10,40):x(side*pass_position):MaskDest() end },
+						Def.Quad { InitCommand=function(self) self:zoomto(10,songHeight):x(side*pass_position):diffuse(.25,.25,.25,.25):diffusealpha(.5) end, },
+						Def.Quad { InitCommand=function(self) self:zoomto(10-2, songHeight-2*2):x(side*pass_position):MaskSource(true) end },
+						Def.Quad { InitCommand=function(self) self:zoomto(10,songHeight):x(side*pass_position):MaskDest() end },
 						Def.Quad { InitCommand=function(self) self:diffusealpha(0):clearzbuffer(true) end },
 					},
 					--Colors to fill in the box
@@ -183,7 +194,7 @@ local song_mt = {
 						InitCommand=function(subself) subself:visible(false) self[pn..'pass_box'] = subself end,
 						SlideToTopCommand=function(subself) subself:linear(.12):diffusealpha(0) end,
 						SlideBackIntoGridCommand=function(subself) subself:linear(.12):diffusealpha(1) end,
-						Def.Quad {InitCommand=function(self) self:zoomto(10-2, 40-2*2):x(side*pass_position) end},
+						Def.Quad {InitCommand=function(self) self:zoomto(10-2, songHeight-2*2):x(side*pass_position) end},
 					},
 					-- The grade shown to the right of the song box
 					Def.Sprite{
@@ -290,7 +301,7 @@ local song_mt = {
 					self.title_bmt:diffuse(Color.Red)
 				end
 				--handle row hiding
-				if item_index == 1 or item_index > 11 then
+				if item_index == 1 or item_index > 12 then
 					self.container:visible(false)
 				else
 					self.container:visible(true)
@@ -299,18 +310,8 @@ local song_mt = {
 				-- handle row shifting speed
 				self.container:linear(0.2)
 
-				local middle_index = math.floor(num_items/2)
+				self.container:y( 41*item_index ):x( _screen.w/1.5+25 )
 
-				-- top row
-				if item_index < middle_index  then
-						self.container:y( 47*item_index ):x(_screen.w/1.5+25*WideScale(1,(middle_index-item_index)) )
-				-- bottom row
-				elseif item_index > middle_index then
-						self.container:y( 47*item_index ):x(_screen.w/1.5+25*WideScale(1,(item_index-middle_index)) )
-				-- center row
-				elseif item_index == middle_index then
-					self.container:y( 47*item_index ):x( _screen.w/1.5+25 )
-				end
 			end
 		end,
 

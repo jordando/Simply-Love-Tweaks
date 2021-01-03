@@ -15,8 +15,8 @@ if not ThemePrefs.Get("ShowExtraSongInfo") then histogramHeight = 30 end --the g
 
 local InitializeDensity = NPS_Histogram(player, 275, histogramHeight)..{
 	OnCommand=function(self)
-		self:x(labelX_col1)
-			:y( _screen.h/3.5+6)
+		self:x(labelX_col1+20)
+			:y( _screen.h/3.5+3)
 	end
 }
 

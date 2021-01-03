@@ -262,6 +262,9 @@ local t = Def.ActorFrame {
 if ThemePrefs.Get("BlackBackground") then
 	t[#t+1] = table.insert(t,1,LoadActor( THEME:GetPathB("", "_black")))
 end
+-- right now this just has the black rectangle going across the screen.
+-- there's also a different style of text that are disabled
+t[#t+1] = LoadActor("./SongWheelShared.lua", {row, col, songwheel_y_offset})
 --Information about the song - including the grid/stream info, nps histogram, and step information
 --Shows on song select screen but not invididual song or group menus so add them in to an actor
 --frame so we can hide/show them all at once.
@@ -305,13 +308,10 @@ t[#t+1] = Def.ActorFrame{
 			if position == 0 then self:visible(false) --if we're on the close folder option
 			else self:visible(true):zoomto(20,size):y(position*size-size+32) end
 		end
-	}
+	},
 }
 -- Shared items on the OptionWheel GUI
 t[#t+1] = LoadActor("./PlayerOptionsShared.lua", {row, col, Input})
--- right now this just has the black rectangle going across the screen.
--- there's also a different style of text that are disabled
-t[#t+1] = LoadActor("./SongWheelShared.lua", {row, col, songwheel_y_offset})
 -- this has information about the groups - number of songs/charts/filters/# of passed charts
 t[#t+1] = LoadActor("./GroupWheelShared.lua", {row, col, group_info})
 -- elements we need two of - panes for the OptionWheel GUI
@@ -319,8 +319,7 @@ t[#t+1] = LoadActor("./PerPlayer/PlayerOptionsPanes/default.lua")
 
 --All of the wheels are created using Consensual-sick_wheel.lua in Scripts
 -- Songwheel
-t[#t+1] = SongWheel:create_actors( "SongWheel", 13, song_mt, WideScale(25,0), songwheel_y_offset - 40)
-
+t[#t+1] = SongWheel:create_actors( "SongWheel", 14, song_mt, WideScale(25,50), songwheel_y_offset - 40)
 -- the grey bar at the top as well as total time since start
 -- we want these after the songwheel so they cut off the songs but before the group wheel
 -- so you can see the group name
@@ -328,9 +327,8 @@ t[#t+1] = LoadActor("./Header.lua", row)
 -- profile information and time spent in game
 -- note that this covers the footer in graphics
 t[#t+1] = LoadActor("Footer.lua")
-
 -- Groupwheel
-t[#t+1] = GroupWheel:create_actors( "GroupWheel", row.how_many * col.how_many, group_mt, 0, 0, true)
+t[#t+1] = GroupWheel:create_actors( "GroupWheel", row.how_many * col.how_many, group_mt, 25, 200, true)
 -- Add player options ActorFrames to our primary ActorFrame
 for pn in ivalues( {PLAYER_1, PLAYER_2} ) do
 	local x_offset = (pn==PLAYER_1 and -1) or 1

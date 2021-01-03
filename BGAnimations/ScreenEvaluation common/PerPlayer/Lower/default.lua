@@ -32,12 +32,26 @@ local af = Def.ActorFrame{
 }
 
 -- -----------------------------------------------------------------------
--- background quad for player stats
+if SL.Global.GameMode == "Experiment" and NumPlayers == 1 then
+	--card frame
+	af[#af+1] = Def.Sprite{
+		Texture=THEME:GetPathG("FF","CardEdge.png"),
+		InitCommand=function(self)
+			self:zoomto(pane_width+55, pane_height+85):xy(155,307)
+		end
+	}
+end
 
+-- background quad for player stats
 af[#af+1] = Def.Quad{
 	Name="LowerQuad",
 	InitCommand=function(self)
-		self:diffuse(color("#1E282F")):horizalign(left)
+		if SL.Global.GameMode == "Experiment" and NumPlayers == 1 then
+			self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
+		else
+			self:diffuse(color("#1E282F"))
+		end
+		self:horizalign(left)
 		self:xy(-small_pane_w * 0.5, _screen.cy+34)
 		self:zoomto( pane_width, pane_height )
 
@@ -59,6 +73,13 @@ af[#af+1] = LoadActor("./Disqualified.lua", player)
 -- in Experiment mode add the survival time and date to the footer
 if SL.Global.GameMode == "Experiment" and NumPlayers == 1 then
 	af[#af+1] = LoadActor("./ExperimentFooter.lua", player)
+
+	--line splitting graph and other stuff
+	af[#af+1] = Def.Quad{
+		InitCommand=function(self)
+			self:horizalign(left):zoomto(pane_width, 3):xy(-150,365):diffuse(.8,.8,.8,1)
+		end
+	}
 end
 -- -----------------------------------------------------------------------
 

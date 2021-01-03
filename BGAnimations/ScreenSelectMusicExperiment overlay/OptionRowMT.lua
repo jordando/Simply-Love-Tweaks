@@ -71,17 +71,12 @@ local optionrow_mt = {
 							
 						end,
 						SingleSongCanceledMessageCommand=function(subself) subself:rotationz(0) end,
-						BothPlayersAreReadyMessageCommand=function(subself) subself:sleep(0.2):linear(0.2):rotationz(180) end,
+						--BothPlayersAreReadyMessageCommand=function(subself) subself:sleep(0.2):linear(0.2):rotationz(180) end,
 						CancelBothPlayersAreReadyMessageCommand=function(subself) subself:rotationz(0) end,
 
-						LoadActor("./img/arrow_glow.png")..{
-							Name="RightArrowGlow",
-							InitCommand=function(subself) subself:zoom(0.15) end,
-							OnCommand=function(subself) subself:diffuseshift():effectcolor1(1,1,1,0):effectcolor2(1,1,1,1) end
-						},
 						LoadActor("./img/arrow.png")..{
 							Name="RightArrow",
-							InitCommand=function(subself) subself:zoom(0.15):diffuse(Color.White) end,
+							InitCommand=function(subself) subself:zoom(0.15):diffuse(Color.White):visible(false) end,
 						}
 					},
 
@@ -94,21 +89,22 @@ local optionrow_mt = {
 							       :accelerate(0.05):zoom(  1):glow(1,1,1,0)
 						end,
 						ExitRowCommand=function(subself, params)
-							subself:y(-15) --45 if there's only "GO TO OPTIONS?"
+							subself:y(-20) --45 if there's only "GO TO OPTIONS?"
 							if params.PlayerNumber == PLAYER_1 then subself:x(180) end
 						end,
 						SingleSongCanceledMessageCommand=function(subself) subself:rotationz(0) end,
-						BothPlayersAreReadyMessageCommand=function(subself) subself:sleep(0.2):linear(0.2):rotationz(180) end,
+						--BothPlayersAreReadyMessageCommand=function(subself) subself:sleep(0.2):linear(0.2):rotationz(180) end,
 						CancelBothPlayersAreReadyMessageCommand=function(subself) subself:rotationz(0) end,
 
-						LoadActor("./img/arrow_glow.png")..{
-							Name="LeftArrowGlow",
-							InitCommand=function(subself) subself:zoom(0.15):rotationz(180) end,
-							OnCommand=function(subself) subself:diffuseshift():effectcolor1(1,1,1,0):effectcolor2(1,1,1,1) end
-						},
-						LoadActor("./img/arrow.png")..{
+						Def.Sprite{
 							Name="LeftArrow",
-							InitCommand=function(subself) subself:zoom(0.15):rotationz(180):diffuse(Color.White) end,
+							Texture=THEME:GetPathG("FF","finger.png"),
+							InitCommand=function(subself)
+								subself:zoom(0.10):diffuse(Color.White)
+								subself:bounce():effectclock("beatnooffset"):effectmagnitude(-3,0,0)
+								subself:effectperiod(1):effectoffset( -10 * PREFSMAN:GetPreference("GlobalOffsetSeconds"))
+
+							end,
 
 						}
 					}

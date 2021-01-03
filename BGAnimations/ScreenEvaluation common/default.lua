@@ -26,26 +26,7 @@ if SL.Global.GameMode ~= "Casual" then
 end
 
 -- -----------------------------------------------------------------------
--- First, add actors that would be the same whether 1 or 2 players are joined.
-
--- code for triggering a screenshot and animating a "screenshot" texture
-t[#t+1] = LoadActor("./Shared/ScreenshotHandler.lua")
-
--- the title of the song and its graphical banner, if there is one
-t[#t+1] = LoadActor("./Shared/TitleAndBanner.lua")
-
--- text to display BPM range (and ratemod if ~= 1.0) immediately under the banner
-t[#t+1] = LoadActor("./Shared/BPM_RateMod.lua")
-
--- store some attributes of this playthrough of this song in the global SL table
--- for later retrieval on ScreenEvaluationSummary
-t[#t+1] = LoadActor("./Shared/GlobalStorage.lua")
-
--- help text that appears if we're in Casual gamemode
-t[#t+1] = LoadActor("./Shared/CasualHelpText.lua")
-
--- -----------------------------------------------------------------------
--- Then, load player-specific actors.
+-- Player-specific actors.
 
 for player in ivalues(Players) do
 
@@ -78,6 +59,25 @@ for player in ivalues(Players) do
 		end
 	end
 end
+
+-- -----------------------------------------------------------------------
+-- Shared actors
+
+-- code for triggering a screenshot and animating a "screenshot" texture
+t[#t+1] = LoadActor("./Shared/ScreenshotHandler.lua")
+
+-- the title of the song and its graphical banner, if there is one
+t[#t+1] = LoadActor("./Shared/TitleAndBanner.lua")
+
+-- text to display BPM range (and ratemod if ~= 1.0) immediately under the banner
+t[#t+1] = LoadActor("./Shared/BPM_RateMod.lua")
+
+-- store some attributes of this playthrough of this song in the global SL table
+-- for later retrieval on ScreenEvaluationSummary
+t[#t+1] = LoadActor("./Shared/GlobalStorage.lua")
+
+-- help text that appears if we're in Casual gamemode
+t[#t+1] = LoadActor("./Shared/CasualHelpText.lua")
 
 -- -----------------------------------------------------------------------
 

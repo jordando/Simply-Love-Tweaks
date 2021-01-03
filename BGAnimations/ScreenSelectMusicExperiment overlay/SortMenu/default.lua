@@ -51,7 +51,7 @@ local t = Def.ActorFrame {
 		self:playcommand("ShowSortMenu")
 		self:queuecommand("Stall")
 	end,
-	StallCommand=function(self) 
+	StallCommand=function(self)
 		self:playcommand("AssessAvailableChoices")
 		self:visible(true):sleep(0.4):queuecommand("CaptureTest")
 	end,
@@ -91,6 +91,9 @@ local t = Def.ActorFrame {
 		self:playcommand("HideSortMenu")
 	end,
 	SwitchToSortCommand=function(self)
+		self:sleep(.2):queuecommand("Wait")
+	end,
+	WaitCommand=function(self)
 		local wheel_options = {
 			{"SortBy", "Group"},
 			{"SortBy", "Title"},
@@ -112,7 +115,6 @@ local t = Def.ActorFrame {
 				break
 			end
 		end
-
 		-- the second argument passed to set_info_set is the index of the item in wheel_options
 		-- that we want to have focus when the wheel is displayed
 		sort_wheel:set_info_set(wheel_options, current_sort_order_index)
@@ -161,37 +163,45 @@ local t = Def.ActorFrame {
 		InitCommand=function(self) self:FullScreen():diffuse(Color.Black):diffusealpha(0.8) end
 	},
 
-	-- OptionsList Header Quad
-	Def.Quad {
-		InitCommand=function(self) self:Center():zoomto(sortmenu.w+2,22):xy(_screen.cx, _screen.cy-92) end
-	},
-	-- "Options" text
-	Def.BitmapText{
-		Font="Wendy/_wendy small",
-		Text=ScreenString("Options"),
-		InitCommand=function(self)
-			self:xy(_screen.cx, _screen.cy-92):zoom(0.4)
-				:diffuse( Color.Black )
-		end
-	},
+	Def.ActorFrame{
+		SwitchToSortCommand=function(self)
+			self:smooth(.2):diffusealpha(0):smooth(.2):diffusealpha(1)
+		end,
+		-- OptionsList Header Quad
+		Def.Quad {
+			InitCommand=function(self) self:Center():zoomto(sortmenu.w+2,22):xy(_screen.cx, _screen.cy-92):diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black) end
+		},
+		-- "Options" text
+		Def.BitmapText{
+			Font="Wendy/_wendy small",
+			Text=ScreenString("Options"),
+			InitCommand=function(self)
+				self:xy(_screen.cx, _screen.cy-92):zoom(0.4)
+					:diffuse( Color.White )
+			end
+		},
 
-	-- white border
-	Def.Quad {
-		InitCommand=function(self) self:Center():zoomto(sortmenu.w+2,sortmenu.h+2) end
+		-- white border
+		Def.Quad {
+			InitCommand=function(self) self:Center():zoomto(sortmenu.w+2,sortmenu.h+2):diffuse({.5,.5,.5,1}) end
+		},
+		Def.Sprite{
+			Texture=THEME:GetPathG("FF","CardEdge"),
+			InitCommand=function(self) self:zoomto(sortmenu.w+2+23,sortmenu.h+2+40):xy(427,230) end,
+		},
+		-- BG of the sortmenu box
+		Def.Quad {
+			InitCommand=function(self) self:Center():zoomto(sortmenu.w,sortmenu.h):diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black) end
+		},
+		-- top mask
+		Def.Quad {
+			InitCommand=function(self) self:Center():zoomto(sortmenu.w,_screen.h/2):y(40):MaskSource() end
+		},
+		-- bottom mask
+		Def.Quad {
+			InitCommand=function(self) self:zoomto(sortmenu.w,_screen.h/2):xy(_screen.cx,_screen.cy+200):MaskSource() end
+		},
 	},
-	-- BG of the sortmenu box
-	Def.Quad {
-		InitCommand=function(self) self:Center():zoomto(sortmenu.w,sortmenu.h):diffuse(Color.Black) end
-	},
-	-- top mask
-	Def.Quad {
-		InitCommand=function(self) self:Center():zoomto(sortmenu.w,_screen.h/2):y(40):MaskSource() end
-	},
-	-- bottom mask
-	Def.Quad {
-		InitCommand=function(self) self:zoomto(sortmenu.w,_screen.h/2):xy(_screen.cx,_screen.cy+200):MaskSource() end
-	},
-
 	-- "Press SELECT To Cancel" text
 	Def.BitmapText{
 		Font="Wendy/_wendy small",
@@ -200,7 +210,7 @@ local t = Def.ActorFrame {
 			if PREFSMAN:GetPreference("ThreeKeyNavigation") then
 				self:visible(false)
 			else
-				self:xy(_screen.cx, _screen.cy+100):zoom(0.3):diffuse(0.7,0.7,0.7,1)
+				self:xy(_screen.cx, _screen.cy+100):zoom(0.3):diffuse(0.9,0.9,0.9,1)
 			end
 		end
 	},
@@ -209,7 +219,7 @@ local t = Def.ActorFrame {
 	sort_wheel:create_actors( "Sort Menu", 7, wheel_item_mt, _screen.cx, _screen.cy )
 }
 
-t[#t+1] = LoadActor( THEME:GetPathS("ScreenSelectMaster", "change") )..{ Name="change_sound", SupportPan = false }
+t[#t+1] = LoadActor( THEME:GetPathS("FF", "move.wav") )..{ Name="change_sound", SupportPan = false }
 t[#t+1] = LoadActor( THEME:GetPathS("common", "start") )..{ Name="start_sound", SupportPan = false }
 
 return t

@@ -1,7 +1,7 @@
 local player = ...
 local pn = ToEnumShortString(player)
 local rv
-local zoom_factor = WideScale(0.8, 0.9)
+local zoom_factor = WideScale(0.8, 0.85)
 
 local dataX_col1 = WideScale(-75, -96)
 local highscoreX = WideScale(56, 80)
@@ -126,6 +126,32 @@ af[#af + 1] =
 		end
 	end
 }
+af[#af+1] = Def.ActorFrame{
+	Def.ActorMultiVertex{
+			InitCommand=function(self)
+				local verts = {}
+				table.insert(verts,{{0,0,0},color("#23279e")})
+				table.insert(verts,{{0, _screen.h / 8,0}, color("#23279e")})
+				table.insert(verts,{{_screen.w / 2 - 10, _screen.h / 8,0}, Color.Black})
+				table.insert(verts,{{_screen.w / 2 - 10,0,0}, Color.Black})
+				self:SetNumVertices(#verts):SetVertices(verts)
+				self:SetDrawState({Mode="DrawMode_Quads"})
+				self:xy(-210,(_screen.h / 2 - 97))
+			end
+	},
+	Def.Quad { InitCommand=function(self) self:zoomto(_screen.w / 2 - 20, _screen.h / 8 - 20):y(_screen.h / 2 - 67):MaskSource(true) end },
+	-- a lightly styled png asset that is not so different than a Quad
+	-- currently inherited from _fallback
+	LoadActor( THEME:GetPathG("FF","SkinnyCard.png") )..{
+		InitCommand=function(self)
+			self:diffuse(Color.White)
+			self:zoomto(475, 500)
+			self:MaskDest():xy(0,350)
+			--self:visible(false)
+		end,
+	},
+	Def.Quad { InitCommand=function(self) self:diffusealpha(0):clearzbuffer(true) end },
+}
 
 -- chart difficulty meter
 af[#af + 1] =
@@ -133,7 +159,7 @@ af[#af + 1] =
 	{
 		Name = "DifficultyMeter",
 		InitCommand = function(self)
-			self:horizalign(right):diffuse(Color.Black)
+			self:horizalign(right):diffuse(Color.White)
 				:xy(_screen.w / 4 - 10, _screen.h / 2 - 65):queuecommand("Set")
 		end,
 		SetCommand = function(self)
@@ -155,7 +181,7 @@ af[#af +1] =
 		{
 			Name = "Steps",
 			InitCommand = function(self)
-				self:zoom(zoom_factor):xy(-_screen.w / 10 + dataX_col1, 156):diffuse(Color.Black):halign(0)
+				self:zoom(zoom_factor):xy(-_screen.w / 10 + dataX_col1, 157):diffuse(Color.White):halign(0)
 			end
 		}
 
@@ -165,7 +191,7 @@ af[#af + 1] =
 	{
 		Name = "PlayerHighScore",
 		InitCommand = function(self)
-			self:xy(-_screen.w / 10 + highscoreX, 156):zoom(zoom_factor):diffuse(Color.Black):halign(0)
+			self:xy(-_screen.w / 10 + highscoreX, 157):zoom(zoom_factor):diffuse(Color.White):halign(0)
 		end
 	}
 
@@ -175,7 +201,7 @@ af[#af + 1] =
 	{
 		Name = "LastPlayedDate",
 		InitCommand = function(self)
-			self:xy(-_screen.w / 10 + dataX_col1, 176):zoom(zoom_factor):diffuse(Color.Black):halign(0)
+			self:xy(-_screen.w / 10 + dataX_col1, 175):zoom(zoom_factor):diffuse(Color.White):halign(0)
 		end
 	}
 
@@ -185,7 +211,7 @@ af[#af + 1] =
 	{
 		Name = "TimesPlayed",
 		InitCommand = function(self)
-			self:xy(-_screen.w / 10 + dataX_col1, 196):zoom(zoom_factor):diffuse(Color.Black):halign(0)
+			self:xy(-_screen.w / 10 + dataX_col1, 193):zoom(zoom_factor):diffuse(Color.White):halign(0)
 		end
 	}
 --PlayerHighScoreDate
@@ -194,7 +220,7 @@ af[#af + 1] =
 	{
 		Name = "PlayerHighScoreDate",
 		InitCommand = function(self)
-			self:xy(-_screen.w / 10 + highscoreX, 176):zoom(zoom_factor):diffuse(Color.Black):halign(0)
+			self:xy(-_screen.w / 10 + highscoreX, 175):zoom(zoom_factor):diffuse(Color.White):halign(0)
 		end
 	}
 
@@ -204,7 +230,7 @@ af[#af + 1] =
 	{
 		Name = "FirstPass",
 		InitCommand = function(self)
-			self:xy(-_screen.w / 10 + highscoreX, 193):zoom(zoom_factor):diffuse(Color.Black):halign(0)
+			self:xy(-_screen.w / 10 + highscoreX, 193):zoom(zoom_factor):diffuse(Color.White):halign(0)
 		end
 	}
 return af

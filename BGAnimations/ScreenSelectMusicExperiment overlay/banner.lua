@@ -12,6 +12,7 @@ local t = Def.ActorFrame{
 			self:zoom(0.75)
 			self:xy(_screen.cx - 166, 112)
 		end
+		--self:xy(_screen.cx + 205,300)
 	end,
 	SwitchFocusToSingleSongMessageCommand=function(self)
 		self:finishtweening():linear(0.3):xy(_screen.cx - 122, _screen.cy - 130/1.6):rotationy(360):sleep(.1):rotationy(0)
@@ -72,7 +73,14 @@ local t = Def.ActorFrame{
 			Name="FallbackBanner",
 			OnCommand=function(self) self:diffuseshift():effectperiod(6):effectcolor1(1,1,1,0):effectcolor2(1,1,1,1):setsize(418,164) end,
 		},
-		
+		-- a lightly styled png asset that is not so different than a Quad
+		LoadActor( THEME:GetPathG("FF","CardEdge.png") )..{
+			InitCommand=function(self)
+				self:diffuse(Color.White)
+				self:zoomto(458,180)
+				--self:visible(false)
+			end,
+		},
 		Def.Banner{
 			Name="Banner",
 			BeginCommand=function(self)
@@ -80,7 +88,6 @@ local t = Def.ActorFrame{
 				self:setsize(418,164)
 			end,
 		},
-
 	},
 
 	-- the MusicRate Quad and text
