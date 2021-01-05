@@ -32,18 +32,14 @@ af[#af+1] = Def.Quad{
 	SwitchFocusToSingleSongMessageCommand=function(self) self:smooth(0.3):cropright(1) end
 }
 
-af[#af+1] = Def.ActorMultiVertex{
+af[#af+1] = Def.Quad{
 	InitCommand=function(self)
-		local verts = {}
-		table.insert(verts,{{0,0,0}, color("#23279e")})
-		table.insert(verts,{{0, _screen.h / 8,0}, color("#23279e")})
-		table.insert(verts,{{_screen.w / 2 + 50, _screen.h / 8,0}, Color.Black})
-		table.insert(verts,{{_screen.w / 2 + 50,0,0}, Color.Black})
-		self:SetNumVertices(#verts):SetVertices(verts)
-		self:SetDrawState({Mode="DrawMode_Quads"})
-		self:zoom(1):xy(0,240)
-		if test then self:visible(false) end
-	end
+		self:align(0,0):xy(0,240):zoomto(_screen.w / 2 + 50,_screen.h / 8)
+		self:diffuseleftedge(color("#23279e")):diffuserightedge(Color.Black)
+	end,
+		SwitchFocusToGroupsMessageCommand=function(self) self:smooth(0.3):cropright(1) end,
+		SwitchFocusToSongsMessageCommand=function(self) 	self:smooth(.3):cropright(0) end,
+		SwitchFocusToSingleSongMessageCommand=function(self) self:smooth(0.3):cropright(1) end
 }
 
 -- a lightly styled png asset that is not so different than a Quad
@@ -56,26 +52,13 @@ af[#af+1] = Def.ActorFrame{
 		if params.song and self:GetDiffuseAlpha() == 0 then self:stoptweening():smooth(0.3):diffusealpha(1) end end,
 	Def.Quad { InitCommand=function(self) self:zoomto(319,205):MaskSource(true) end },
 	LoadActor( THEME:GetPathG("FF","CardEdge.png") )..{
-	InitCommand=function(self)
-		self:diffuse(Color.White)
-		self:zoomto(352,227)
-		self:MaskDest()
-		--if not test then self:visible(false) end
+		InitCommand=function(self)
+			self:diffuse(Color.White)
+			self:zoomto(352,227)
+			self:MaskDest()
+			--if not test then self:visible(false) end
 	end,
 	},
-	Def.ActorMultiVertex{
-		InitCommand=function(self)
-			local verts = {}
-			table.insert(verts,{{0,0,0}, Color.Blue})
-			table.insert(verts,{{0,366-155,0},color("#23279e")})
-			table.insert(verts,{{352-32, 366-155,0}, Color.Black})
-			table.insert(verts,{{352-32,0,0}, Color.Black})
-			self:SetNumVertices(#verts):SetVertices(verts)
-			self:SetDrawState({Mode="DrawMode_Quads"})
-			self:xy(-160,-104)
-			if not test then self:visible(false) end
-		end
-	}
 }
 
 -- rainbow glowing border top

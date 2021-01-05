@@ -16,7 +16,7 @@ return Def.Quad{
 		if SCREENMAN:GetTopScreen():GetName() == "ScreenSelectMusicCasual" then
 			self:diffuse(dark)
 		elseif SCREENMAN:GetTopScreen():GetName() == "ScreenSelectMusicExperiment" then
-			self:diffuse(light)  
+			self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
 		end
 	end
 }

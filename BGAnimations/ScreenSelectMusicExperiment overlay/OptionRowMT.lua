@@ -90,7 +90,8 @@ local optionrow_mt = {
 						end,
 						ExitRowCommand=function(subself, params)
 							subself:y(-20) --45 if there's only "GO TO OPTIONS?"
-							if params.PlayerNumber == PLAYER_1 then subself:x(180) end
+							if params.PlayerNumber == PLAYER_1 then subself:x(180)
+							else subself:x(15):rotationy(180) end
 						end,
 						SingleSongCanceledMessageCommand=function(subself) subself:rotationz(0) end,
 						--BothPlayersAreReadyMessageCommand=function(subself) subself:sleep(0.2):linear(0.2):rotationz(180) end,

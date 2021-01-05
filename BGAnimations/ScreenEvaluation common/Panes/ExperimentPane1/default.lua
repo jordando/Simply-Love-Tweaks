@@ -80,7 +80,7 @@ local af = Def.ActorFrame{
 --the default judgment breakdown shown in normal SL
 af[#af+1] = Def.ActorFrame{
 	InitCommand = function(self)
-		self:addx(controller == "left" and 0 or 310)
+		--self:addx(controller == "left" and 0 or 310)
 	end,
 
 	LoadActor(THEME:GetPathB("", "_modules/HighScoreDisplay"), {player, currentScore, controller})
@@ -122,7 +122,8 @@ if sanitizedComparisonScore and sanitizedComparisonScore.score then
 else
 	comparisonT[#comparisonT+1] = LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
-			self:zoom(.8):xy(otherSide[controller] == "right" and -30 or 30,200)
+			self:zoom(.8):xy(otherSide[controller] == "right" and -30 or -350,200)
+			self:y(200)
 			self:settext("No previous score\nat Rate "..SL.Global.ActiveModifiers.MusicRate)
 		end,
 	}

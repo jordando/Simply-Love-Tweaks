@@ -1,68 +1,9 @@
-local NewLinearFrames = function(start, stop, time)
-	local delay = time / (stop - start)
-	local t = {}
-	for i = start, stop do
-		t[#t+1] = {Frame=i,Delay=delay}
-	end
-	return t
-end
-
-local Character = {
-    Quina = {
-        attack = NewLinearFrames(0,11, 1.5),
-        idle = NewLinearFrames(12,27,1.5),
-        limit = NewLinearFrames(28,70,1.5),
-        magic = NewLinearFrames(71,78,0.75),
-        magic2 = NewLinearFrames(79,85,0.75),
-        standby = NewLinearFrames(86,96,1.5),
-        win = NewLinearFrames(97,106,1.5),
-        danger = NewLinearFrames(110,110,1),
-        dead = NewLinearFrames(109,109,1),
-        deadXY = {0,50},
-        dangerXY = {0,30},
-        attackXY = {-125,10}
-    }
-}
-local Enemy = {
-    x001 = {
-        idle = NewLinearFrames(0,3,0.5),
-        damage = NewLinearFrames(4,5,0.1),
-        xy = {0,0},
-        zoom = 1
-    },
-    x002 = {
-        idle = NewLinearFrames(0,5,0.5),
-        damage = NewLinearFrames(6,7,0.1),
-        xy = {-30,-50},
-        zoom = 1
-    },
-    x004 = {
-        idle = NewLinearFrames(2,5,0.5),
-        damage = NewLinearFrames(0,1,0.1),
-        xy = {-38,-50},
-        zoom = .5
-    },
-    x003 = {
-        idle = NewLinearFrames(0,3,0.5),
-        damage = NewLinearFrames(4,5,0.1),
-        xy = {-100,-90},
-        zoom = .75
-    },
-}
-local character = "Quina"
-local enemy = "x003"
-local loadEnemy = "Characters/Enemies/003 3x2.png"
+LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
+local character = GetCharacter("Quina")
+local enemy = GetEnemy("x003")
 
 local player = ...
 local pn = ToEnumShortString(player)
-local mods = SL[pn].ActiveModifiers
-
--- don't allow MeasureCounter to appear in Casual gamemode via profile settings
-if SL.Global.GameMode == "Casual"
-or not mods.MeasureCounter
-or mods.MeasureCounter == "None" then
-	return
-end
 
 -- -----------------------------------------------------------------------
 
@@ -142,6 +83,10 @@ local af = Def.ActorFrame{
     SetUpdateCommand=function(self) self:SetUpdateFunction( Update ) end,
 	CurrentSongChangedMessageCommand=function(self)
         InitializeMeasureCounter()
+        if not streams.Measures or not next(streams.Measures) then
+            currentEnemyHealth=0
+            self:sleep(3):queuecommand("InstantDeath") return
+        end
         if streamIndex == 1 and not streams.Measures[streamIndex].isBreak then
             start = timingData:GetElapsedTimeFromBeat(4*streams.Measures[streamIndex].streamStart)
             finish = timingData:GetElapsedTimeFromBeat(4*streams.Measures[streamIndex].streamEnd)
@@ -149,6 +94,10 @@ local af = Def.ActorFrame{
             if currentAnimation ~= "attack" then MESSAGEMAN:Broadcast("Standby") end
             self:GetChild("ATB"):GetChild("ProgressBar"):GetChild("ProgressQuad"):queuecommand("Update")
         end
+    end,
+    InstantDeathCommand=function(self)
+        MESSAGEMAN:Broadcast("Attack")
+        self:sleep(1.5):queuecommand("InstantWin")
     end,
     --Card Edge
     Def.Sprite{
@@ -178,11 +127,11 @@ af[#af+1] = Def.ActorFrame{
         EnemyDieMessageCommand=function(self) self:sleep(.5):linear(1):diffusealpha(0) end,
         Def.Sprite{
             Name="EnemySprite",
-            Texture=THEME:GetPathG("",loadEnemy),
+            Texture=enemy.load,
             InitCommand=function(self)
-                self:zoom(Enemy[enemy].zoom)
-                self:SetStateProperties(Enemy[enemy].idle)
-                self:xy(Enemy[enemy].xy[1],Enemy[enemy].xy[2])
+                self:zoom(enemy.zoom)
+                self:SetStateProperties(enemy.idle)
+                self:xy(enemy.xy[1],enemy.xy[2])
                 :horizalign(left)
             end,
             AttackMessageCommand=function(self)
@@ -193,8 +142,8 @@ af[#af+1] = Def.ActorFrame{
                     if currentEnemyHealth ~= 0 then self:queuecommand("Default") end
                 end
             end,
-            DamageCommand=function(self) self:SetStateProperties(Enemy[enemy].damage) end,
-            DefaultCommand=function(self) self:SetStateProperties(Enemy[enemy].idle) end,
+            DamageCommand=function(self) self:SetStateProperties(enemy.damage) end,
+            DefaultCommand=function(self) self:SetStateProperties(enemy.idle) end,
         },
         -- The damage text is nested in multiple actor frames so we can use multiple
         -- simultaneous tweens
@@ -237,46 +186,52 @@ af[#af+1] = Def.ActorFrame{
 -- Character
     Def.Sprite{
         Name="Character",
-        Texture=THEME:GetPathG("","Characters/Quina2/quina 8x14.png"),
+        Texture=character.load,
         InitCommand=function(self)
             self:zoom(1)
             currentAnimation = "idle"
-            self:SetStateProperties(Character[character]["idle"])
+            self:SetStateProperties(character["idle"])
             self:horizalign(left)
         end,
         AttackMessageCommand=function(self)
             currentAnimation = "attack"
-            self:finishtweening():SetStateProperties(Character[character]["attack"]):xy(Character[character]["attackXY"][1],Character[character]["attackXY"][2]):sleep(1.5):xy(0,0):queuecommand("Default")
+            self:finishtweening():SetStateProperties(character["attack"]):xy(character["attackXY"][1],character["attackXY"][2]):sleep(1.5):xy(0,0):queuecommand("Default")
         end,
         StandbyMessageCommand=function(self)
             currentAnimation = "magic2"
-            self:finishtweening():SetStateProperties(Character[character]["magic2"])
+            self:finishtweening():SetStateProperties(character["magic2"])
         end,
         DefaultCommand=function(self)
-            -- if we get through every stream measure then start the victory dance
-            if streamIndex == #streams.Measures and streams.Measures[streamIndex].isBreak then
-                currentAnimation = "win"
-                self:SetStateProperties(Character[character]["win"])
-            -- sometimes runs start while the attack animation is still playing. if we're still updating
-            -- the progress bar then jump in to the standby command
-            elseif continueUpdating then
-                currentAnimation="magic2"
-                self:SetStateProperties(Character[character]["magic2"])
-            -- otherwise we're in a no stream section so idle
-            else
-                currentAnimation = "idle"
-                self:SetStateProperties(Character[character]["idle"])
+            if streams.Measures then
+                -- if we get through every stream measure then start the victory dance
+                if streamIndex == #streams.Measures and streams.Measures[streamIndex].isBreak then
+                    currentAnimation = "win"
+                    self:SetStateProperties(character["win"])
+                -- sometimes runs start while the attack animation is still playing. if we're still updating
+                -- the progress bar then jump in to the standby command
+                elseif continueUpdating then
+                    currentAnimation="magic2"
+                    self:SetStateProperties(character["magic2"])
+                -- otherwise we're in a no stream section so idle
+                else
+                    currentAnimation = "idle"
+                    self:SetStateProperties(character["idle"])
+                end
             end
+        end,
+        InstantWinCommand=function(self)
+            currentAnimation="win"
+            self:SetStateProperties(character.win)
         end,
         HealthStateChangedMessageCommand=function(self, param)
             if param.PlayerNumber == player and param.HealthState == "HealthState_Dead" then
-                self:SetStateProperties(Character[character]["dead"]):xy(Character[character]["deadXY"][1],Character[character]["deadXY"][2])
+                self:SetStateProperties(character["dead"]):xy(character["deadXY"][1],character["deadXY"][2])
                 continueUpdating = false
             elseif currentAnimation ~= "attack" then
                 if param.HealthState == "HealthState_Danger" then
-                    self:SetStateProperties(Character[character]["danger"]):xy(Character[character]["dangerXY"][1],Character[character]["dangerXY"][2])
+                    self:SetStateProperties(character["danger"]):xy(character["dangerXY"][1],character["dangerXY"][2])
                 else
-                    self:SetStateProperties(Character[character][currentAnimation]):xy(0,0)
+                    self:SetStateProperties(character[currentAnimation]):xy(0,0)
                 end
             end
         end,

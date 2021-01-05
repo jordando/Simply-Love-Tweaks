@@ -128,6 +128,7 @@ return function(event)
 	if event.type == "InputEventType_FirstPress" and panes[cn] then
 
 		if event.GameButton == "MenuRight" or event.GameButton == "MenuLeft" then
+			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
 			if event.GameButton == "MenuRight" then
 				active_pane[cn] = (active_pane[cn] % #panes[cn]) + 1
 				-- don't allow duplicate panes to show in single/double

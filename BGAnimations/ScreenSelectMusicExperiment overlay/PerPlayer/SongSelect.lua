@@ -4,7 +4,7 @@ local pn = args.player
 -- Makes sure that when you're changing songs that the cursor automatically lands on a valid chart (in case of filters/difficulty sort/etc
 -- For Difficulty/BPM order it just picks the next highest as determined by the sort/etc
 -- Otherwise, first it tries to pick the same difficulty (expert, challenge, etc) and if that's non-existent or invalid then
--- the closest song favoring harder 
+-- the closest song favoring harder
 return Def.ActorFrame {
 	-- broadcast by SongMT as part of a wheel transition. Also broadcast from somewhere not in the theme. SongMT adds a song to params
 	-- while the other source doesn't so we can use that to check and only act on the one we want to (the SongMT one)

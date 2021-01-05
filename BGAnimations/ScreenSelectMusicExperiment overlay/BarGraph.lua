@@ -75,7 +75,7 @@ CreateBarGraph = function(_w, _h)
 		self:SetDrawState({Mode="DrawMode_Quads"})
 	end
 
-	local af=Def.ActorFrame{}
+	local af=Def.ActorFrame{InitCommand=function(self) self:visible(false) end}
 	af[#af+1]=amv
 	af[#af+1]=legend
 	af.UpdateGroupInfoMessageCommand=function(self, params) group_info = params[1] end

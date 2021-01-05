@@ -23,8 +23,8 @@ return Def.Sprite{
 			self:effectmagnitude(-3,0,0)
 
 		elseif player == PLAYER_2 then
-			self:rotationz(180)
-			self:x(IsUsingWideScreen() and _screen.cx-28 or 276)
+			self:rotationy(180)
+			self:x(IsUsingWideScreen() and _screen.cx-325 or 276)
 			self:effectmagnitude(3,0,0)
 		end
 

@@ -38,11 +38,11 @@ local af = Def.ActorFrame{}
 af.Name="TapNoteJudgments"
 af.InitCommand=function(self)
 	self:zoom(0.7)
-	self:x( WideScale(152,-80) * (player==PLAYER_1 and -1 or 1))
+	self:x( player==PLAYER_1 and 80 or 190)
 	self:y(25)
 
 	if NoteFieldIsCentered and IsUsingWideScreen() then
-		self:x( 200 * (player==PLAYER_1 and -1 or 1)):y(25):zoom(.8)
+		self:x(player==PLAYER_1 and -200 or 75):y(25):zoom(.8)
 	end
 
 	-- adjust for smaller panes when ultrawide and both players joined

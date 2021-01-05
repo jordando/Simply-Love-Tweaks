@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------
 -- do as much setup work as possible in another file to keep default.lua
 -- from becoming overly cluttered
-
+MESSAGEMAN:SetLogging(true)
 local setup = LoadActor("./Setup.lua")
 if setup == nil then
 	return LoadActor(THEME:GetPathB("ScreenSelectMusicCasual", "overlay/NoValidSongs.lua"))
@@ -395,6 +395,26 @@ t[#t+1] = LoadFont("Common Normal")..{
 		ShowPressStartForOptionsCommand=function(self) self:hibernate(.3):visible(true):linear(0.3):diffusealpha(1) end,
 		ShowEnteringOptionsCommand=function(self) self:linear(0.125):diffusealpha(0):queuecommand("NewText") end,
 		NewTextCommand=function(self) self:hibernate(0.1):settext(THEME:GetString("ScreenSelectMusicExperiment", "Entering Options...")):linear(0.125):diffusealpha(1):sleep(1) end
+}
+
+t[#t+1] = Def.ActorFrame{
+	Name="sounds",
+	Def.Sound{
+		Name="accept",
+		File=THEME:GetPathS("FF","accept.wav"),
+	},
+	Def.Sound{
+		Name="select",
+		File=THEME:GetPathS("FF", "select.mp3"),
+	},
+	Def.Sound{
+		Name="move",
+		File=THEME:GetPathS("FF","move.wav"),
+	},
+	Def.Sound{
+		Name="cancel",
+		File=THEME:GetPathS("FF","cancel.mp3"),
+	},
 }
 
 return t

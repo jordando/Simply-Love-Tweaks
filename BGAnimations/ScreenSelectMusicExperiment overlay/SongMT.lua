@@ -54,8 +54,6 @@ local song_mt = {
 					-- slide the chosen Actor into place
 					if self.index == SongWheel:get_actor_item_at_focus_pos().index then
 						subself:queuecommand("SlideToTop")
-						MESSAGEMAN:Broadcast("SwitchFocusToSingleSong")
-
 					-- hide everything else
 					else
 						subself:visible(false)
@@ -70,7 +68,6 @@ local song_mt = {
 					-- slide the chosen song ActorFrame back into grid position
 					if self.index == SongWheel:get_actor_item_at_focus_pos().index then
 						subself:playcommand("SlideBackIntoGrid")
-						MESSAGEMAN:Broadcast("SwitchFocusToSongs")
 					end
 
 					subself:visible(true):sleep(0.3):linear(0.2):diffusealpha(1)
@@ -201,7 +198,7 @@ local song_mt = {
 						Texture=THEME:GetPathG("MusicWheelItem","Grades/grades 1x18.png"),
 						InitCommand=function(subself) subself:visible(false):zoom(WideScale(.25,.3)):x(side*grade_position):animate(0) self[pn..'grade_sprite'] = subself end,
 						SlideToTopCommand=function(subself)
-							subself:linear(.12):diffusealpha(0):xy(side*-1*-55,60):zoom(1):linear(.12):diffusealpha(1)
+							subself:linear(.12):diffusealpha(0):xy(-35+(side*-1*-45),70):zoom(1):linear(.12):diffusealpha(1)
 						end,
 						SlideBackIntoGridCommand=function(subself)
 							subself:linear(.12):diffusealpha(0):zoom( WideScale(.25, 0.3)):xy(side*grade_position,0):linear(.12):diffusealpha(1)

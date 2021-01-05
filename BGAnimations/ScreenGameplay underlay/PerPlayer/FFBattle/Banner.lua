@@ -6,11 +6,11 @@ return Def.Banner{
 	CurrentSongChangedMessageCommand=function(self)
 		self:LoadFromSong( GAMESTATE:GetCurrentSong() )
 		self:setsize(418,164):zoom(0.31)
-		self:xy(175 + 138 * (player==PLAYER_1 and 1 or -1), -209 + 70)
+		self:xy(313, -139)
 
 		-- offset a bit more when NoteFieldIsCentered
 		if NoteFieldIsCentered and IsUsingWideScreen() then
-			self:x( 205 * (player==PLAYER_1 and 1 or -1) ):addy(48)
+			self:x( player==PLAYER_1 and 205 or 60 ):addy(48)
 		end
 
 		-- ultrawide and both players joined

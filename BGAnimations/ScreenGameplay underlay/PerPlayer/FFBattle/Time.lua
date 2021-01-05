@@ -1,4 +1,5 @@
 local player = ...
+local pn = ToEnumShortString(player)
 local PlayerState  = GAMESTATE:GetPlayerState(player)
 local SongPosition = GAMESTATE:GetPlayerState(player):GetSongPosition()
 local rate = SL.Global.ActiveModifiers.MusicRate
@@ -135,11 +136,12 @@ local af = Def.ActorFrame{}
 af.InitCommand=function(self)
 	self:SetUpdateFunction(Update)
 	self:x(WideScale(150,200) * (player==PLAYER_1 and -1 or 1))
-	self:y(35)
+	if not SL[pn].ActiveModifiers.NPSGraphAtTop then self:y(-15) if player==PLAYER_1 then self:addx(300) end
+	else self:y(35) end
 	self:zoom(.9)
 
 	if NoteFieldIsCentered and IsUsingWideScreen() then
-		self:x( 200 * (player==PLAYER_1 and -1 or 1) )
+		self:x( player==PLAYER_1 and -200 or 75 )
 		self:y(-20)
 	end
 

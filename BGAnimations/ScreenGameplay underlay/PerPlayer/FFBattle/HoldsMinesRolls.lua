@@ -16,7 +16,7 @@ af.InitCommand=function(self)
 	self:y(-124)
 
 	if NoteFieldIsCentered and IsUsingWideScreen() then
-		self:x( player==PLAYER_1 and 100 or -88 ):addy(20)
+		self:x( player==PLAYER_1 and 100 or -160 ):addy(20)
 	end
 
 	-- adjust for smaller panes when ultrawide and both players joined

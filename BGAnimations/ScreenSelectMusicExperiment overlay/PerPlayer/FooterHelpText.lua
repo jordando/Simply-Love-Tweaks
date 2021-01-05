@@ -46,17 +46,34 @@ return Def.ActorFrame {
 	PlayerJoinedMessageCommand=function(self)
 		self:playcommand("Set")
 	end,
+	-- Unit icon
+	Def.Sprite{
+		Texture=THEME:GetPathG("","Characters/Quina2/unit_icon.png"),
+		InitCommand=function(self) self:align(0,1):zoomto(47,32)
+			if not GAMESTATE:IsHumanPlayer(player) then self:visible(false) end
+			if player == PLAYER_1 then
+				self:xy(_screen.w/15+20, _screen.h)
+			else
+				self:xy(_screen.w - (_screen.w/15) - 75,_screen.h)
+			end
+		end,
+		SetCommand=function(self)
+			if GAMESTATE:IsHumanPlayer(player) then self:visible(true) end
+		end
+	},
+
 	-- Profile name
 	LoadFont("Common Normal")..{
 		Text=PROFILEMAN:GetPlayerName(player),
-		InitCommand=function(self) 
+		InitCommand=function(self)
+			self:horizalign(right)
 			if PROFILEMAN:GetPlayerName(player) == "" then self:settext("Guest") end
 			if player == PLAYER_1 then self:xy(_screen.w/15, _screen.h - 16):zoom(1)
-			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/10), _screen.h - 16):zoom(1) end
+			elseif player == PLAYER_2 then self:horizalign(left):xy(_screen.w - (_screen.w/15), _screen.h - 16):zoom(1) end
 			if not GAMESTATE:IsHumanPlayer(player) then self:visible(false) end
 		end,
 		SetCommand=function(self)
-			if PROFILEMAN:GetPlayerName(player) == "" then self:settext("Guest") 
+			if PROFILEMAN:GetPlayerName(player) == "" then self:settext("Guest")
 			else self:settext(PROFILEMAN:GetPlayerName(player)) end
 			if GAMESTATE:IsHumanPlayer(player) then self:visible(true) end
 		end,
@@ -64,11 +81,10 @@ return Def.ActorFrame {
 
 	-- Songs Played Label
 	LoadFont("Common Normal")..{
-		Name="Songs Played",
 		Text=THEME:GetString("ScreenSelectMusicExperiment", "SongsPlayed"),
-		InitCommand=function(self) 
-			if player == PLAYER_1 then self:xy(_screen.w/10+75, _screen.h - 24):zoom(0.6):halign(1)
-			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/5), _screen.h - 24):zoom(.6):halign(1) end
+		InitCommand=function(self)
+			if player == PLAYER_1 then self:xy(_screen.w/5+75,  _screen.h - 24):zoom(0.6):halign(1)
+			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/3),  _screen.h - 24):zoom(0.6):halign(1) end
 			if not GAMESTATE:IsHumanPlayer(player) then self:visible(false) end
 		end,
 		SetCommand=function(self)
@@ -78,11 +94,10 @@ return Def.ActorFrame {
 
 	--Songs Played
 	LoadFont("Common Normal")..{
-		Name="Songs Played",
 		Text=songsPlayedThisGame,
-		InitCommand=function(self) 
-			if player == PLAYER_1 then self:xy(_screen.w/10+80, _screen.h - 24):zoom(0.6):halign(0)
-			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/10+80) + WideScale(20,0), _screen.h - 24):zoom(0.6):halign(0) end
+		InitCommand=function(self)
+			if player == PLAYER_1 then self:xy(_screen.w/5+80,  _screen.h - 24):zoom(0.6):halign(0)
+			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/3) + 5,  _screen.h - 24):zoom(0.6):halign(0) end
 			if not GAMESTATE:IsHumanPlayer(player) then self:visible(false) end
 		end,
 		SetCommand=function(self)
@@ -92,9 +107,8 @@ return Def.ActorFrame {
 	},
 	--Calories Label
 	LoadFont("Common Normal")..{
-		Name="Calories",
 		Text=THEME:GetString("ScreenSelectMusicExperiment", "Calories"),
-		InitCommand=function(self) 
+		InitCommand=function(self)
 			if player == PLAYER_1 then self:xy(_screen.w/10+75, _screen.h - 8):zoom(0.6):halign(1)
 			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/5), _screen.h - 8):zoom(0.6):halign(1) end
 			if not GAMESTATE:IsHumanPlayer(player) then self:visible(false) end
@@ -105,9 +119,8 @@ return Def.ActorFrame {
 	},
 	--Calories
 	LoadFont("Common Normal")..{
-		Name="Calories",
 		Text=round(profile:GetCaloriesBurnedToday()),
-		InitCommand=function(self) 
+		InitCommand=function(self)
 			if player == PLAYER_1 then self:xy(_screen.w/10+80, _screen.h - 8):zoom(0.6):halign(0)
 			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/10+80) + WideScale(20,0), _screen.h - 8):zoom(0.6):halign(0) end
 			if not GAMESTATE:IsHumanPlayer(player) then self:visible(false) end
@@ -119,11 +132,10 @@ return Def.ActorFrame {
 	},
 	-- Total Taps Label
 	LoadFont("Common Normal")..{
-		Name="Calories",
-		Text="Notes Hit:",
-		InitCommand=function(self) 
-			if player == PLAYER_1 then self:xy(_screen.w/5+75,  _screen.h - 24):zoom(0.6):halign(1)
-			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/3),  _screen.h - 24):zoom(0.6):halign(1) end
+		Text=THEME:GetString("ScreenSelectMusicExperiment", "NotesHitThisGame"),
+		InitCommand=function(self)
+			if player == PLAYER_1 then self:xy(_screen.w/10+75, _screen.h - 24):zoom(0.6):halign(1)
+			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/5), _screen.h - 24):zoom(.6):halign(1) end
 			if not GAMESTATE:IsHumanPlayer(player) then self:visible(false) end
 		end,
 		SetCommand=function(self)
@@ -132,11 +144,10 @@ return Def.ActorFrame {
 	},
 	--Total Taps
 	LoadFont("Common Normal")..{
-		Name="Calories",
 		Text=profile:GetTotalTapsAndHolds(),
-		InitCommand=function(self) 
-			if player == PLAYER_1 then self:xy(_screen.w/5+80,  _screen.h - 24):zoom(0.6):halign(0)
-			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/3) + 5,  _screen.h - 24):zoom(0.6):halign(0) end
+		InitCommand=function(self)
+			if player == PLAYER_1 then self:xy(_screen.w/10+80,  _screen.h - 24):zoom(0.6):halign(0)
+			elseif player == PLAYER_2 then self:xy(_screen.w - (_screen.w/10+80) + WideScale(20,0),  _screen.h - 24):zoom(0.6):halign(0) end
 			if not GAMESTATE:IsHumanPlayer(player) then self:visible(false) end
 			self:settext(notesHitThisGame)
 		end,
@@ -147,7 +158,6 @@ return Def.ActorFrame {
 	},
 	--Game Time
 	LoadFont("Common Normal")..{
-		Name="Game Time",
 		InitCommand=function(self) self:xy(_screen.cx, _screen.h - 16):zoom(0.7):diffusealpha(1) end,
 		Text = gametime
 	}

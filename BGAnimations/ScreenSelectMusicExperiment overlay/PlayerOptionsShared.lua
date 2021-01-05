@@ -19,7 +19,6 @@ local af = Def.ActorFrame{
 			self:diffuse(Color.White)
 			self:zoomto(625,150):xy(427,160)
 			self:MaskDest()
-			--self:visible(false)
 		end,
 	},
 	-- frame for options
@@ -28,16 +27,15 @@ local af = Def.ActorFrame{
 			self:diffuse(Color.White)
 			self:zoomto(625,215):xy(427,327)
 			self:MaskDest()
-			--self:visible(false)
 		end,
 	},
 	Def.Quad{
 		Name="SongInfoBG",
 		InitCommand=function(self)
-			self:diffuse(bg_color):zoomto(_screen.w/WideScale(1.15,1.5), row.h)
+			self:diffuse(bg_color):zoomto(_screen.w/WideScale(1.15,1.5), row.h+2)
 			self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
 		end,
-		OnCommand=function(self) self:xy(_screen.cx, _screen.cy - row.h/1.6 ) end,
+		OnCommand=function(self) self:xy(_screen.cx, _screen.cy - row.h/1.6 -1) end,
 	},
 	Def.Quad{
 		Name="PlayerOptionsBG",

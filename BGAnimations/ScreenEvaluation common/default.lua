@@ -15,7 +15,7 @@ if SL.Global.GameMode ~= "Casual" then
 	-- and the number of panes there are to InputHandler.lua
 	t.OnCommand=function(self)
 		if SL.Global.GameMode ~= "Casual" then
-			SCREENMAN:GetTopScreen():AddInputCallback( LoadActor("./InputHandler.lua", {self, NumPanes}) )											  
+			SCREENMAN:GetTopScreen():AddInputCallback( LoadActor("./InputHandler.lua", {self, NumPanes}) )
 		end
 	end
 	t.OffCommand=function(self)
@@ -80,6 +80,10 @@ t[#t+1] = LoadActor("./Shared/GlobalStorage.lua")
 t[#t+1] = LoadActor("./Shared/CasualHelpText.lua")
 
 -- -----------------------------------------------------------------------
+-- Character if there's only one player
+if #GAMESTATE:GetHumanPlayers() == 1 then
+	t[#t+1] = LoadActor("./Character.lua", GAMESTATE:GetMasterPlayerNumber())
+end
 
 t[#t+1] = LoadActor("./Panes/default.lua", {NumPanes = NumPanes,hash = hash})
 

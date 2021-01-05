@@ -2,6 +2,8 @@
 
 local player = ...
 
+local toReturn = Def.ActorFrame{}
+
 local af = Def.ActorFrame{
 	Name=ToEnumShortString(player).."_AF_Upper",
 	OnCommand=function(self)
@@ -12,20 +14,23 @@ local af = Def.ActorFrame{
 		end
 	end,
 }
-
+-- this will always be in the same place regardless of player number
+-- TODO should probably move it somewhere into shared...
 if SL.Global.GameMode == "Experiment" then
-	af[#af+1] = Def.Sprite{
-		Texture=THEME:GetPathG("FF","CardEdge.png"),
-		InitCommand=function(self)
-			self:horizalign(left):zoomto(666,135):xy(-178,118)
-		end
-	}
-
-	af[#af+1] = Def.Quad{
-		InitCommand=function(self)
-			self:horizalign(left):zoomto(610,125):xy(-150,118)
-			self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
-		end
+	toReturn[#toReturn+1] = Def.ActorFrame{
+		InitCommand=function(self) self:x(_screen.cx - 155) end,
+		Def.Sprite{
+			Texture=THEME:GetPathG("FF","CardEdge.png"),
+			InitCommand=function(self)
+				self:align(0,0):zoomto(666,157):xy(-178,30)
+			end
+		},
+		Def.Quad{
+			InitCommand=function(self)
+				self:align(0,0):zoomto(610,145):xy(-150,36)
+				self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
+			end
+		}
 	}
 end
 
@@ -51,4 +56,5 @@ af[#af+1] = Def.ActorFrame{
 -- Record Texts (Machine and/or Personal)
 af[#af+1] = LoadActor("./RecordTexts.lua", player)
 
-return af
+toReturn[#toReturn+1] = af
+return toReturn

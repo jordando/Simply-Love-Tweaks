@@ -137,7 +137,7 @@ for RowNumber=1,num_rows do
 			local height = self:GetParent():GetChild("Blocks_"..RowNumber):GetHeight()
 			self:horizalign(right)
 			self:y(RowNumber * height * BlockZoomY)
-			self:x( IsUsingWideScreen() and -140 or -126 )
+			self:x( IsUsingWideScreen() and -146 or -126 )
 			self:zoom(0.3)
 		end,
 		SetCommand=function(self, params)

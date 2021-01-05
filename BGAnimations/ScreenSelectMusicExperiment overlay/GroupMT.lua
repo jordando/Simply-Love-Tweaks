@@ -49,7 +49,7 @@ function Switch_to_songs(group_name)
 		SL.Global.DifficultyGroup = group_name
 		SL.Global.GradeGroup = group_name
 		SongWheel:set_info_set(toAdd, index)
-		MESSAGEMAN:Broadcast("SwitchFocusToSongs")
+		--MESSAGEMAN:Broadcast("SwitchFocusToSongs")
 	else
 		-- if there are no songs in the current group then switch to the first available group/first song
 		-- TODO it should put you on the groupwheel instead
@@ -101,7 +101,7 @@ local item_mt = {
 					if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
 						-- slide the chosen Actor into place
 						subself:queuecommand("SlideToTop")
-						MESSAGEMAN:Broadcast("SwitchFocusToSongs")
+						--MESSAGEMAN:Broadcast("SwitchFocusToSongs")
 					else
 						-- hide everything else
 						subself:linear(0.2):diffusealpha(0)
@@ -145,15 +145,15 @@ local item_mt = {
 					end,
 					OnCommand=function(subself)
 						if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
-							subself:zoomto(905,85)
+							subself:zoomto(926,92):addx(-20)
 						end
 					end,
 					SlideToTopCommand=function(subself) subself:sleep(0.2):queuecommand("SlideToTop2") end,
 					SlideToTop2Command = function(subself)
-						subself:linear(.3):zoomto(905,85)
+						subself:linear(.3):zoomto(926,92):addx(-20)
 					end,
 					SlideBackIntoGridCommand = function(subself)
-						subself:zoomto(385,85)
+						subself:zoomto(385,85):addx(20)
 					end,
 				},
 				--blue box behind banner
@@ -198,7 +198,7 @@ local item_mt = {
 					Font="Common Normal",
 					InitCommand=function(subself)
 						self.bmt = subself:maxwidth(225)
-						subself:_wrapwidthpixels(150):vertspacing(-4):shadowlength(0.5):horizalign(left):xy(125,-25)
+						subself:_wrapwidthpixels(150):vertspacing(-4):shadowlength(0.5):horizalign(left):xy(125,-18)
 					end,
 					OnCommand=function(subself)
 						if self.index == GroupWheel:get_actor_item_at_focus_pos().index then

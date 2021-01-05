@@ -86,7 +86,6 @@ return LoadFont("Wendy/_wendy monospace numbers")..{
 			-- the jugdgment breakdown
 			if mods.DataVisualizations=="Step Statistics" or mods.DataVisualizations=="Battle Statistics" then
 				local step_stats = self:GetParent():GetChild("StepStatsPane"..pn)
-
 				-- Step Statistics might be true in the SL table from a previous game session
 				-- but current conditions might be such that it won't actually appear.
 				-- Ensure the StepStats ActorFrame is present before trying to traverse it.
@@ -95,7 +94,7 @@ return LoadFont("Wendy/_wendy monospace numbers")..{
 					if player==PLAYER_1 then
 						if mods.DataVisualizations=="Battle Statistics" then self:addy(25) end
 						if NoteFieldIsCentered then
-							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale( 94, 112.5) ):addy(3)
+							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale( 94, 112.5) ):addy(5)
 						else
 							self:x( pos[ OtherPlayer[player] ].x - SL_WideScale(-84, -60) )
 							if mods.DataVisualizations=="Battle Statistics" then self:addx(5) end
@@ -108,6 +107,7 @@ return LoadFont("Wendy/_wendy monospace numbers")..{
 						else
 							self:x( pos[ OtherPlayer[player] ].x - SL_WideScale(-6, -2))
 						end
+						if mods.DataVisualizations=="Battle Statistics" then self:addy(25):addx(220) end
 					end
 				end
 
