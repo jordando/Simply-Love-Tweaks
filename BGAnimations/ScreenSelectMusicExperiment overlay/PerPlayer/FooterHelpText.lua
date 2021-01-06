@@ -42,13 +42,16 @@ end
 gametime = THEME:GetString("ScreenSelectMusicExperiment", "Gametime").." "..gametime
 if player ~= GAMESTATE:GetMasterPlayerNumber() then gametime = "" end
 
+LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
+local character = GetCharacter("Steiner")
+
 return Def.ActorFrame {
 	PlayerJoinedMessageCommand=function(self)
 		self:playcommand("Set")
 	end,
 	-- Unit icon
 	Def.Sprite{
-		Texture=THEME:GetPathG("","Characters/Quina2/unit_icon.png"),
+		Texture=character.icon,
 		InitCommand=function(self) self:align(0,1):zoomto(47,32)
 			if not GAMESTATE:IsHumanPlayer(player) then self:visible(false) end
 			if player == PLAYER_1 then

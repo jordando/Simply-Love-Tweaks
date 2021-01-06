@@ -1,6 +1,6 @@
 LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
-local character = GetCharacter("Quina")
-local enemy = GetEnemy("x003")
+local character = GetCharacter("Steiner")
+local enemy = GetEnemy("x001")
 
 local player = ...
 local pn = ToEnumShortString(player)
@@ -188,14 +188,16 @@ af[#af+1] = Def.ActorFrame{
         Name="Character",
         Texture=character.load,
         InitCommand=function(self)
-            self:zoom(1)
+            self:zoom(1):xy(character.XY[1],character.XY[2])
             currentAnimation = "idle"
             self:SetStateProperties(character["idle"])
             self:horizalign(left)
         end,
         AttackMessageCommand=function(self)
             currentAnimation = "attack"
-            self:finishtweening():SetStateProperties(character["attack"]):xy(character["attackXY"][1],character["attackXY"][2]):sleep(1.5):xy(0,0):queuecommand("Default")
+            self:finishtweening():SetStateProperties(
+                character["attack"]):xy(character["attackXY"][1],character["attackXY"][2])
+                :sleep(1.5):xy(character["XY"][1],character["XY"][2]):queuecommand("Default")
         end,
         StandbyMessageCommand=function(self)
             currentAnimation = "magic2"
@@ -206,7 +208,7 @@ af[#af+1] = Def.ActorFrame{
                 -- if we get through every stream measure then start the victory dance
                 if streamIndex == #streams.Measures and streams.Measures[streamIndex].isBreak then
                     currentAnimation = "win"
-                    self:SetStateProperties(character["win"])
+                    self:SetStateProperties(character["win"]):xy(character.winXY[1],character.winXY[2])
                 -- sometimes runs start while the attack animation is still playing. if we're still updating
                 -- the progress bar then jump in to the standby command
                 elseif continueUpdating then
@@ -261,7 +263,7 @@ af[#af+1] = Def.ActorFrame{
     --Character icon
     Def.Sprite {
         Name="Icon",
-        Texture=THEME:GetPathG("","Characters/Quina2/unit_icon.png"),
+        Texture=character.icon,
         InitCommand=function(self) self:xy(0,0):align(0,1) end,
     },
     --Character ATB Meter

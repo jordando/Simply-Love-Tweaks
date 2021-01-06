@@ -1,6 +1,6 @@
 local player = ...
 LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
-local character = GetCharacter("Quina")
+local character = GetCharacter("Steiner")
 
 local t = Def.ActorFrame{
     InitCommand=function(self) self:y(_screen.cy-134)
