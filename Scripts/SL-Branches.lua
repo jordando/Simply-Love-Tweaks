@@ -73,11 +73,19 @@ Branch.AllowScreenSelectColor = function()
 	if ThemePrefs.Get("AllowScreenSelectColor") and not ThemePrefs.Get("RainbowMode") then
 		return "ScreenSelectColor"
 	else
-		return Branch.AfterScreenSelectColor()
+		return Branch.AllowScreenSelectCharacter()
 	end
 end
 
-Branch.AfterScreenSelectColor = function()
+Branch.AllowScreenSelectCharacter = function()
+	if ThemePrefs.Get("AllowScreenSelectCharacter") then
+		return "ScreenSelectCharacter"
+	else
+		return Branch.AfterScreenSelectCharacter()
+	end
+end
+
+Branch.AfterScreenSelectCharacter = function()
 	local preferred_style = ThemePrefs.Get("AutoStyle")
 
 	if preferred_style ~= "none"

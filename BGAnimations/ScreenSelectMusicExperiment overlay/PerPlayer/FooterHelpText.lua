@@ -42,8 +42,7 @@ end
 gametime = THEME:GetString("ScreenSelectMusicExperiment", "Gametime").." "..gametime
 if player ~= GAMESTATE:GetMasterPlayerNumber() then gametime = "" end
 
-LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
-local character = GetCharacter("Steiner")
+local character = SL.Global.Character
 
 return Def.ActorFrame {
 	PlayerJoinedMessageCommand=function(self)

@@ -123,6 +123,7 @@ local GlobalDefaults = {
 		-- These values outside initialize() won't be reset each game cycle,
 		-- but are rather manipulated as needed by the theme.
 		ActiveColorIndex = ThemePrefs.Get("SimplyLoveColor") or 1,
+		Character = ThemePrefs.Get("Character") or "Quina",
 
 		----------------------Experiment only values----------------------------------------------
 		DifficultyGroup = 1, --used when we're in difficulty sort to keep the correct difficulty defaulted

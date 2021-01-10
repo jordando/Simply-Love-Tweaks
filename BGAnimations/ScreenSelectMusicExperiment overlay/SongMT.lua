@@ -49,7 +49,7 @@ local song_mt = {
 				OnCommand=function(subself)
 					subself:finishtweening():sleep(0.25):linear(0.25):diffusealpha(1):queuecommand("PlayMusicPreview")
 				end,
-
+				-- someone pressed start on the song wheel so hide everything except the focus
 				StartCommand=function(subself)
 					-- slide the chosen Actor into place
 					if self.index == SongWheel:get_actor_item_at_focus_pos().index then
@@ -59,19 +59,21 @@ local song_mt = {
 						subself:visible(false)
 					end
 				end,
+				-- hide the song wheel including the focus song
 				HideCommand=function(subself)
 					stop_music()
 					subself:visible(false):diffusealpha(0)
 				end,
+				-- unhide the song wheel
 				UnhideCommand=function(subself)
 					-- we're going back to song selection
 					-- slide the chosen song ActorFrame back into grid position
 					if self.index == SongWheel:get_actor_item_at_focus_pos().index then
 						subself:playcommand("SlideBackIntoGrid")
 					end
-
 					subself:visible(true):sleep(0.3):linear(0.2):diffusealpha(1)
 				end,
+				SetSongViaSearchMessageCommand=function(subself) subself:playcommand("Unhide") end,
 				SlideToTopCommand=function(subself) subself:linear(0.2):xy(_screen.cx + 150, row.h+43) end,
 				SlideBackIntoGridCommand=function(subself) subself:linear(0.2):y( math.floor(14/2)*(songHeight + 1) ):x( _screen.w/1.5+25 )end, --y = num_items/2 * 47
 

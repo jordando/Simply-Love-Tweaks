@@ -1,7 +1,6 @@
 ---------------------------------------------------------------------------
 -- do as much setup work as possible in another file to keep default.lua
 -- from becoming overly cluttered
-MESSAGEMAN:SetLogging(true)
 local setup = LoadActor("./Setup.lua")
 if setup == nil then
 	return LoadActor(THEME:GetPathB("ScreenSelectMusicCasual", "overlay/NoValidSongs.lua"))
@@ -158,10 +157,9 @@ local t = Def.ActorFrame {
 	SetSongViaSearchMessageCommand=function(self)
 		if SL.Global.Debug then Trace("Running SetSongViaSearchMessageCommand") end
 		if Input.WheelWithFocus == GroupWheel then --going from group to song
-			Input.WheelWithFocus.container:playcommand("Start")
 			SOUND:PlayOnce( THEME:GetPathS("MusicWheel", "expand.ogg") )
 			Input.WheelWithFocus = SongWheel
-			Input.WheelWithFocus.container:playcommand("Unhide")
+			MESSAGEMAN:Broadcast("SwitchFocusToSongs", {"GroupWheel"})
 			SL.Global.GroupToSong = true
 		end
 		setup.InitGroups() --this prunes out groups with no songs in them (or resets filters if we have 0 songs) and resets GroupWheel
@@ -324,9 +322,6 @@ t[#t+1] = SongWheel:create_actors( "SongWheel", 14, song_mt, WideScale(25,50), s
 -- we want these after the songwheel so they cut off the songs but before the group wheel
 -- so you can see the group name
 t[#t+1] = LoadActor("./Header.lua", row)
--- profile information and time spent in game
--- note that this covers the footer in graphics
-t[#t+1] = LoadActor("Footer.lua")
 -- Groupwheel
 t[#t+1] = GroupWheel:create_actors( "GroupWheel", row.how_many * col.how_many, group_mt, 25, 200, true)
 -- Add player options ActorFrames to our primary ActorFrame
@@ -347,7 +342,9 @@ for pn in ivalues( {PLAYER_1, PLAYER_2} ) do
 	end
 	OptionsWheel[pn].focus_pos = #OptionRows --start with the bottom (Start) selected
 end
-
+-- profile information and time spent in game
+-- note that this covers the footer in graphics
+t[#t+1] = LoadActor("Footer.lua")
 -- the big banner above song information
 t[#t+1] = LoadActor("./Banner.lua")
 -- CD Title

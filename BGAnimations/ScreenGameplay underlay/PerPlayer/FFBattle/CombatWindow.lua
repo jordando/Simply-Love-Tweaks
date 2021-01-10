@@ -1,21 +1,21 @@
 LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
-local character = GetCharacter("Steiner")
-local enemy = GetEnemy("x001")
+local character = SL.Global.Character
+local enemy = GetRandomEnemy()
 
 local player = ...
 local pn = ToEnumShortString(player)
+--character = GetCharacter(character)
 
 -- -----------------------------------------------------------------------
 
 local PlayerState = GAMESTATE:GetPlayerState(player)
 local streams, prevMeasure, streamIndex
 local timingData = GAMESTATE:GetCurrentSteps(player):GetTimingData()
-local IsUltraWide = (GetScreenAspectRatio() > 21/9)
-local NoteFieldIsCentered = (GetNotefieldX(player) == _screen.cx)
 local width, height = 130, 35
 local start, finish
 local continueUpdating = false
 local currentAnimation, currentEnemyHealth
+local danger = false
 
 -- We'll want to reset each of these values for each new song in the case of CourseMode
 local InitializeMeasureCounter = function()
@@ -97,7 +97,6 @@ local af = Def.ActorFrame{
     end,
     InstantDeathCommand=function(self)
         MESSAGEMAN:Broadcast("Attack")
-        self:sleep(1.5):queuecommand("InstantWin")
     end,
     --Card Edge
     Def.Sprite{
@@ -110,6 +109,10 @@ local af = Def.ActorFrame{
             self:xy(-33,80):zoomto(width*2 + 13, height * 7):align(0,1)
             self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
         end
+    },
+    Def.Sprite{
+        Texture=GetRandomBG(),
+        InitCommand=function(self) self:zoomto(width*2 + 14, height * 5):align(0,1):xy(-34,10) end
     },
     --Ground for the sprites to stand on
     Def.Sprite{
@@ -188,42 +191,61 @@ af[#af+1] = Def.ActorFrame{
         Name="Character",
         Texture=character.load,
         InitCommand=function(self)
-            self:zoom(1):xy(character.XY[1],character.XY[2])
+            self:zoom(1):xy(character.idleXY[1],character.idleXY[2])
             currentAnimation = "idle"
             self:SetStateProperties(character["idle"])
             self:horizalign(left)
         end,
         AttackMessageCommand=function(self)
             currentAnimation = "attack"
-            self:finishtweening():SetStateProperties(
-                character["attack"]):xy(character["attackXY"][1],character["attackXY"][2])
-                :sleep(1.5):xy(character["XY"][1],character["XY"][2]):queuecommand("Default")
+            -- attack should have either a table of frame information or a string
+            -- pointing to a separate sprite sheet. if we have a string then just
+            -- fade out the character so the attack sprite can do its thing
+            if type(character.attack) ~= "string" then
+                self:finishtweening():SetStateProperties(character["attack"])
+                    :xy(character["attackXY"][1],character["attackXY"][2])
+                    :sleep(self:GetAnimationLengthSeconds()):queuecommand("Default")
+            else
+                self:linear(.15):diffusealpha(0):sleep(character.attackTime):queuecommand("Default")
+            end
         end,
         StandbyMessageCommand=function(self)
             currentAnimation = "magic2"
-            self:finishtweening():SetStateProperties(character["magic2"])
+            if not danger then
+                self:finishtweening():SetStateProperties(character["magic2"])
+                self:xy(character.magic2XY[1],character.magic2XY[2])
+            end
         end,
         DefaultCommand=function(self)
+            if self:GetDiffuseAlpha() ~= 1 then
+                self:linear(.15):diffusealpha(1)
+            end
             if streams.Measures then
                 -- if we get through every stream measure then start the victory dance
-                if streamIndex == #streams.Measures and streams.Measures[streamIndex].isBreak then
-                    currentAnimation = "win"
-                    self:SetStateProperties(character["win"]):xy(character.winXY[1],character.winXY[2])
+                if currentEnemyHealth==0 then--streamIndex == #streams.Measures and streams.Measures[streamIndex].isBreak then
+                    self:queuecommand("WinIntro")
                 -- sometimes runs start while the attack animation is still playing. if we're still updating
                 -- the progress bar then jump in to the standby command
                 elseif continueUpdating then
                     currentAnimation="magic2"
-                    self:SetStateProperties(character["magic2"])
+                    if not danger then self:SetStateProperties(character["magic2"]) end
                 -- otherwise we're in a no stream section so idle
                 else
                     currentAnimation = "idle"
-                    self:SetStateProperties(character["idle"])
+                    if not danger then self:SetStateProperties(character["idle"]) end
+                end
+                if type(character[currentAnimation]) == "table" then
+                    self:SetStateProperties(character[currentAnimation]):xy(character[currentAnimation.."XY"][1],character[currentAnimation.."XY"][2])
                 end
             end
         end,
-        InstantWinCommand=function(self)
+        WinIntroCommand=function(self)
+            self:xy(character.winIntroXY[1],character.winIntroXY[2])
             currentAnimation="win"
-            self:SetStateProperties(character.win)
+            self:SetStateProperties(character["winIntro"]):sleep(self:GetAnimationLengthSeconds()):queuecommand("Win")
+        end,
+        WinCommand=function(self)
+            self:SetStateProperties(character["win"]):xy(character.winXY[1],character.winXY[2])
         end,
         HealthStateChangedMessageCommand=function(self, param)
             if param.PlayerNumber == player and param.HealthState == "HealthState_Dead" then
@@ -231,14 +253,37 @@ af[#af+1] = Def.ActorFrame{
                 continueUpdating = false
             elseif currentAnimation ~= "attack" then
                 if param.HealthState == "HealthState_Danger" then
+                    danger = true
                     self:SetStateProperties(character["danger"]):xy(character["dangerXY"][1],character["dangerXY"][2])
                 else
-                    self:SetStateProperties(character[currentAnimation]):xy(0,0)
+                    danger = false
+                    self:SetStateProperties(character[currentAnimation]):xy(character[currentAnimation.."XY"][1],character[currentAnimation.."XY"][2])
                 end
             end
         end,
     },
 
+    -- Extra sprite for if attack is in a different spritesheet
+    Def.Sprite{
+        Name="Attack",
+        InitCommand=function(self)
+            if type(character.attack) == "string" then
+                self:Load(character.attack)
+                self:SetStateProperties(self.LinearFrames(48,1.5))
+                self:zoom(1):xy(character.attackXY[1],character.attackXY[2]):setstate(0):animate(true):visible(false)
+                self:horizalign(left)
+            end
+        end,
+        AttackMessageCommand=function(self)
+            if type(character.attack) == "string" then
+                self:finishtweening():visible(true):
+                linear(.15):diffusealpha(1):play():sleep(self:GetAnimationLengthSeconds()-.25):linear(.1):diffusealpha(0):queuecommand("FinishAttack")
+            end
+        end,
+        FinishAttackCommand=function(self)
+            self:animate(false):setstate(0):visible(false)
+        end,
+    }
 }
 
 --------------------------------------------------------------------------------------------

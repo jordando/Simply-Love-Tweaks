@@ -14,7 +14,15 @@ if type(ThemePrefs) ~= "table" or type(ThemePrefs.Get) ~= "function" then
 	}
 end
 
-
+local getChar =function()
+	LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
+	local characters = GetAllCharacters()
+	local temp = {}
+	for _,v in pairs(characters) do
+		temp[#temp+1] = v.name
+	end
+	return temp
+end
 
 SL_CustomPrefs.Get = function()
 	return {
@@ -223,6 +231,12 @@ SL_CustomPrefs.Get = function()
 			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values 	= { true, false }
 		},
+		AllowScreenSelectCharacter =
+		{
+			Default = true,
+			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
+			Values 	= { true, false }
+		},
 		AllowScreenEvalSummary =
 		{
 			Default = true,
@@ -272,6 +286,12 @@ SL_CustomPrefs.Get = function()
 			Default = 0,
 			Choices = range(0, 22, 1),
 			Values = range(0, 22, 1),
+		},
+		-- - - - - - - - - - - - - - - - - - - -
+		-- Character
+		Character = {
+			Default = "Quina",
+			Values = getChar(),
 		},
 	}
 end

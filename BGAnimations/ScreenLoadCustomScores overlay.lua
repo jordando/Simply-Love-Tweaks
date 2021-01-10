@@ -1,5 +1,5 @@
 -- This screen is called right before going in to SelectMusic when Experiment mode custom scores are enabled.
-
+-- Also load the character for Fantasy. TODO either rename this screen or move this somewhere else
 local tweentime = 0.325
 local co, text
 local count = 0
@@ -10,7 +10,9 @@ return Def.ActorFrame{
 		self:Center():draworder(101)
 		if SL.Global.GameMode == "Experiment" then
 			self:sleep(1):queuecommand("LoadScores")
-		end
+        end
+        LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
+        SL.Global.Character = GetCharacter(ThemePrefs.Get("Character"))
 	end,
 
 	Def.Quad{
@@ -71,7 +73,6 @@ return Def.ActorFrame{
         SetupCoroutineCommand = function(self)
             self:stoptweening()
             if coroutine.status(co) == "suspended" then
-                Trace("COROUTINE SUSPENDED")
                 count = count + 1
                 self:settext(text..count)
                 Trace("COROUTINE: "..count)
@@ -79,10 +80,8 @@ return Def.ActorFrame{
             end
             Trace("Yielded, checking dead")
             if coroutine.status(co) ~= "dead" then
-                Trace("COROUTINE NOT DEAD")
                 self:sleep(.3):queuecommand("SetupCoroutine")
             else
-            Trace("DEAD")
                 self:settext("DONE")
                 if finish then
                     Trace("FINISH")

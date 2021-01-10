@@ -49,7 +49,6 @@ function Switch_to_songs(group_name)
 		SL.Global.DifficultyGroup = group_name
 		SL.Global.GradeGroup = group_name
 		SongWheel:set_info_set(toAdd, index)
-		--MESSAGEMAN:Broadcast("SwitchFocusToSongs")
 	else
 		-- if there are no songs in the current group then switch to the first available group/first song
 		-- TODO it should put you on the groupwheel instead
@@ -101,19 +100,14 @@ local item_mt = {
 					if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
 						-- slide the chosen Actor into place
 						subself:queuecommand("SlideToTop")
-						--MESSAGEMAN:Broadcast("SwitchFocusToSongs")
 					else
 						-- hide everything else
 						subself:linear(0.2):diffusealpha(0)
 					end
 				end,
-				-- if we come straight here because of a search, make sure that the group title
-				-- moves to the top
-				SetSongViaSearchMessageCommand=function(subself)
-					if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
-						-- slide the chosen Actor into place
-						subself:sleep(.1):queuecommand("SlideToTop")
-					end
+				-- if we come straight here because of a search run start to get into songs
+				SetSongViaSearchMessageCommand=function(self)
+					self:playcommand("Start")
 				end,
 				-- we're going back to group selection
 				-- slide the chosen group Actor back into grid position
@@ -145,15 +139,15 @@ local item_mt = {
 					end,
 					OnCommand=function(subself)
 						if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
-							subself:zoomto(926,92):addx(-20)
+							subself:zoomto(926,92):x(-88)
 						end
 					end,
 					SlideToTopCommand=function(subself) subself:sleep(0.2):queuecommand("SlideToTop2") end,
 					SlideToTop2Command = function(subself)
-						subself:linear(.3):zoomto(926,92):addx(-20)
+						subself:linear(.3):zoomto(926,92):x(-88)
 					end,
 					SlideBackIntoGridCommand = function(subself)
-						subself:zoomto(385,85):addx(20)
+						subself:zoomto(385,85):x(-68)
 					end,
 				},
 				--blue box behind banner
