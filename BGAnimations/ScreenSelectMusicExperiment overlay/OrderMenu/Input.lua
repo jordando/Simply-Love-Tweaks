@@ -6,11 +6,10 @@ local mpn = GAMESTATE:GetMasterPlayerNumber()
 
 local Handle = {}
 
--- When the player hits start on the CustomSongMenu they want to either add or remove a song from a custom group.
 Handle.Start = function(event)
 	local topscreen = SCREENMAN:GetTopScreen()
 	if GAMESTATE:IsHumanPlayer(event.PlayerNumber) then
-		MESSAGEMAN:Broadcast("StartButton")
+		MESSAGEMAN:Broadcast("PlayStartSound")
 		-- first figure out which group we're dealing with
 		local info = scrollers[mpn]:get_info_at_focus_pos()
 		SL.Global.Order = info.displayname
@@ -32,7 +31,7 @@ Handle.MenuLeft = function(event)
 		-- and then just don't scroll to 0 or lower
 		local index = type(info)=="table" and info.index or 0
 		if index - 1 > 0 then
-			MESSAGEMAN:Broadcast("DirectionButton")
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
 			scrollers[mpn]:scroll_by_amount(-1)
 			local frame = af:GetChild(ToEnumShortString(mpn) .. 'Frame')
 			frame:playcommand("Set", {index=index-1})
@@ -52,7 +51,7 @@ Handle.MenuRight = function(event)
 		-- and then just don't scroll to 0 or lower
 		local index = type(info)=="table" and info.index or 0
 		if index + 1 <= SL.Global.OrderOptions then
-			MESSAGEMAN:Broadcast("DirectionButton")
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
 			scrollers[mpn]:scroll_by_amount(1)
 			local frame = af:GetChild(ToEnumShortString(mpn) .. 'Frame')
 			frame:playcommand("Set", {index=index+1})
@@ -66,7 +65,7 @@ Handle.Back = function(event)
 	local topscreen = SCREENMAN:GetTopScreen()
 
 	if GAMESTATE:IsHumanPlayer(event.PlayerNumber) then
-		MESSAGEMAN:Broadcast("BackButton")
+		MESSAGEMAN:Broadcast("PlayCancelSound")
 		-- queue the Finish for the entire screen
 		topscreen:queuecommand("Off")
 	end

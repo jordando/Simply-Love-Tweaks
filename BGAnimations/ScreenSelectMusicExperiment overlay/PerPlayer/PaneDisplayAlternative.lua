@@ -10,7 +10,7 @@ local row_height = 154
 
 local GetNameAndScoreAndDate = function(profile)
 	local song = (GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentCourse()) or GAMESTATE:GetCurrentSong()
-	local steps = (GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentTrail(player)) or GAMESTATE:GetCurrentSteps(player)
+	local steps = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentTrail(player) or GAMESTATE:GetCurrentSteps(player)
 	local score = ""
 	local name = ""
 	local scoredate = ""
@@ -48,6 +48,8 @@ local af =
 	CurrentCourseChangedMessageCommand = function(self) self:queuecommand("Set") end,
 	StepsHaveChangedMessageCommand = function(self) self:queuecommand("Set") end,
 	SetCommand = function(self)
+		-- Don't bother if not a human player
+		if not GAMESTATE:IsHumanPlayer(player) then return end
 		local player_score, player_date, first_pass, last_played, times_played
 		if GAMESTATE:GetCurrentSong() then --if there's no song there won't be a hash
 			local hash = GetCurrentHash(player)

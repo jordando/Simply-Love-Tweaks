@@ -142,7 +142,8 @@ for RowNumber=1,num_rows do
 		end,
 		SetCommand=function(self, params)
 			-- diffuse and set each chart's difficulty meter
-			if ValidateChart(GAMESTATE:GetCurrentSong(),params.Chart) then self:diffuse( DifficultyColor(params.Difficulty) )
+			if GAMESTATE:IsCourseMode() then self:diffuse( DifficultyColor(params.Difficulty) )
+			elseif ValidateChart(GAMESTATE:GetCurrentSong(),params.Chart) then self:diffuse( DifficultyColor(params.Difficulty) )
 			else self:diffuse(.5,.5,.5,1) end
 			self:settext(params.Meter)
 		end,

@@ -70,12 +70,13 @@ return Def.ActorFrame{
 	LoadFont("Common Normal")..{
 		InitCommand=function(self) self:diffuse(color("#1e282f")):horizalign(left):x(75):maxwidth(115) end,
 		StepsHaveChangedMessageCommand=function(self)
+			-- don't bother if not a human player
+			if not GAMESTATE:IsHumanPlayer(player) then return end
 			local SongOrCourse = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentCourse() or GAMESTATE:GetCurrentSong()
 			local StepsOrCourse = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentCourse() or GAMESTATE:GetCurrentSteps(player)
 
 			-- always stop tweening when steps change in case a MarqueeCommand is queued
 			self:stoptweening()
-
 			if SongOrCourse and StepsOrCourse then
 				text_table = GetStepsCredit(player)
 				marquee_index = 0
@@ -98,13 +99,13 @@ return Def.ActorFrame{
 			marquee_index = (marquee_index % #text_table) + 1
 			-- retrieve the text we want to display
 			local text = text_table[marquee_index]
+			if text then
+				-- set this BitmapText actor to display that text
+				self:settext( text )
 
-			-- set this BitmapText actor to display that text
-			self:settext( text )
-
-			-- account for the possibility that emojis shouldn't be diffused to Color.Black
-			DiffuseEmojis(self, text)
-
+				-- account for the possibility that emojis shouldn't be diffused to Color.Black
+				DiffuseEmojis(self, text)
+			end
 			-- sleep 2 seconds before queueing the next Marquee command to do this again
 			if #text_table > 1 then
 				self:sleep(2):queuecommand("Marquee")

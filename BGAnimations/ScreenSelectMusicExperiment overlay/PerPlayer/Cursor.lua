@@ -54,8 +54,6 @@ return Def.Sprite{
 			local StepsToDisplay = GetStepsToDisplay(AllStepsOrTrails)
 			local CurrentStepsOrTrail = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentTrail(player) or GAMESTATE:GetCurrentSteps(player)
 
-
-
 			for i,chart in pairs(StepsToDisplay) do
 				if chart == CurrentStepsOrTrail then
 					RowIndex = i
@@ -63,7 +61,6 @@ return Def.Sprite{
 				end
 			end
 		end
-
 		-- keep within reasonable limits because Edit charts are a thing
 		RowIndex = clamp(RowIndex, 1, 5)
 

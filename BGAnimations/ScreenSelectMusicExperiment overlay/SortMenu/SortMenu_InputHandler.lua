@@ -15,21 +15,22 @@ local function input(event)
 
 		if event.GameButton == "MenuRight" or event.GameButton == "MenuDown" then
 			sort_wheel:scroll_by_amount(1)
-			sortmenu:GetChild("change_sound"):play()
+			MESSAGEMAN:Broadcast("PlayMove1Sound")
 
 		elseif event.GameButton == "MenuLeft" or event.GameButton == "MenuUp" then
 			sort_wheel:scroll_by_amount(-1)
-			sortmenu:GetChild("change_sound"):play()
+			MESSAGEMAN:Broadcast("PlayMove1Sound")
 
 		elseif event.GameButton == "Start" then
-			sortmenu:GetChild("start_sound"):play()
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
 			local focus = sort_wheel:get_actor_item_at_focus_pos()
 
 			if focus.kind == "SortBy" then
 				SL.Global.GroupType = focus.sort_by
 				--if we're trying to sort by artist then make order type artist as well
 				--TODO when we come out it'll still be sorted by artist which is awkward
-				if SL.Global.GroupType == "Artist" then SL.Global.Order = "Artist" end
+				if SL.Global.GroupType == "Artist" then SL.Global.Order = "Artist"
+				elseif SL.Global.GroupType == "Courses" then SL.Global.Order = "Alphabetical" end
 				MESSAGEMAN:Broadcast("GroupTypeChanged")
 				overlay:queuecommand("DirectInputToEngine")
 			-- the player wants to adjust filters
@@ -56,6 +57,7 @@ local function input(event)
 			end
 
 		elseif event.GameButton == "Back" or event.GameButton == "Select" then
+			MESSAGEMAN:Broadcast("PlayCancelSound")
 			overlay:queuecommand("DirectInputToEngine")
 		end
 	end

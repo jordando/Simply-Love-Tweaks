@@ -36,7 +36,7 @@ return Def.ActorFrame {
 						end
 					end
 				end
-			--if we're grouping by difficulty then we want to keep the chosen difficulty when changing songs
+			--if we're grouping by difficulty (number) then we want to keep the chosen difficulty when changing songs
 			--note that we set params_for_input.DifficultyIndex manually here because we might be forcing the cursor to a different difficulty
 			elseif SL.Global.GroupType == "Difficulty" then
 				local currentDifficulty = SL.Global.DifficultyGroup
@@ -49,7 +49,13 @@ return Def.ActorFrame {
 				end
 			--otherwise try to choose the same difficulty if it exists(challenge, expert, basic, etc)
 			elseif DifficultyExists(pn,true) then
-				GAMESTATE:SetCurrentSteps(pn,params.song:GetOneSteps(GetStepsType(),params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]]))
+
+				if SL.Global.GroupType == "Courses" then
+					local trails = GetCourseTrails(GAMESTATE:GetCurrentCourse())
+					GAMESTATE:SetCurrentTrail(pn,trails[params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]]])
+				else
+					GAMESTATE:SetCurrentSteps(pn,params.song:GetOneSteps(GetStepsType(),params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]]))
+				end
 			--otherwise default to next closest
 			--note that we set params_for_input.DifficultyIndex manually here because we might be forcing the cursor to a different difficulty
 			else
@@ -59,12 +65,17 @@ return Def.ActorFrame {
 				local harder = NextHardest(pn,true) and Difficulty:Reverse()[NextHardest(pn,true):GetDifficulty()] or nil
 				--if the difference between harder and current difficulty is greater than the difference between easier and current
 				--then we can throw away the harder steps as we know the easier is closer
-				if harder and easier then 
+				if harder and easier then
 					if harder - params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]] > params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]] - easier then harder = nil end
 				end
 				--if they're equally close then default to harder steps, otherwise, set to the closest difficulty
-				GAMESTATE:SetCurrentSteps(pn,harder and NextHardest(pn,true) or easier and NextEasiest(pn,true))
-				params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]] = Difficulty:Reverse()[GAMESTATE:GetCurrentSteps(pn):GetDifficulty()]
+				if SL.Global.GroupType == "Courses" then
+					GAMESTATE:SetCurrentTrail(pn,harder and NextHardest(pn,true) or easier and NextEasiest(pn,true))
+					params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]] = Difficulty:Reverse()[GAMESTATE:GetCurrentTrail(pn):GetDifficulty()]
+				else
+					GAMESTATE:SetCurrentSteps(pn,harder and NextHardest(pn,true) or easier and NextEasiest(pn,true))
+					params_for_input['DifficultyIndex'..PlayerNumber:Reverse()[pn]] = Difficulty:Reverse()[GAMESTATE:GetCurrentSteps(pn):GetDifficulty()]
+				end
 			end
 			--Normally once we're done we'd call CurrentStepsHaveChanged to set the pane to whatever we've switched to
 			--but the pass type and grade are controlled by our songwheel and only updated when the wheel transforms.

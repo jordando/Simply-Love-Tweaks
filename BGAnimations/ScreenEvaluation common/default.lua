@@ -1,8 +1,10 @@
 local Players = GAMESTATE:GetHumanPlayers()
 local NumPanes = SL.Global.GameMode=="Casual" and 1 or 6
 
-if SL.Global.GameMode == "Experiment" and GetStepsType() == "StepsType_Dance_Double" then
-	NumPanes = 5
+if SL.Global.GameMode == "Experiment" then
+	if GetStepsType() == "StepsType_Dance_Double" or GAMESTATE:IsCourseMode() then
+		NumPanes = 5
+	end
 end
 
 local hash

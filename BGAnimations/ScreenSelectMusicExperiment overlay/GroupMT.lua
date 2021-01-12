@@ -11,10 +11,13 @@ local banner_directory = FILEMAN:DoesFileExist(path) and path or THEME:GetPathG(
 
 local startTime, endTime
 
-function Switch_to_songs(group_name)
+function Switch_to_songs(group)
+	local group_name = group
+	if GAMESTATE:IsCourseMode() then group_name = "Courses" end
 	startTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
 	if SL.Global.Debug then  Trace("Running Switch_to_songs: "..group_name) end
-	local songs = PruneSongList(GetSongList(group_name))
+	local songs = GetSongList(group_name)
+	if SL.Global.GroupType ~= "Courses" then songs = PruneSongList(songs) end
 	if #songs > 0 then --it's possible that filters can cause us to try and enter a group with no songs
 		if IsSpecialOrder() then --If we're using a special order than we need to further split the song list
 			songs = CreateSpecialSongList(songs)
@@ -26,8 +29,13 @@ function Switch_to_songs(group_name)
 		end
 		local current_song = GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
 		local index = SL.Global.LastSeenIndex
-		if SL.Global.Debug then  Trace("Current song is: "..current_song:GetMainTitle()) end
-
+		if SL.Global.Debug then
+			if GAMESTATE:IsCourseMode() then
+				Trace("Current course is: "..current_song:GetDisplayFullTitle())
+			else
+				Trace("Current song is: "..current_song:GetMainTitle())
+			end
+		end
 		--since each song can show up multiple times in special orders we can't rely just on songs being the same
 		--however, when we first switch order the indexes won't match up so rather than get a random song we
 		--go to the first instance of the song.
@@ -40,7 +48,13 @@ function Switch_to_songs(group_name)
 			for k,song in pairs(songs) do
 				if song == current_song then
 					index = k
-					if SL.Global.Debug then  Trace("Found: "..song:GetMainTitle()) end
+					if SL.Global.Debug then		
+						if GAMESTATE:IsCourseMode() then
+							Trace("Current course is: "..current_song:GetDisplayFullTitle())
+						else
+							Trace("Current song is: "..current_song:GetMainTitle())
+						end
+					end
 					break
 				end
 			end

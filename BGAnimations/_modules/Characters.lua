@@ -101,6 +101,7 @@ local Character = {
         name = "TwoB",
         displayName = "2B",
         attack = THEME:GetPathG("","Characters/2B/attack 6x8.png"),
+        attackFrames = {48,1.5},
         attackTime = 1.5,
         idle = NewLinearFrames(2,5,.75),
         --limit = NewLinearFrames(0,43, 1.5),
@@ -214,6 +215,35 @@ local Character = {
         splash = THEME:GetPathG("","Characters/Sora/splash4.png"),
         text = "Seems to really like popsicles. Not even from Final Fantasy.",
         game = "KH",
+    },
+    Cloud1 = {
+        name = "Cloud1",
+        displayName = "Cloud",
+        attack = NewLinearFrames(0,11, 1.5),
+        idle = NewLinearFrames(14,17,.75),
+        limit = NewLinearFrames(0,11, 1.5),
+        magic = NewLinearFrames(18,21,0.75),
+        magic2 = NewLinearFrames(22,25,0.75),
+        standby = NewLinearFrames(26,29,1.5),
+        win = NewLinearFrames(30,49,2),
+        winIntro = NewLinearFrames(50,74,3),
+        still = NewLinearFrames(75,75,1),
+        danger = NewLinearFrames(13,13,1),
+        dead = NewLinearFrames(12,12,1),
+        stillXY = {55,15,60,20}, --second set is for when character is idling in Select a character
+        idleXY = {5,10},
+        magic2XY = {13,2},
+        winIntroXY = {-15,-30},
+        winXY = {30,4},
+        deadXY = {-20,50},
+        dangerXY = {3,23},
+        attackXY = {-100,-20},
+        load = THEME:GetPathG("","Characters/Cloud/Cloud1 7x11.png"),
+        icon = THEME:GetPathG("","Characters/Cloud/unit_icon_1.png"),
+        ills = THEME:GetPathG("","Characters/Cloud/unit_ills_1.png"),
+        splash = THEME:GetPathG("","Characters/Cloud/splash2.png"),
+        text = "'Uh...... aaa......? A...... Gurk......?' - Cloud Strife",
+        game = "FF7",
     }
 }
 
@@ -334,7 +364,7 @@ local Enemy = {
 }
 
 local backgrounds = {}
-for i=1, 387 do
+for i=1, 5 do
     backgrounds[#backgrounds+1] = THEME:GetPathG("","Characters/BGs/bg ("..i..").jpg")
 end
 

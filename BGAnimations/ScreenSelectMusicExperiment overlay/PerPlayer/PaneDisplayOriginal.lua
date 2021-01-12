@@ -147,9 +147,11 @@ local af =
 		self:queuecommand("Set")
 	end,
 	SetCommand = function(self)
+		-- Don't bother if not a human player
+		if not GAMESTATE:IsHumanPlayer(player) then return end
 		local machine_score, machine_name, machine_date = GetNameAndScoreAndDate(PROFILEMAN:GetMachineProfile())
 		self:GetChild("MachineHighScore"):settext(machine_score)
-		self:GetChild("MachineHighScoreName"):settext(machine_name):diffuse({0, 0, 0, 1})
+		self:GetChild("MachineHighScoreName"):settext(machine_name):diffuse(Color.White)
 		self:GetChild("MachineHighScoreDate"):settext(FormatDate(machine_date))
 		DiffuseEmojis(self, machine_name)
 		local player_score, player_name
@@ -162,7 +164,7 @@ local af =
 				player_score, player_name = GetNameAndScoreAndDate(PROFILEMAN:GetProfile(player))
 			end
 			self:GetChild("PlayerHighScore"):settext(player_score)
-			self:GetChild("PlayerHighScoreName"):settext(player_name):diffuse({0, 0, 0, 1})
+			self:GetChild("PlayerHighScoreName"):settext(player_name):diffuse(Color.White)
 
 			DiffuseEmojis(self, player_name)
 		end
@@ -174,7 +176,6 @@ af[#af+1] = LoadActor( THEME:GetPathG("FF","CardEdge.png") )..{
 		self:diffuse(Color.White)
 		self:zoomto(450, 450)
 		self:MaskDest():xy(0,350)
-		--self:visible(false)
 	end,
 }
 
@@ -211,14 +212,14 @@ for key, item in pairs(PaneItems) do
 			{
 				Text = key,
 				InitCommand = function(self)
-					self:zoom(zoom_factor):xy(item.label.x, item.label.y):diffuse(Color.Black):halign(0)
+					self:zoom(zoom_factor):xy(item.label.x, item.label.y):diffuse(Color.White):halign(0)
 				end
 			},
 		--  numerical value
 		LoadFont("Common Normal") ..
 			{
 				InitCommand = function(self)
-					self:zoom(zoom_factor):xy(item.data.x, item.data.y):diffuse(Color.Black):halign(1)
+					self:zoom(zoom_factor):xy(item.data.x, item.data.y):diffuse(Color.White):halign(1)
 				end,
 				OnCommand = function(self)
 					self:playcommand("Set")
@@ -251,7 +252,7 @@ af[#af + 1] =
 	{
 		Name = "DifficultyMeter",
 		InitCommand = function(self)
-			self:horizalign(right):diffuse(Color.Black)
+			self:horizalign(right):diffuse(Color.White)
 				:xy(_screen.w / 4 - 10, _screen.h / 2 - 65):queuecommand("Set")
 		end,
 		SetCommand = function(self)
@@ -273,7 +274,7 @@ af[#af + 1] =
 	{
 		Name = "PlayerHighScore",
 		InitCommand = function(self)
-			self:xy(highscoreX, 156):zoom(zoom_factor):diffuse(Color.Black):halign(1)
+			self:xy(highscoreX, 156):zoom(zoom_factor):diffuse(Color.White):halign(1)
 		end
 	}
 --PLAYER PROFILE highscore name
@@ -282,7 +283,7 @@ af[#af + 1] =
 	{
 		Name = "PlayerHighScoreName",
 		InitCommand = function(self)
-			self:xy(highscorenameX, 156):zoom(zoom_factor):diffuse(Color.Black):halign(0):maxwidth(80)
+			self:xy(highscorenameX, 156):zoom(zoom_factor):diffuse(Color.White):halign(0):maxwidth(80)
 		end
 	}
 --MACHINE high score
@@ -291,7 +292,7 @@ af[#af + 1] =
 	{
 		Name = "MachineHighScore",
 		InitCommand = function(self)
-			self:xy(highscoreX, 176):zoom(zoom_factor):diffuse(Color.Black):halign(1)
+			self:xy(highscoreX, 176):zoom(zoom_factor):diffuse(Color.White):halign(1)
 		end
 	}
 
@@ -301,7 +302,7 @@ af[#af + 1] =
 	{
 		Name = "MachineHighScoreName",
 		InitCommand = function(self)
-			self:xy(highscorenameX, 176):zoom(zoom_factor):diffuse(Color.Black):halign(0):maxwidth(80)
+			self:xy(highscorenameX, 176):zoom(zoom_factor):diffuse(Color.White):halign(0):maxwidth(80)
 		end
 	}
 
@@ -311,7 +312,7 @@ af[#af + 1] =
 	{
 		Name = "MachineHighScoreDate",
 		InitCommand = function(self)
-			self:xy(highscoreX, 193):zoom(zoom_factor):diffuse(Color.Black):halign(0.5)
+			self:xy(highscoreX, 193):zoom(zoom_factor):diffuse(Color.White):halign(0.5)
 		end
 	}
 return af

@@ -4,7 +4,7 @@ local enemy = GetRandomEnemy()
 
 local player = ...
 local pn = ToEnumShortString(player)
---character = GetCharacter(character)
+character = GetCharacter(ThemePrefs.Get("Character"))
 
 -- -----------------------------------------------------------------------
 
@@ -269,7 +269,7 @@ af[#af+1] = Def.ActorFrame{
         InitCommand=function(self)
             if type(character.attack) == "string" then
                 self:Load(character.attack)
-                self:SetStateProperties(self.LinearFrames(48,1.5))
+                self:SetStateProperties(self.LinearFrames(character.attackFrames[1],character.attackFrames[2]))
                 self:zoom(1):xy(character.attackXY[1],character.attackXY[2]):setstate(0):animate(true):visible(false)
                 self:horizalign(left)
             end

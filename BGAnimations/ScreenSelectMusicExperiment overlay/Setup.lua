@@ -107,7 +107,8 @@ local InitGroups = function()
 	local s, e
 	s = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
 	if SL.Global.Debug then Trace("Running InitGroups") end
-	local groups = PruneGroups(GetGroups())
+	local groups = GetGroups()
+	if not GAMESTATE:IsCourseMode() then groups = PruneGroups(groups) end
 	if #groups == 0 then
 		SM("WARNING: ALL SONGS WERE FILTERED. RESETTING FILTERS")
 		ResetFilters()
@@ -136,6 +137,7 @@ local GetGroupInfo = function()
 	local s, e
 	s = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
 	if SL.Global.Debug then Trace("Running GetGroupInfo") end
+	if SL.Global.GroupType == "Courses" then return nil end
 	local groups = PruneGroups(GetGroups())
 	local info = {}
 	local songs

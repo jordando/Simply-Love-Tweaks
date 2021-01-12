@@ -10,7 +10,10 @@ table.insert(awards,Color.Blue)
 
 local GetSongDisplayName = function(song, index)
 	local main, sub
-	if IsSpecialOrder() and index then
+	if SL.Global.GroupType == "Courses" then
+		main = song:GetDisplayFullTitle()
+		sub = ""
+	elseif IsSpecialOrder() and index then
 		local block = GetSpecialOrder(index)
 		local special = IsSpecialOrder()
 		if block[special[1]] and block[special[2]] then
@@ -155,7 +158,9 @@ local song_mt = {
 							if self.song ~= "CloseThisFolder" then subself:zoom(.8):y(30):maxwidth(250):settext( self.song:GetDisplaySubTitle()) end end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
-								subself:settext( self.song:GetDisplaySubTitle() ):y(11):maxwidth(250):zoom(.65)
+								if not SL.Global.GroupType == "Courses" then
+									subself:settext( self.song:GetDisplaySubTitle() ):y(11):maxwidth(250):zoom(.65)
+								end
 							end
 						end,
 						GainFocusCommand=function(subself) --make the words a little bigger to make it seem like they're popping out
@@ -166,8 +171,6 @@ local song_mt = {
 							subself:y(12):visible(true)
 						end,
 					},
-					
-
 				},
 			}
 			--Things we need two of
@@ -217,19 +220,28 @@ local song_mt = {
 			if has_focus then
 				--TODO find out why this is called twice every time we go to ScreenSelectMusicExperiment
 				if self.song ~= "CloseThisFolder" then
-					SL.Global.LastSeenSong = self.song
+					if SL.Global.GroupType ~= "Courses" then SL.Global.LastSeenSong = self.song end
 					--Input.lua will transform the wheel when changing difficulty (to change the grade sprite) but we
 					--don't need to restart the preview music because only difficulty changed
 					--so check here that transform was called because we're moving to a new song
 					--or because we're initializing ScreenSelectMusicExperiment
-					if self.song ~= GAMESTATE:GetCurrentSong() or SL.Global.GroupToSong or SL.Global.LastSeenIndex ~= self.index then
-						if SL.Global.Debug then  Trace("SongMT setting current song: "..self.song:GetMainTitle()) end
-						GAMESTATE:SetCurrentSong(self.song)
+					if self.song ~= GAMESTATE:GetCurrentSong() and self.song ~= GAMESTATE:GetCurrentCourse()
+					or SL.Global.GroupToSong or SL.Global.LastSeenIndex ~= self.index then
+						if SL.Global.Debug then
+							local title
+							if SL.Global.GroupType == "Courses" then title = self.song:GetDisplayFullTitle()
+							else title = self.song:GetMainTitle() end
+							Trace("SongMT setting current song: "..title) end
+						if SL.Global.GroupType == "Courses" then GAMESTATE:SetCurrentCourse(self.song)
+						else
+							GAMESTATE:SetCurrentSong(self.song)
+							SL.Global.LastSongPlayedName = GAMESTATE:GetCurrentSong():GetDisplayMainTitle()
+							SL.Global.LastSongPlayedGroup = GAMESTATE:GetCurrentSong():GetGroupName()
+						end
 						SL.Global.GroupToSong = false
 						SL.Global.LastSeenIndex = self.index
 						SL.Global.SongTransition = true
-						SL.Global.LastSongPlayedName = GAMESTATE:GetCurrentSong():GetDisplayMainTitle()
-						SL.Global.LastSongPlayedGroup = GAMESTATE:GetCurrentSong():GetGroupName()
+
 						MESSAGEMAN:Broadcast("CurrentSongChanged", {song=self.song, index=self.index})
 						MESSAGEMAN:Broadcast("BeginSongTransition") --See the MessageCommand in ScreenSelectMusicExperiment/default.lua for details
 						stop_music()
@@ -256,11 +268,15 @@ local song_mt = {
 					local current_difficulty
 					local grade
 					local steps
-					if GAMESTATE:GetCurrentSteps(pn) then
-						current_difficulty = GAMESTATE:GetCurrentSteps(pn):GetDifficulty() --are we looking at steps?
-					end
-					if current_difficulty and self.song:GetOneSteps(GetStepsType(),current_difficulty) then
-						steps = self.song:GetOneSteps(GetStepsType(),current_difficulty)
+					if SL.Global.GroupType == "Courses" then
+						--what we do for courses
+					else
+						if GAMESTATE:GetCurrentSteps(pn) then
+							current_difficulty = GAMESTATE:GetCurrentSteps(pn):GetDifficulty() --are we looking at steps?
+						end
+						if current_difficulty and self.song:GetOneSteps(GetStepsType(),current_difficulty) then
+							steps = self.song:GetOneSteps(GetStepsType(),current_difficulty)
+						end
 					end
 					if steps then
 						--color the pass_box

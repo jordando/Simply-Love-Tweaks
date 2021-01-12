@@ -28,7 +28,7 @@ end
 
 local af = Def.ActorFrame{
 	InitCommand=function(self)
-		self:xy(_screen.cx-170, _screen.cy + 40)
+		self:xy(_screen.cx-170, _screen.cy + 40):visible(false)
 	end,
 
 	---------------------------------------------------------------------
@@ -59,19 +59,7 @@ local af = Def.ActorFrame{
 				:MaskSource()
 		end
 	},
-	---------------------------------------------------------------------
 
-	-- gray background Quad
-	Def.Quad{
-		InitCommand=function(self)
-			self:diffuse(color("#1e282f")):zoomto(320, 96)
-				:xy(0, 30)
-
-			if ThemePrefs.Get("RainbowMode") then
-				self:diffusealpha(0.75)
-			end
-		end
-	},
 }
 
 af[#af+1] = Def.CourseContentsList {
@@ -90,7 +78,6 @@ af[#af+1] = Def.CourseContentsList {
 	CurrentTrailP1ChangedMessageCommand=function(self) self:playcommand("Set") end,
 	CurrentTrailP2ChangedMessageCommand=function(self) self:playcommand("Set") end,
 	SetCommand=function(self)
-
 		-- I have a very flimsy understanding of what most of these methods do,
 		-- as they were all copied from the default theme's CourseContentsList, but
 		-- commenting each one out broke the behavior of the ActorScroller in a unique

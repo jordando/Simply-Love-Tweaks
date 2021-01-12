@@ -17,6 +17,10 @@ local InitializeDensity = NPS_Histogram(player, 275, histogramHeight)..{
 	OnCommand=function(self)
 		self:x(labelX_col1+20)
 			:y( _screen.h/3.5+3)
+	end,
+	GroupTypeChangedMessageCommand=function(self)
+		if SL.Global.GroupType == "Courses" then self:visible(false)
+		else self:visible(true) end
 	end
 }
 

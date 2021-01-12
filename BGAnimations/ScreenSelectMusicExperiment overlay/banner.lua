@@ -44,7 +44,11 @@ local t = Def.ActorFrame{
 			SongOrCourse = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentCourse() or GAMESTATE:GetCurrentSong()
 			if SongOrCourse and SongOrCourse:HasBanner() then
 				self:GetChild("Banner"):visible(true)
-				self:GetChild("Banner"):LoadFromSong(GAMESTATE:GetCurrentSong())
+				if GAMESTATE:IsCourseMode() then
+					self:GetChild("Banner"):LoadFromCourse(GAMESTATE:GetCurrentCourse())
+				else
+					self:GetChild("Banner"):LoadFromSong(GAMESTATE:GetCurrentSong())
+				end
 				self:GetChild("Banner"):setsize(418,164)
 				if IsUsingWideScreen() then
 					self:GetChild("Banner"):stoptweening():zoom(.5):linear(.125):zoomto(418,164)
@@ -84,7 +88,11 @@ local t = Def.ActorFrame{
 		Def.Banner{
 			Name="Banner",
 			BeginCommand=function(self)
-				self:LoadFromSong( GAMESTATE:GetCurrentSong() )
+				if GAMESTATE:IsCourseMode() then
+					self:LoadFromCourse( GAMESTATE:GetCurrentCourse() )
+				else 
+					self:LoadFromSong( GAMESTATE:GetCurrentSong() )
+				end
 				self:setsize(418,164)
 			end,
 		},

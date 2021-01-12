@@ -42,7 +42,10 @@ local t = Def.ActorFrame {
 	OnCommand=function(self) self:playcommand("AssessAvailableChoices") end,
 	-- We'll want to (re)assess available choices in the SortMenu if a player late-joins
 	PlayerJoinedMessageCommand=function(self, params) self:queuecommand("AssessAvailableChoices") end,
-	-- Load the custom song menu
+	-- Some options are not available in course sort so (re)assess choices when we change sort type
+	GroupTypeChangedMessageCommand = function(self)
+		self:queuecommand("AssessAvailableChoices")
+	end,
 
 	ShowSortMenuCommand=function(self) self:diffusealpha(0):visible(true):linear(.2):diffusealpha(1) end,
 	HideSortMenuCommand=function(self) self:visible(false) end,
@@ -103,6 +106,7 @@ local t = Def.ActorFrame {
 			{"SortBy", "Difficulty"},
 			{"SortBy", "Grade"},
 			{"SortBy", "Tag"},
+			{"SortBy", "Courses"},
 		}
 		-- get the currently active SortOrder
 		local current_sort_order = SL.Global.GroupType
@@ -122,16 +126,20 @@ local t = Def.ActorFrame {
 	AssessAvailableChoicesCommand=function(self)
 		self:visible(false)
 		local wheel_options = {}
-		table.insert(wheel_options, {"Text", "Search"})
-		table.insert(wheel_options, {"Change", "Sort"})
-		table.insert(wheel_options, {"Change", "Order"})
-		table.insert(wheel_options, {"Adjust", "Filters"})
-		table.insert(wheel_options, {"Modify", "Song Tags"})
+		if SL.Global.GroupType == "Courses" then
+			table.insert(wheel_options, {"Change", "Sort"})
+		else
+			table.insert(wheel_options, {"Text", "Search"})
+			table.insert(wheel_options, {"Change", "Sort"})
+			table.insert(wheel_options, {"Change", "Order"})
+			table.insert(wheel_options, {"Adjust", "Filters"})
+			table.insert(wheel_options, {"Modify", "Song Tags"})
+		end
 
 		if #GAMESTATE:GetHumanPlayers() == 1 then
 			table.insert(wheel_options, {"View", "Player Stats"})
 			-- From source: Edit mode DOES NOT WORK if the master player is not player 1. -Kyz
-			if GAMESTATE:GetMasterPlayerNumber() == "PlayerNumber_P1" then
+			if GAMESTATE:GetMasterPlayerNumber() == "PlayerNumber_P1" and SL.Global.GroupType ~= "Courses" then
 				table.insert(wheel_options, {"Song", "Practice"})
 			end
 		end
@@ -218,8 +226,5 @@ local t = Def.ActorFrame {
 	-- this returns an ActorFrame ( see: ./Scripts/Consensual-sick_wheel.lua )
 	sort_wheel:create_actors( "Sort Menu", 7, wheel_item_mt, _screen.cx, _screen.cy )
 }
-
-t[#t+1] = LoadActor( THEME:GetPathS("FF", "move.wav") )..{ Name="change_sound", SupportPan = false }
-t[#t+1] = LoadActor( THEME:GetPathS("common", "start") )..{ Name="start_sound", SupportPan = false }
 
 return t

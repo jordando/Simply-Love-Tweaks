@@ -4,11 +4,8 @@
 local args = ...
 local group_info = args[3]
 
-if group_info == nil then
-	return Def.Actor{ InitCommand=function(self) self:visible(false) end }
-end
 -----------------------------------------------------------------
-local BarGraph = LoadActor("./BarGraph.lua", group_info)
+LoadActor("./BarGraph.lua", group_info)
 local initializeBarGraph = CreateBarGraph(250,100)..{
 	OnCommand=function(self)
 		self:xy(WideScale(350,70),375):zoom(WideScale(.95,1))
@@ -22,6 +19,13 @@ local af = Def.ActorFrame{
 		group_info = params[1]
 		MESSAGEMAN:Broadcast("CurrentGroupChanged", {group=params[2]})
 	end,
+	GroupTypeChangedMessageCommand=function(self)
+		if SL.Global.GroupType == "Courses" then
+			self:visible(false)
+		else
+			self:visible(true)
+		end
+	end
 }
 
 
@@ -120,7 +124,7 @@ af[#af+1] = Def.ActorFrame{
 				self:zoom(1):diffuse(Color.White):xy(WideScale(-315,-395),45):vertalign(bottom):horizalign(left):maxwidth(300)
 			end,
 			CurrentGroupChangedMessageCommand=function(self, params)
-				if group_info[params.group] then
+				if group_info and group_info[params.group] then --TODO for now no group info if we're looking at courses
 					self:settext( group_info[params.group].num_songs)
 				end
 			end,
@@ -140,7 +144,7 @@ af[#af+1] = Def.ActorFrame{
 				self:zoom(1):diffuse(Color.White):xy(WideScale(-200,-275),45):vertalign(bottom):horizalign(left):maxwidth(300)
 			end,
 			CurrentGroupChangedMessageCommand=function(self, params)
-				if group_info[params.group] then
+				if group_info and group_info[params.group] then --TODO for now no group info if we're looking at courses
 					local total = 0
 					for _,item in pairs(group_info[params.group]['Level']) do
 						total = total + item.num_songs
@@ -165,7 +169,7 @@ af[#af+1] = Def.ActorFrame{
 				self:zoom(0.75):diffuse(Color.White):xy(WideScale(-315,-395), 70):vertalign(top):horizalign(left)
 			end,
 			CurrentGroupChangedMessageCommand=function(self, params)
-				if group_info[params.group] then
+				if group_info and group_info[params.group] then --TODO for now no group info if we're looking at courses
 					local filteredSongs = #GetSongList(params.group) - group_info[params.group].num_songs
 					self:settext( filteredSongs )
 				end
@@ -186,7 +190,7 @@ af[#af+1] = Def.ActorFrame{
 				self:zoom(0.75):diffuse(Color.White):xy(WideScale(-200,-275), 70):vertalign(top):horizalign(left)
 			end,
 			CurrentGroupChangedMessageCommand=function(self, params)
-				if group_info[params.group] then
+				if group_info and group_info[params.group] then --TODO for now no group info if we're looking at courses
 					self:settext( group_info[params.group].filtered_charts )
 				end
 			end,
@@ -206,7 +210,7 @@ af[#af+1] = Def.ActorFrame{
 				self:zoom(0.75):diffuse(Color.White):xy(WideScale(-95,-170), 70):vertalign(top):horizalign(left)
 			end,
 			CurrentGroupChangedMessageCommand=function(self, params)
-				if group_info[params.group] then
+				if group_info and group_info[params.group] then --TODO for now no group info if we're looking at courses
 					local num_passed, num_charts = 0, 0
 					for k,v in pairs(group_info[params.group]["PassedLevel"]) do
 						num_passed = num_passed + v.num_songs
@@ -222,7 +226,7 @@ af[#af+1] = Def.ActorFrame{
 				self:zoom(0.75):diffuse(Color.White):xy(WideScale(-95,-170), -35):horizalign(left):vertalign(top)
 			end,
 			CurrentGroupChangedMessageCommand=function(self, params)
-				if group_info[params.group] then
+				if group_info and group_info[params.group] then --TODO for now no group info if we're looking at courses
 					local num_charts,num_passed,median, mode = 0,0,{},nil
 					for k,v in pairs(group_info[params.group]["Level"]) do
 						for i = 1,v.num_songs do

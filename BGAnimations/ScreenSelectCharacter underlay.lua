@@ -293,10 +293,10 @@ local t = Def.ActorFrame{
 	-- character name
 	LoadFont("Common normal")..{
 		InitCommand=function(self)
-			self:horizalign(left):xy(25,65):zoom(2)
+			self:horizalign(left):xy(25,65):zoom(2):diffusealpha(0)
 		end,
 		OnCommand=function(self)
-			self:settext(characters[item_index+1].displayName)
+			self:settext(characters[item_index+1].displayName):linear(.5):diffusealpha(1)
 		end,
 		SetInfoCommand=function(self)
 			self:settext(characters[item_index+1].displayName)
@@ -305,12 +305,13 @@ local t = Def.ActorFrame{
 	Def.Sprite{
 		Name="splash",
 		InitCommand=function(self)
-			self:xy(140,275):scaletoclipped(250,300):diffusealpha(.25)
+			self:xy(140,275):scaletoclipped(250,300):diffusealpha(0)
 			self:diffusebottomedge({.1,.1,.1,.5})
-			self:diffusetopedge({1,1,1,.5})
 		end,
 		OnCommand=function(self)
-			self:Load(characters[item_index+1].splash)
+			self:Load(characters[item_index+1].splash):linear(.5)
+			self:diffusetopedge({1,1,1,.5})
+
 		end,
 		SetInfoCommand=function(self)
 			self:Load(characters[item_index+1].splash)
@@ -318,16 +319,19 @@ local t = Def.ActorFrame{
 	},
 	Def.Quad{
 		InitCommand = function(self)
-			self:xy(140,100):zoomto(250,3)
+			self:xy(140,100):zoomto(250,3):diffusealpha(0)
 		end,
+		OnCommand=function(self)
+			self:linear(1):diffusealpha(1)
+		end
 	},
 	-- helper text
 	LoadFont("Common normal")..{
 		InitCommand=function(self)
-			self:horizalign(left):vertalign(top):xy(25,130):zoom(1):_wrapwidthpixels(200)
+			self:horizalign(left):vertalign(top):xy(25,130):zoom(1):_wrapwidthpixels(200):diffusealpha(0)
 		end,
 		OnCommand=function(self)
-			self:settext(characters[item_index+1].text)
+			self:settext(characters[item_index+1].text):linear(1):diffusealpha(1)
 		end,
 		SetInfoCommand=function(self)
 			self:settext(characters[item_index+1].text)
