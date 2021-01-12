@@ -447,6 +447,8 @@ end
 --- @param chartParam Steps
 --- @param rateParam boolean
 function GetTopGrade(player, songParam, chartParam, rateParam)
+	-- TODO only check if not course mode. should change this to check courses once they're added in
+	if GAMESTATE:IsCourseMode() then return nil end
 	local song = songParam or GAMESTATE:GetCurrentSong()
 	local chart = chartParam or GAMESTATE:GetCurrentSteps(player)
 	local grade

@@ -44,13 +44,12 @@ Branch.AfterScreenRankingDouble = function()
 end
 
 SelectMusicOrCourse = function()
+	if SL.Global.GameMode == "Experiment" then return "ScreenSelectMusicExperiment" end
 	if GAMESTATE:IsCourseMode() then
 		return "ScreenSelectCourse"
 	else
 		if SL.Global.GameMode == "Casual" then
 			return "ScreenSelectMusicCasual"
-		elseif SL.Global.GameMode == "Experiment" then
-			return "ScreenSelectMusicExperiment"
 		end
 
 		return "ScreenSelectMusic"

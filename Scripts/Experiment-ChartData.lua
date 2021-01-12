@@ -254,6 +254,7 @@ end
 --- Returns a hash for the given steps from the lookup table or nil if none is found.
 ---@param inputSteps Steps
 function GetHash(inputSteps)
+	if GAMESTATE:IsCourseMode() then return nil end --TODO: right now this only works for non course stuff
 	local song = SONGMAN:GetSongFromSteps(inputSteps)
 	local difficulty = ToEnumShortString(inputSteps:GetDifficulty())
 	local stepsType = ToEnumShortString(GetStepsType()):gsub("_","-"):lower()

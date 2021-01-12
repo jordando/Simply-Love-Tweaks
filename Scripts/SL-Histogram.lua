@@ -119,6 +119,8 @@ function NPS_Histogram(player, width, height, upColor, lowColor)
 			end
 		end,
 		LessLagMessageCommand=function(self)
+			--ScreenSelectMusic density graph should only display if we're not in course mode
+			if GAMESTATE:IsCourseMode() then return end
 			if GAMESTATE:IsHumanPlayer(player) and GAMESTATE:GetCurrentSong() then
 				--check to see if we have the stream info for this song saved already
 				local hash = GetCurrentHash(player)
