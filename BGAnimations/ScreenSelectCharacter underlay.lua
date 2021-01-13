@@ -180,13 +180,14 @@ local wheel_item_mt = {
 					Name="graphic",
 					InitCommand=function(subself)
 						self.graphic = subself
-						subself:diffusealpha(0):zoom(1)
+						subself:diffusealpha(0)
 					end,
 					OnCommand=function(subself)
 						subself:sleep(0.2)
 						subself:sleep(0.04 * self.index)
 						subself:linear(0.2)
 						subself:diffusealpha(1)
+						if self.character and self.character.stillZoom then subself:zoom(self.character.stillZoom) end
 						if self.name == "item2" and self.charName then
 							subself:SetStateProperties(self.character.idle)
 							subself:xy(self.character.stillXY[3],self.character.stillXY[4])
@@ -227,7 +228,7 @@ local wheel_item_mt = {
 		end,
 
 		set = function(self, item)
-			if item and item.ills then
+			if item and item.load then
 				self.charName = item.name
 				self.character = item
 				self.graphic:Load(item.load):SetStateProperties(item.still)
