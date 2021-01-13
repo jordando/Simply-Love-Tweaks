@@ -20,6 +20,7 @@ t[#t+1] = Def.Sprite{
     Texture=character.load,
 	InitCommand=function(self)
         self:xy(character.winIntroXY[1],character.winIntroXY[2])
+        if character.zoom then self:zoom(character.zoom) end
 	end,
     OnCommand=function(self)
         if not STATSMAN:GetCurStageStats():GetPlayerStageStats(player):GetFailed() then

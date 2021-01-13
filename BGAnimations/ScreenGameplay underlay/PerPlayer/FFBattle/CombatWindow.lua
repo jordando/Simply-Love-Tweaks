@@ -191,10 +191,11 @@ af[#af+1] = Def.ActorFrame{
         Name="Character",
         Texture=character.load,
         InitCommand=function(self)
-            self:zoom(1):xy(character.idleXY[1],character.idleXY[2])
+            self:xy(character.idleXY[1],character.idleXY[2])
             currentAnimation = "idle"
             self:SetStateProperties(character["idle"])
             self:horizalign(left)
+            if character.zoom then self:zoom(character.zoom) end
         end,
         AttackMessageCommand=function(self)
             currentAnimation = "attack"
