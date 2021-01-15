@@ -282,7 +282,10 @@ af[#af+1] = Def.ActorFrame{
 			self:effectmagnitude(-3,0,0)
 	
 			self:effectperiod(1):effectoffset( -10 * PREFSMAN:GetPreference("GlobalOffsetSeconds"))
-		end
+		end,
+		CloseThisFolderHasFocusMessageCommand = function(self) self:visible(false) end,
+		SwitchFocusToGroupsMessageCommand=function(self) self:visible(true) end,
+
 	}
 }
 
