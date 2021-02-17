@@ -76,7 +76,10 @@ return Def.ActorFrame{
                 count = count + 1
                 self:settext(text..count)
                 Trace("COROUTINE: "..count)
-                coroutine.resume(co)
+                local ok, errorMsg = coroutine.resume(co)
+                if not ok then
+                    SM(errorMsg)
+                end
             end
             Trace("Yielded, checking dead")
             if coroutine.status(co) ~= "dead" then
