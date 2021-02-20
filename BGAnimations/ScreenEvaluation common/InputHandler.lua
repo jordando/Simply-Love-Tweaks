@@ -1,4 +1,4 @@
-local af, num_panes = unpack(...)
+local af, num_panes, altPaneNames = unpack(...)
 
 if not af
 or type(num_panes) ~= "number"
@@ -15,6 +15,8 @@ local players = GAMESTATE:GetHumanPlayers()
 
 local mpn = GAMESTATE:GetMasterPlayerNumber()
 
+local missAnalysis = false
+
 -- since we're potentially retrieving from player profile
 -- perform some rudimentary validation by clamping both
 -- values to be within permitted ranges
@@ -24,6 +26,21 @@ local mpn = GAMESTATE:GetMasterPlayerNumber()
 local primary_i   = clamp(SL[ToEnumShortString(mpn)].EvalPanePrimary,   1, num_panes)
 local secondary_i = clamp(SL[ToEnumShortString(mpn)].EvalPaneSecondary, 1, num_panes)
 if SL.Global.GameMode == "Experiment" then secondary_i = 1 end
+
+local altPanes = {}
+
+local position = {}
+
+local row, col = 6,8
+for y = 1, row do
+	for x = 1, col do
+		position[#position+1] = {130 + (57 * x), 205 + (25 * y)}
+		if x <= (col/2) then table.insert(position[#position],"left")
+		else table.insert(position[#position],"right") end
+
+	end
+end
+local cursor_index = 1
 -- -----------------------------------------------------------------------
 -- initialize local tables (panes, active_pane) for the the input handling function to use
 for controller=1,2 do
@@ -31,7 +48,9 @@ for controller=1,2 do
 	panes[controller] = {}
 	-- Iterate through all potential panes, and only add the non-nil ones to the
 	-- list of panes we want to consider.
-
+	for i = 1, #altPaneNames do
+		altPanes[altPaneNames[i]] = af:GetChild("Panes"):GetChild(altPaneNames[i])
+	end
 	for i=1,num_panes do
 		local pane = af:GetChild("Panes"):GetChild( ("Pane%i_SideP%i"):format(i, controller) )
 
@@ -63,7 +82,6 @@ for controller=1,2 do
 		end
 	end
 end
-
 -- -----------------------------------------------------------------------
 -- don't allow double to initialize into a configuration like
 -- EvalPanePrimary=2
@@ -126,75 +144,123 @@ return function(event)
 
 
 	if event.type == "InputEventType_FirstPress" and panes[cn] then
-
-		if event.GameButton == "MenuRight" or event.GameButton == "MenuLeft" then
-			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
-			if event.GameButton == "MenuRight" then
-				active_pane[cn] = (active_pane[cn] % #panes[cn]) + 1
-				-- don't allow duplicate panes to show in single/double
-				-- if the above change would result in duplicate panes, increment again
-				if #players==1 and active_pane[cn] == active_pane[ocn] then
-					active_pane[cn] = (active_pane[cn] % #panes[cn]) + 1
-				end
-
-			elseif event.GameButton == "MenuLeft" then
-				active_pane[cn] = ((active_pane[cn] - 2) % #panes[cn]) + 1
-				-- don't allow duplicate panes to show in single/double
-				-- if the above change would result in duplicate panes, decrement again
-				if #players==1 and active_pane[cn] == active_pane[ocn] then
-					active_pane[cn] = ((active_pane[cn] - 2) % #panes[cn]) + 1
-				end
+		if event.GameButton == "Select" and #players == 1 and active_pane[cn] == 5 then
+			if missAnalysis then
+				missAnalysis = false
+				af:GetChild("cursor"):visible(false)
+				SM("Normal Mode")
+			else
+				missAnalysis = true
+				af:GetChild("cursor"):visible(true)
+				af:GetChild("cursor"):xy(position[cursor_index][1], position[cursor_index][2])
+				SM("MISS ANALYSIS")
 			end
+			for player in ivalues(PlayerNumber) do
+				SCREENMAN:set_input_redirected(player, missAnalysis)
+			end
+		elseif not missAnalysis then
+			if event.GameButton == "MenuRight" or event.GameButton == "MenuLeft" then
+				SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+				if event.GameButton == "MenuRight" then
+					active_pane[cn] = (active_pane[cn] % #panes[cn]) + 1
+					-- don't allow duplicate panes to show in single/double
+					-- if the above change would result in duplicate panes, increment again
+					if #players==1 and active_pane[cn] == active_pane[ocn] then
+						active_pane[cn] = (active_pane[cn] % #panes[cn]) + 1
+					end
 
-			-- double
-			if style == "OnePlayerTwoSides" then
-				-- if this controller is switching to Pane2 or Pane5, both of which take over both pane widths
-				if panes[cn][active_pane[cn]]:GetChild(""):GetCommand("ExpandForDouble") then
+				elseif event.GameButton == "MenuLeft" then
+					active_pane[cn] = ((active_pane[cn] - 2) % #panes[cn]) + 1
+					-- don't allow duplicate panes to show in single/double
+					-- if the above change would result in duplicate panes, decrement again
+					if #players==1 and active_pane[cn] == active_pane[ocn] then
+						active_pane[cn] = ((active_pane[cn] - 2) % #panes[cn]) + 1
+					end
+				end
 
-					-- hide all panes for both controllers
-					for controller=1,2 do
-						for pane in ivalues(panes[controller]) do
-							pane:visible(false)
+				-- double
+				if style == "OnePlayerTwoSides" then
+					-- if this controller is switching to Pane2 or Pane5, both of which take over both pane widths
+					if panes[cn][active_pane[cn]]:GetChild(""):GetCommand("ExpandForDouble") then
+
+						-- hide all panes for both controllers
+						for controller=1,2 do
+							for pane in ivalues(panes[controller]) do
+								pane:visible(false)
+							end
 						end
-					end
-					-- and only show the one full-width pane
-					panes[cn][active_pane[cn]]:visible(true)
+						-- and only show the one full-width pane
+						panes[cn][active_pane[cn]]:visible(true)
 
 
-				-- if this controller is switching panes while the OTHER controller was viewing Pane2 or Pane5
-				elseif panes[ocn][active_pane[ocn]]:GetChild(""):GetCommand("ExpandForDouble") then
-					panes[ocn][active_pane[ocn]]:visible(false)
-					panes[cn][active_pane[cn]]:visible(true)
-					-- atribitarily choose to decrement other controller pane
-					active_pane[ocn] = ((active_pane[ocn] - 2) % #panes[ocn]) + 1
-					if active_pane[cn] == active_pane[ocn] then
+					-- if this controller is switching panes while the OTHER controller was viewing Pane2 or Pane5
+					elseif panes[ocn][active_pane[ocn]]:GetChild(""):GetCommand("ExpandForDouble") then
+						panes[ocn][active_pane[ocn]]:visible(false)
+						panes[cn][active_pane[cn]]:visible(true)
+						-- atribitarily choose to decrement other controller pane
 						active_pane[ocn] = ((active_pane[ocn] - 2) % #panes[ocn]) + 1
+						if active_pane[cn] == active_pane[ocn] then
+							active_pane[ocn] = ((active_pane[ocn] - 2) % #panes[ocn]) + 1
+						end
+						panes[ocn][active_pane[ocn]]:visible(true)
+
+					else
+
+						-- hide all panes for this side
+						for i=1,#panes[cn] do
+							panes[cn][i]:visible(false)
+						end
+						-- show the panes we want on both sides
+						panes[cn][active_pane[cn]]:visible(true)
+						panes[ocn][active_pane[ocn]]:visible(true)
 					end
-					panes[ocn][active_pane[ocn]]:visible(true)
 
+
+				-- single, versus
 				else
-
 					-- hide all panes for this side
 					for i=1,#panes[cn] do
 						panes[cn][i]:visible(false)
 					end
-					-- show the panes we want on both sides
+					-- only show the pane we want on this side
 					panes[cn][active_pane[cn]]:visible(true)
-					panes[ocn][active_pane[ocn]]:visible(true)
+				end
+				-- hide all the alt panes
+				for i = 1,#altPaneNames do
+					altPanes[altPaneNames[i]]:visible(false)
 				end
 
-
-			-- single, versus
-			else
-				-- hide all panes for this side
-				for i=1,#panes[cn] do
-					panes[cn][i]:visible(false)
+				af:queuecommand("PaneSwitch")
+			elseif event.GameButton == "MenuUp" and #players == 1 then
+				SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+				if altPanes['ExperimentPane'..active_pane[cn]..'_Alt'] then
+					altPanes['ExperimentPane'..active_pane[cn]..'_Alt']:visible(true)
+					for i=1,#panes[cn] do
+						panes[cn][i]:visible(false)
+					end
 				end
-				-- only show the pane we want on this side
-				panes[cn][active_pane[cn]]:visible(true)
+			elseif event.GameButton == "MenuDown" and #players == 1 then
+				SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+				if altPanes['ExperimentPane'..active_pane[cn]..'_Alt'] then
+					altPanes['ExperimentPane'..active_pane[cn]..'_Alt']:visible(false)
+					panes[cn][active_pane[cn]]:visible(true)
+				end
 			end
-
-			af:queuecommand("PaneSwitch")
+		else
+			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+			if event.GameButton == "MenuRight" then
+				if cursor_index < (row * col) then cursor_index = cursor_index + 1 end
+			elseif event.GameButton == "MenuLeft" then
+				if cursor_index > 1 then cursor_index = cursor_index - 1 end
+			elseif event.GameButton == "MenuDown" then
+				if cursor_index <= ((row-1) * col) then cursor_index = cursor_index + col end
+			elseif event.GameButton == "MenuUp" then
+				if cursor_index > col then cursor_index = cursor_index - col end
+			elseif event.GameButton == "Start" then
+				MESSAGEMAN:Broadcast("AnalyzeJudgment",{index = cursor_index,})
+				SM("BEGIN ANALYSIS")
+			end
+			af:GetChild("cursor"):xy(position[cursor_index][1], position[cursor_index][2])
 		end
 	end
 

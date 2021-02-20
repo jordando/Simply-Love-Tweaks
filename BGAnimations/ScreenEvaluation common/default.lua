@@ -3,9 +3,13 @@ local NumPanes = SL.Global.GameMode=="Casual" and 1 or 6
 
 if SL.Global.GameMode == "Experiment" then
 	if GetStepsType() == "StepsType_Dance_Double" or GAMESTATE:IsCourseMode() then
+		NumPanes = 4
+	elseif #GAMESTATE:GetHumanPlayers() == 1 then
 		NumPanes = 5
 	end
 end
+
+local altPanes = {'ExperimentPane1_Alt','ExperimentPane5_Alt'}
 
 local hash
 
@@ -17,7 +21,7 @@ if SL.Global.GameMode ~= "Casual" then
 	-- and the number of panes there are to InputHandler.lua
 	t.OnCommand=function(self)
 		if SL.Global.GameMode ~= "Casual" then
-			SCREENMAN:GetTopScreen():AddInputCallback( LoadActor("./InputHandler.lua", {self, NumPanes}) )
+			SCREENMAN:GetTopScreen():AddInputCallback( LoadActor("./InputHandler.lua", {self, NumPanes, altPanes}) )
 		end
 	end
 	t.OffCommand=function(self)
@@ -87,6 +91,12 @@ if #GAMESTATE:GetHumanPlayers() == 1 then
 	t[#t+1] = LoadActor("./Character.lua", GAMESTATE:GetMasterPlayerNumber())
 end
 
-t[#t+1] = LoadActor("./Panes/default.lua", {NumPanes = NumPanes,hash = hash})
+t[#t+1] = LoadActor("./Panes/default.lua", {NumPanes = NumPanes,hash = hash, AltPanes = altPanes})
+
+t[#t+1] = Def.Sprite{
+	Name="cursor",
+	Texture=THEME:GetPathG("FF","finger.png"),
+	InitCommand=function(self) self:xy(_screen.cx-10, _screen.cy+110):zoom(.15):visible(false) end,
+}
 
 return t
