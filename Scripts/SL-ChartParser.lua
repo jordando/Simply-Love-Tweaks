@@ -62,7 +62,7 @@ local GetSimfileChartString = function(SimfileString, StepsType, Difficulty, Ste
 				-- there can be multiple Edit stepcharts but each is guaranteed to have a unique #DESCIPTION tag
 				if (Difficulty ~= "Edit") or (Difficulty=="Edit" and chart:match("#DESCRIPTION:"..regexEncode(StepsDescription))) then
 					-- Find just the notes
-					NoteDataString = chart:match("#NOTES:[01234]*[\r\n]+([^;]*)\n?$") --ecfa files have the first line of notes right there (#NOTES:0000) so sort of account for that here
+					NoteDataString = chart:match("#NOTES:[M01234]*[\r\n]+([^;]*)\n?$") --ecfa files have the first line of notes right there (#NOTES:0000) so sort of account for that here
 					-- remove possible comments
 					NoteDataString = NoteDataString:gsub("\\[^\r\n]*", "")
 					NoteDataString = NoteDataString:gsub("//[^\r\n]*", "")

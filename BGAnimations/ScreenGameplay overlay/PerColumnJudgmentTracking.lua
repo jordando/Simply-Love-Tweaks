@@ -24,6 +24,8 @@ local player = ...
 local track_missbcheld = SL[ToEnumShortString(player)].ActiveModifiers.MissBecauseHeld
 
 local judgments = {}
+local heldTimes = {}
+
 for i=1,GAMESTATE:GetCurrentStyle():ColumnsPerPlayer() do
 	judgments[#judgments+1] = { W0=0, W1=0, W2=0, W3=0, W4=0, W5=0, Miss=0 }
 end
@@ -32,6 +34,7 @@ local actor = Def.Actor{
 	OffCommand=function(self)
 		local storage = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1]
 		storage.column_judgments = judgments
+		storage.heldTimes = heldTimes[player]
 	end
 }
 
@@ -75,7 +78,6 @@ else
 		table.insert(buttons, col.Name)
 	end
 
-
 	local held = {}
 
 	-- initialize to handle both players, regardless of whether both are actually joined.
@@ -84,21 +86,27 @@ else
 	-- to ensure that doesn't cause Lua errors here
 	for player in ivalues( PlayerNumber ) do
 		held[player] = {}
+		heldTimes[player] = {}
 
 		-- initialize all buttons available to this game for this player to be "not held"
 		for button in ivalues(buttons) do
 			held[player][button] = false
+			heldTimes[player][button] = {}
 		end
 	end
 
 	local InputHandler = function(event)
 		-- if any of these, don't attempt to handle input
 		if not event.PlayerNumber or not event.button then return false end
-
-		if event.type == "InputEventType_FirstPress" then
-			held[event.PlayerNumber][event.button] = true
-		elseif event.type == "InputEventType_Release" then
-			held[event.PlayerNumber][event.button] = false
+		local buttonTable = heldTimes[event.PlayerNumber][event.button]
+		if buttonTable then --start/back aren't part of the table. only procede if it's a button we care about
+			if event.type == "InputEventType_FirstPress" then
+				held[event.PlayerNumber][event.button] = true
+				buttonTable[#buttonTable+1] = {GAMESTATE:GetCurMusicSeconds()}
+			elseif event.type == "InputEventType_Release" then
+				held[event.PlayerNumber][event.button] = false
+				table.insert(buttonTable[#buttonTable],GAMESTATE:GetCurMusicSeconds() - buttonTable[#buttonTable][1])
+			end
 		end
 	end
 
