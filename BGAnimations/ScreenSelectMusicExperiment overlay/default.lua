@@ -50,7 +50,6 @@ local t = Def.ActorFrame {
 		SL.Global.GameplayReloadCheck = false
 		setup.InitGroups()
 		self:GetChild("GroupWheel"):SetDrawByZPosition(true)
-		self:queuecommand("Capture")
 		local mpn = GAMESTATE:GetMasterPlayerNumber()
 		--SongMT only broadcasts this message when the song is different from the previous one (ie ignores changing steps)
 		--But this won't work when we first enter ScreenSelectMusicExperiment so we broadcast here once.
@@ -63,6 +62,7 @@ local t = Def.ActorFrame {
 	end,
 
 	OnCommand=function(self)
+		self:queuecommand("Capture")
 		if PREFSMAN:GetPreference("MenuTimer") then self:queuecommand("Listen") end
 	end,
 

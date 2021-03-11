@@ -33,7 +33,7 @@ end
 -- In "dance" the columns are left, down, up, right.
 -- In "pump" the columns are downleft, upleft, center, upright, downright
 -- etc.
-local footBreakdown = noteAnalysis.GetFootBreakdownCommand()
+local footBreakdown, ordered_offsets, heldTimes = noteAnalysis.GetFootBreakdownCommand()
 
 af[#af+1] = LoadActor("./Percentage.lua", {player = player, side = "left"})..{InitCommand=function(self) self:visible(true) end}
 af[#af+1] = LoadActor("./JudgmentLabels.lua", {player = player, side = "left"})..{InitCommand=function(self) self:visible(true) end}
@@ -57,6 +57,10 @@ af[#af+1] = Def.ActorFrame{
 	LoadActor("./JudgmentLabels.lua", {player = PLAYER_1, side = "right"})..{InitCommand=function(self) self:visible(true):x(_screen.cx+155) end},
 	LoadActor("./Arrows.lua", {player = player, side = "right", footBreakdown = footBreakdown})..{InitCommand=function(self) self:visible(true):x(_screen.cx-305) end}
 }
+
+if heldTimes then
+	af[#af+1] = LoadActor("./HeldAnalysis.lua", {footBreakdown, ordered_offsets, heldTimes})
+end
 
 return af
 

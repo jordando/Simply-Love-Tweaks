@@ -38,18 +38,6 @@ end
 -- sequential_offsets gathered in ./BGAnimations/ScreenGameplay overlay/JudgmentOffsetTracking.lua
 local sequential_offsets = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].sequential_offsets
 local ordered_offsets = {}
-local heldTimes = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].heldTimes
-
--- heldTimes gathered in PerColumnJudgmentTracking (if track held misses is turned on)
-local ordered_heldTimes = {}
-for button,times in pairs(heldTimes) do
-	for item in ivalues(times) do
-		local toInsert = DeepCopy(item)
-		toInsert[#toInsert+1] = button
-		table.insert(ordered_heldTimes,toInsert)
-	end
-end
-table.sort(ordered_heldTimes, function(k1,k2) return tonumber(k1[1]) < tonumber(k2[1]) end)
 
 -- ---------------------------------------------
 -- if players have disabled W4 or W4+W5, there will be a smaller pool
@@ -85,8 +73,6 @@ end
 table.sort(ordered_offsets, function(k1,k2) return tonumber(k1.Time) < tonumber(k2.Time) end)
 
 -- add which foot got which judgment and if it was early or late
--- also make a table of the stream times to check against heldTimes
-local streamTimes = {}
 local footBreakdown = {left = {}, right = {} }
 footBreakdown.left["left"] = {}
 footBreakdown.left["down"] = {}
@@ -97,7 +83,6 @@ footBreakdown.right["down"] = {}
 footBreakdown.right["up"] = {}
 footBreakdown.right["right"] = {}
 
-local streaming = false
 for i, value in ipairs(ordered_offsets) do
 	local footStats = SL[ToEnumShortString(player)]["ParsedSteps"][i]
     --check if we should add this to per foot breakdown
@@ -119,21 +104,6 @@ for i, value in ipairs(ordered_offsets) do
 		else
 			footBreakdown[footStats.Foot][footStats.Note][tempJudgment] = {count = 1, early = 0}
 			if value.Offset and value.Offset < 0 then footBreakdown[footStats.Foot][footStats.Note][tempJudgment].early = 1 end
-		end
-	elseif not footStats.Stream then
-		if streaming then
-			-- a stream section just ended so figure out if we should add it to our time tables
-			-- we cut off the last two notes because they may get held on purpose so if the stream
-			-- isn't at least three notes long than don't count it.
-			streaming = false
-			if i > 3 then
-				local prevFootStats = SL[ToEnumShortString(player)]["ParsedSteps"][i-3]
-				if prevFootStats.Stream == true then
-					table.insert(streamTimes[#streamTimes], {value.Time+worst_window, i - 3})
-				else
-					table.remove(streamTimes,#streamTimes)
-				end
-			end
 		end
 	end
 end

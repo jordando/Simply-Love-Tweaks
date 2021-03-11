@@ -15,7 +15,8 @@ local players = GAMESTATE:GetHumanPlayers()
 
 local mpn = GAMESTATE:GetMasterPlayerNumber()
 
-local missAnalysis = false
+local pickingSpecific = false
+local popUpWindow = false
 
 -- since we're potentially retrieving from player profile
 -- perform some rudimentary validation by clamping both
@@ -121,6 +122,22 @@ if style == "OnePlayerTwoSides" then
 	end
 end
 
+local noteInfo = function(index)
+	local judgment = math.floor((index-.5) / 8) + 1
+	local arrows = {'left', 'down', 'up', 'right'}
+	local tempArrow = index % 8
+	local foot = 'left'
+	if tempArrow > 4 then
+		tempArrow = tempArrow - 4
+		foot = 'right'
+	end
+	if tempArrow == 0 then
+		tempArrow = 4
+		foot = 'right'
+	end
+	local arrow = arrows[tempArrow]
+	return {Foot = foot, Arrow = arrow, Judgment = judgment}
+end
 -- -----------------------------------------------------------------------
 -- input handling function
 
@@ -145,20 +162,36 @@ return function(event)
 
 	if event.type == "InputEventType_FirstPress" and panes[cn] then
 		if event.GameButton == "Select" and #players == 1 and active_pane[cn] == 5 then
-			if missAnalysis then
-				missAnalysis = false
+			if popUpWindow then
+				popUpWindow = false
+				MESSAGEMAN:Broadcast("EndPopup")
+			elseif pickingSpecific then
+				pickingSpecific = false
 				af:GetChild("cursor"):visible(false)
+				MESSAGEMAN:Broadcast("EndAnalyzeJudgment")
 				SM("Normal Mode")
 			else
-				missAnalysis = true
+				pickingSpecific = true
 				af:GetChild("cursor"):visible(true)
 				af:GetChild("cursor"):xy(position[cursor_index][1], position[cursor_index][2])
 				SM("MISS ANALYSIS")
 			end
 			for player in ivalues(PlayerNumber) do
-				SCREENMAN:set_input_redirected(player, missAnalysis)
+				SCREENMAN:set_input_redirected(player, pickingSpecific)
 			end
-		elseif not missAnalysis then
+		elseif popUpWindow then
+			--input for the popup window
+			if event.GameButton == "MenuRight" or event.GameButton == "MenuDown" then
+				MESSAGEMAN:Broadcast("ScrollPopUpRight")
+	
+			elseif event.GameButton == "MenuLeft" or event.GameButton == "MenuUp" then
+				MESSAGEMAN:Broadcast("ScrollPopUpLeft")
+			elseif event.GameButton == "Start" then
+				popUpWindow = false
+				MESSAGEMAN:Broadcast("EndPopup")
+			end
+		elseif not pickingSpecific then
+			-- input in normal screen eval (not analyzing judgments)
 			if event.GameButton == "MenuRight" or event.GameButton == "MenuLeft" then
 				SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
 				if event.GameButton == "MenuRight" then
@@ -247,6 +280,7 @@ return function(event)
 				end
 			end
 		else
+			-- input analyzing judgments
 			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
 			if event.GameButton == "MenuRight" then
 				if cursor_index < (row * col) then cursor_index = cursor_index + 1 end
@@ -257,8 +291,8 @@ return function(event)
 			elseif event.GameButton == "MenuUp" then
 				if cursor_index > col then cursor_index = cursor_index - col end
 			elseif event.GameButton == "Start" then
-				MESSAGEMAN:Broadcast("AnalyzeJudgment",{index = cursor_index,})
-				SM("BEGIN ANALYSIS")
+				popUpWindow = true
+				MESSAGEMAN:Broadcast("AnalyzeJudgment",noteInfo(cursor_index))
 			end
 			af:GetChild("cursor"):xy(position[cursor_index][1], position[cursor_index][2])
 		end

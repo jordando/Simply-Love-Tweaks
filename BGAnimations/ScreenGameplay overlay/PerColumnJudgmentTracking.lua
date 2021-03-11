@@ -105,7 +105,9 @@ else
 				buttonTable[#buttonTable+1] = {GAMESTATE:GetCurMusicSeconds()}
 			elseif event.type == "InputEventType_Release" then
 				held[event.PlayerNumber][event.button] = false
-				table.insert(buttonTable[#buttonTable],GAMESTATE:GetCurMusicSeconds() - buttonTable[#buttonTable][1])
+				if buttonTable[#buttonTable] then
+					table.insert(buttonTable[#buttonTable],GAMESTATE:GetCurMusicSeconds() - buttonTable[#buttonTable][1])
+				end
 			end
 		end
 	end

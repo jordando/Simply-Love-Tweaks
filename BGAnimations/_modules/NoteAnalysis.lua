@@ -1,22 +1,25 @@
 local player = GAMESTATE:GetMasterPlayerNumber()
 
 local fapping = SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and true or false
-
+local trackHeld = SL[ToEnumShortString(player)].ActiveModifiers.MissBecauseHeld
 -- sequential_offsets gathered in ./BGAnimations/ScreenGameplay overlay/JudgmentOffsetTracking.lua
 local sequential_offsets = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].sequential_offsets
 local ordered_offsets = {}
-local heldTimes = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].heldTimes
 
 -- heldTimes gathered in PerColumnJudgmentTracking (if track held misses is turned on)
-local ordered_heldTimes = {}
-for button,times in pairs(heldTimes) do
-	for item in ivalues(times) do
-		local toInsert = DeepCopy(item)
-		toInsert[#toInsert+1] = button
-		table.insert(ordered_heldTimes,toInsert)
+local ordered_heldTimes, ordered_streamHeldTimes
+if trackHeld then
+	ordered_heldTimes = {}
+	local heldTimes = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].heldTimes
+	for button,times in pairs(heldTimes) do
+		for item in ivalues(times) do
+			local toInsert = DeepCopy(item)
+			toInsert[#toInsert+1] = button
+			table.insert(ordered_heldTimes,toInsert)
+		end
 	end
+	table.sort(ordered_heldTimes, function(k1,k2) return tonumber(k1[1]) < tonumber(k2[1]) end)
 end
-table.sort(ordered_heldTimes, function(k1,k2) return tonumber(k1[1]) < tonumber(k2[1]) end)
 
 -- ---------------------------------------------
 -- if players have disabled W4 or W4+W5, there will be a smaller pool
@@ -114,14 +117,16 @@ if #streamTimes[#streamTimes] == 1 then
 	end
 end
 
-local ordered_streamHeldTimes = {}
-local startNote = 1
-for streamTime in ivalues(streamTimes) do
-	local start = streamTime[1][1]
-	local finish = streamTime[2][1]
-	for i = startNote, #ordered_heldTimes do
-		if ordered_heldTimes[i][1] > finish then startNote = i break end
-		if ordered_heldTimes[i][1] > start then ordered_streamHeldTimes[#ordered_streamHeldTimes+1] = DeepCopy(ordered_heldTimes[i]) end
+if trackHeld then
+	ordered_streamHeldTimes = {}
+	local startNote = 1
+	for streamTime in ivalues(streamTimes) do
+		local start = streamTime[1][1]
+		local finish = streamTime[2][1]
+		for i = startNote, #ordered_heldTimes do
+			if ordered_heldTimes[i][1] > finish then startNote = i break end
+			if ordered_heldTimes[i][1] > start then ordered_streamHeldTimes[#ordered_streamHeldTimes+1] = DeepCopy(ordered_heldTimes[i]) end
+		end
 	end
 end
 
@@ -143,7 +148,7 @@ convertedFootBreakdown["right"] = {
 local af = Def.ActorFrame{
     Name="Analysis",
     GetFootBreakdownCommand = function(self)
-        return convertedFootBreakdown
+        return convertedFootBreakdown, ordered_offsets, ordered_heldTimes, ordered_streamHeldTimes
     end,
 }
 
