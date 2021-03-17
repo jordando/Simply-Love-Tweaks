@@ -73,11 +73,12 @@ for i, value in ipairs(ordered_offsets) do
 	--check if we should add this to per foot breakdown
 	if footStats.Foot and footStats.Stream == true and footStats.TechType ~= "Jump" then
 		--check if we should consider this for stream
-		--TODO for now we don't care about length of stream - something to consider for the future
+		--[[TODO for now we don't care about length of stream - something to consider for the future
 		if not streaming then
 			streaming = true
 			streamTimes[#streamTimes+1] = { {value.Time-worst_window, i } }
 		end
+		]]
 		--add to per foot breakdown
 		if footBreakdown[footStats.Foot][footStats.Note][value.Judgment] then
 			footBreakdown[footStats.Foot][footStats.Note][value.Judgment].count = footBreakdown[footStats.Foot][footStats.Note][value.Judgment].count + 1
@@ -88,7 +89,8 @@ for i, value in ipairs(ordered_offsets) do
 			footBreakdown[footStats.Foot][footStats.Note][value.Judgment] = {count = 1, early = 0}
 			if value.Offset and value.Offset < 0 then footBreakdown[footStats.Foot][footStats.Note][value.Judgment].early = 1 end
 		end
-	elseif not footStats.Stream then
+	--[[TODO leave this out for now.
+		elseif not footStats.Stream then
 		if streaming then
 			-- a stream section just ended so figure out if we should add it to our time tables
 			-- we cut off the last two notes because they may get held on purpose so if the stream
@@ -103,8 +105,11 @@ for i, value in ipairs(ordered_offsets) do
 				end
 			end
 		end
+	]]
 	end
 end
+--TODO leave this out for now.
+--[[
 -- if last note was stream then figure out if we need to add an end time or remove the section
 if #streamTimes[#streamTimes] == 1 then
 	if #ordered_offsets > 3 then
@@ -129,6 +134,7 @@ if trackHeld then
 		end
 	end
 end
+]]
 
 -- change to an indexed table for ease of use with Arrows.lua
 local convertedFootBreakdown = {}
@@ -148,7 +154,7 @@ convertedFootBreakdown["right"] = {
 local af = Def.ActorFrame{
     Name="Analysis",
     GetFootBreakdownCommand = function(self)
-        return convertedFootBreakdown, ordered_offsets, ordered_heldTimes, ordered_streamHeldTimes
+        return convertedFootBreakdown, ordered_offsets, ordered_heldTimes
     end,
 }
 

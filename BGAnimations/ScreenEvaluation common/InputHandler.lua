@@ -164,6 +164,7 @@ return function(event)
 		if event.GameButton == "Select" and #players == 1 and active_pane[cn] == 5 then
 			if popUpWindow then
 				popUpWindow = false
+				af:GetChild("cursor"):visible(true)
 				MESSAGEMAN:Broadcast("EndPopup")
 			elseif pickingSpecific then
 				pickingSpecific = false
@@ -188,6 +189,7 @@ return function(event)
 				MESSAGEMAN:Broadcast("ScrollPopUpLeft")
 			elseif event.GameButton == "Start" then
 				popUpWindow = false
+				af:GetChild("cursor"):visible(true)
 				MESSAGEMAN:Broadcast("EndPopup")
 			end
 		elseif not pickingSpecific then
@@ -292,9 +294,10 @@ return function(event)
 				if cursor_index > col then cursor_index = cursor_index - col end
 			elseif event.GameButton == "Start" then
 				popUpWindow = true
+				af:GetChild("cursor"):visible(false)
 				MESSAGEMAN:Broadcast("AnalyzeJudgment",noteInfo(cursor_index))
 			end
-			af:GetChild("cursor"):xy(position[cursor_index][1], position[cursor_index][2])
+			af:GetChild("cursor"):smooth(.1):xy(position[cursor_index][1], position[cursor_index][2])
 		end
 	end
 

@@ -86,39 +86,36 @@ local setVerts = function(middleTime, items)
     local color
 	for item in ivalues(items) do
 		x = xPosition[string.lower(item[2])] * xSpacing
-		yStart = scale(item[3], firstSecond, totalSeconds, 0, GraphHeight) - 1
+		yStart = scale(item[3], firstSecond, totalSeconds, 0, GraphHeight)
         if item[1] == "hold" then
             color = {.5,.5,.5,1}
             yEnd = scale(item[3] + item[4], firstSecond, totalSeconds, 0, GraphHeight)
 
         else
-            yEnd = yStart + 2
+            local perfectTime = yStart
+            yEnd = yStart
+            local perfectBarColor = {1,1,1,.9}
             if item[4] then
+                perfectTime = scale(item[3] - item[4],firstSecond, totalSeconds, 0, GraphHeight)
+                --insert a line showing what perfect timing for the judgment would be
+                table.insert( verts, {{x-7, perfectTime - 1, 0}, perfectBarColor} )
+                table.insert( verts, {{x+7, perfectTime - 1, 0}, perfectBarColor} )
+                table.insert( verts, {{x+7,perfectTime + 1, 0}, perfectBarColor} )
+                table.insert( verts, {{x-7, perfectTime + 1, 0}, perfectBarColor} )
                 color = colors[DetermineTimingWindow(item[4])]
             else
+                table.insert( verts, {{x-7, perfectTime - 1, 0}, perfectBarColor} )
+                table.insert( verts, {{x+7, perfectTime - 1, 0}, perfectBarColor} )
+                table.insert( verts, {{x+7,perfectTime + 1, 0}, perfectBarColor} )
+                table.insert( verts, {{x-7, perfectTime + 1, 0}, perfectBarColor} )
                 color = Color.Red
             end
         end
         --insert a bar showing held length or a line showing where you got a judgment
-        table.insert( verts, {{x-5, yStart, 0}, color} )
-        table.insert( verts, {{x+5, yStart, 0}, color} )
-        table.insert( verts, {{x+5,yEnd, 0}, color} )
-        table.insert( verts, {{x-5, yEnd, 0}, color} )
-        if item[1] == "note" then
-            local perfectTime = scale(item[3],firstSecond,totalSeconds,0,GraphHeight)
-            if item[4] then
-                perfectTime = scale(item[3] - item[4],firstSecond, totalSeconds, 0, GraphHeight)
-                color = {1,1,1,.9}
-            else
-                color = Color.Red
-            end
-            --insert a line showing what perfect timing for the judgment would be
-            table.insert( verts, {{x-5, perfectTime - 1, 0}, color} )
-            table.insert( verts, {{x+5, perfectTime - 1, 0}, color} )
-            table.insert( verts, {{x+5,perfectTime + 1, 0}, color} )
-            table.insert( verts, {{x-5, perfectTime + 1, 0}, color} )
-
-        end
+        table.insert( verts, {{x-5, yStart - 1, 0}, color} )
+        table.insert( verts, {{x+5, yStart - 1, 0}, color} )
+        table.insert( verts, {{x+5,yEnd + 1, 0}, color} )
+        table.insert( verts, {{x-5, yEnd + 1, 0}, color} )
 	end
 	return verts
 end
@@ -141,6 +138,7 @@ local getHeldTimes = function(time, note)
     end
     table.sort(relevantNotes,function(k1,k2) return k1[3] < k2[3] end)
     MESSAGEMAN:Broadcast("DrawHoldTable", setVerts(time.Time, relevantNotes))
+    MESSAGEMAN:Broadcast("UpdateScatterplot",{ordered_offsets[note]})
 end
 
 -- a string representing the NoteSkin the player was using
