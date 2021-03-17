@@ -1,5 +1,6 @@
 local footBreakdown, ordered_offsets, heldTimes = unpack(...)
-local footStats = SL[ToEnumShortString(GAMESTATE:GetMasterPlayerNumber())]["ParsedSteps"]
+local player = GAMESTATE:GetMasterPlayerNumber()
+local footStats = SL[ToEnumShortString(player)]["ParsedSteps"]
 
 -- the metatable for an item in the wheel
 local wheel = setmetatable({disable_wrapping = true}, sick_wheel_mt)
@@ -11,7 +12,7 @@ local GetTNSStringFromTheme = function( arg )
 end
 
 local TapNoteScores = {}
-if SL[ToEnumShortString(GAMESTATE:GetMasterPlayerNumber())].ActiveModifiers.EnableFAP  and SL.Global.GameMode == "Experiment" then
+if SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP  and SL.Global.GameMode == "Experiment" then
 	TapNoteScores.Types = { 'W0','W1', 'W2', 'W3', 'W4', 'W5', 'Miss' }
 else
 	TapNoteScores.Types = { 'W1', 'W2', 'W3', 'W4', 'W5', 'Miss' }
@@ -142,7 +143,7 @@ local getHeldTimes = function(time, note)
 end
 
 -- a string representing the NoteSkin the player was using
-local noteskin = GAMESTATE:GetPlayerState(GAMESTATE:GetMasterPlayerNumber()):GetCurrentPlayerOptions():NoteSkin()
+local noteskin = GAMESTATE:GetPlayerState(player):GetCurrentPlayerOptions():NoteSkin()
 -- NOTESKIN:LoadActorForNoteSkin() expects the noteskin name to be all lowercase(?)
 -- so transform the string to be lowercase
 noteskin = noteskin:lower()
@@ -166,7 +167,7 @@ local num_columns = style:ColumnsPerPlayer()
 -- each game (dance, pump, techno, etc.) and each style (single, double, routine, etc.)
 -- within each game will have its own unique columns
 for i=1,num_columns do
-	table.insert(cols, style:GetColumnInfo(GAMESTATE:GetMasterPlayerNumber(), i))
+	table.insert(cols, style:GetColumnInfo(player, i))
 end
 for i, column in ipairs( cols ) do
 

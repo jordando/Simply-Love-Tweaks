@@ -34,6 +34,13 @@ local actor = Def.Actor{
 	OffCommand=function(self)
 		local storage = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1]
 		storage.column_judgments = judgments
+		-- if gameplay ends while buttons are still held we won't have values for length. Check the last
+		-- hold time for each button and if it only has one value use the current time to determine the length
+		for _,button in pairs(heldTimes[player]) do
+			if #button[#button] == 1 then
+				table.insert(button[#button],GAMESTATE:GetCurMusicSeconds() - button[#button][1])
+			end
+		end
 		storage.heldTimes = heldTimes[player]
 	end
 }
