@@ -6,7 +6,7 @@ local deltaPosition = controller == "right" and -250 or 175
 local fapping = SL[ToEnumShortString(player)].ActiveModifiers.EnableFAP and true or false
 
 local deltaT = Def.ActorFrame{
-	InitCommand=function(self) self:xy(deltaPosition,_screen.cy-92):zoom(.55) end,
+	InitCommand=function(self) self:y(_screen.cy-92):zoom(.55) end,
 }
 
 local TapNoteScores = {}

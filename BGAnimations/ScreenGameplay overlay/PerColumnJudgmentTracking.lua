@@ -36,9 +36,11 @@ local actor = Def.Actor{
 		storage.column_judgments = judgments
 		-- if gameplay ends while buttons are still held we won't have values for length. Check the last
 		-- hold time for each button and if it only has one value use the current time to determine the length
-		for _,button in pairs(heldTimes[player]) do
-			if #button[#button] == 1 then
-				table.insert(button[#button],GAMESTATE:GetCurMusicSeconds() - button[#button][1])
+		if heldTimes[player] then
+			for _,button in pairs(heldTimes[player]) do
+				if next(button) and #button[#button] == 1 then -- next(button) checks if there's anything at all
+					table.insert(button[#button],GAMESTATE:GetCurMusicSeconds() - button[#button][1])
+				end
 			end
 		end
 		storage.heldTimes = heldTimes[player]

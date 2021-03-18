@@ -172,10 +172,14 @@ return function(event)
 				MESSAGEMAN:Broadcast("EndAnalyzeJudgment")
 				SM("Normal Mode")
 			else
-				pickingSpecific = true
-				af:GetChild("cursor"):visible(true)
-				af:GetChild("cursor"):xy(position[cursor_index][1], position[cursor_index][2])
-				SM("MISS ANALYSIS")
+				if SL[ToEnumShortString(GAMESTATE:GetMasterPlayerNumber())].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].heldTimes then
+					pickingSpecific = true
+					af:GetChild("cursor"):visible(true)
+					af:GetChild("cursor"):xy(position[cursor_index][1], position[cursor_index][2])
+					SM("STATIC REPLAY")
+				else
+					SM("Enable held miss tracking to use this feature.")
+				end
 			end
 			for player in ivalues(PlayerNumber) do
 				SCREENMAN:set_input_redirected(player, pickingSpecific)
@@ -261,8 +265,10 @@ return function(event)
 					panes[cn][active_pane[cn]]:visible(true)
 				end
 				-- hide all the alt panes
-				for i = 1,#altPaneNames do
-					altPanes[altPaneNames[i]]:visible(false)
+				if next(altPanes) then
+					for i = 1,#altPaneNames do
+						altPanes[altPaneNames[i]]:visible(false)
+					end
 				end
 
 				af:queuecommand("PaneSwitch")

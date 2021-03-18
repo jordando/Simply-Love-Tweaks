@@ -96,15 +96,23 @@ local comparisonT = Def.ActorFrame{
 
 if sanitizedComparisonScore and sanitizedComparisonScore.score then
 
-	comparisonT[#comparisonT+1] = LoadActor(THEME:GetPathB("", "_modules/HighScoreDisplay"), {player, sanitizedComparisonScore, otherSide[controller]})
+	comparisonT[#comparisonT+1] = LoadActor(THEME:GetPathB("", "_modules/HighScoreDisplay"), {player, sanitizedComparisonScore, otherSide[controller]})..{
+		InitCommand=function(self)
+			self:x(otherSide[controller] == "right" and 0 or -413)
+		end
+	}
 
 	-- delta comparing scores
-	comparisonT[#comparisonT+1] = LoadActor("./Delta.lua", {player, currentScore,sanitizedComparisonScore, otherSide[controller]})
+	comparisonT[#comparisonT+1] = LoadActor("./Delta.lua", {player, currentScore,sanitizedComparisonScore, otherSide[controller]})..{
+		InitCommand=function(self)
+			self:x(otherSide[controller] == "right" and -230 or -225)
+		end
+	}
 
 	--Label for previous record or current record depending on if you got a new high score
 	comparisonT[#comparisonT+1] = LoadFont("Wendy/_wendy small")..{
 		InitCommand=function(self)
-			self:zoom(.65):xy(otherSide[controller] == "right" and 0 or 5,145)
+			self:zoom(.65):xy(otherSide[controller] == "right" and 0 or -400,145)
 			self:visible(true)
 			if tonumber(sanitizedComparisonScore.score) <= tonumber(pss:GetPercentDancePoints()) then self:settext("Previous Record")
 			else self:settext("Current Record") end
@@ -113,7 +121,7 @@ if sanitizedComparisonScore and sanitizedComparisonScore.score then
 		--Date
 		comparisonT[#comparisonT+1] = LoadFont("Wendy/_wendy small")..{
 			InitCommand=function(self)
-				self:zoom(.4):xy(otherSide[controller] == "right" and 0 or 5,173)
+				self:zoom(.4):xy(otherSide[controller] == "right" and 0 or -400,173)
 				self:visible(true)
 				self:settext(sanitizedComparisonScore.dateTime)
 			end,
