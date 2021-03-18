@@ -73,9 +73,11 @@ local FirstSecond = SL.Global.GameMode == "Experiment" and 0 or GAMESTATE:GetCur
 local TotalSeconds = GAMESTATE:GetCurrentSong():GetLastSecond()
 
 -- variables that will be used and re-used in the loop while calculating the AMV's vertices
-local TimingWindow, x, y, c, r, g, b
+local x, y, c, r, g, b
 
 -- ---------------------------------------------
+-- will color everything in the scatterplot normally if no parameters are passed,
+-- otherwise it will only color what's being looked at in static replay
 local setVerts = function(specific)
 	local footStats
 	if specific then footStats = SL[ToEnumShortString(player)]["ParsedSteps"] end
@@ -140,9 +142,38 @@ local amv = Def.ActorMultiVertex{
 	AnalyzeJudgmentMessageCommand=function(self, params)
 		self:SetVertices(setVerts(params))
 	end,
+	EndPopupMessageCommand=function(self)
+		self:SetVertices(setVerts())
+	end,
 	EndAnalyzeJudgmentMessageCommand=function(self)
 		self:SetVertices(setVerts())
 	end,
 }
+--points to the individual point on the scatterplot when looking at the static replay
+local cursor = Def.Sprite{
+	Name="cursor",
+	Texture=THEME:GetPathG("FF","finger.png"),
+	InitCommand=function(self) self:zoom(.15):xy(-GraphWidth/2,GraphHeight/2):visible(false) end,
+	UpdateScatterplotMessageCommand=function(self, time)
+		self:smooth(.1)
+		self:x(scale(time[1].Time, FirstSecond, TotalSeconds + 0.05, -GraphWidth/2, GraphWidth/2) - 19)
+		if time[1].Offset then
+			self:y(scale(time[1].Offset,worst_window, -worst_window, 0, GraphHeight) + 8)
+		else
+			self:y(scale(0,worst_window, -worst_window, 0, GraphHeight) + 8)
+		end
+	end,
+	AnalyzeJudgmentMessageCommand=function(self)
+		self:diffusealpha(0):visible(true):smooth(.1):diffusealpha(1)
+	end,
+	EndPopupMessageCommand=function(self)
+		self:smooth(.2):diffusealpha(0):visible(false)
+	end,
+}
 
-return amv
+local af = Def.ActorFrame{
+	amv,
+	cursor
+}
+
+return af
