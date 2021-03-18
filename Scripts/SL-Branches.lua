@@ -76,6 +76,10 @@ Branch.AllowScreenSelectColor = function()
 	end
 end
 
+Branch.AfterScreenSelectColor = function()
+	return Branch.AllowScreenSelectCharacter()
+end
+
 Branch.AllowScreenSelectCharacter = function()
 	if ThemePrefs.Get("AllowScreenSelectCharacter") then
 		return "ScreenSelectCharacter"

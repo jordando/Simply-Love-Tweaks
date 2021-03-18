@@ -1,6 +1,6 @@
 -- code for setting the PlayerOptions string (needed to counteract ITG mod charts)
 -- and the MeasureCounter has been abstracted out to a different file to keep this one simpler.
-local InitializeMeasureCounterAndModsLevel = LoadActor("./MeasureCounterAndModsLevel.lua")
+local InitializeMeasureCounterAndModsLevel = LoadActor(THEME:GetPathB("","_modules/MeasureCounterAndModsLevel.lua"))
 
 local text = ""
 local SongNumberInCourse = 0
@@ -29,7 +29,9 @@ else
 	text = THEME:GetString("Stage", "Event")
 end
 
-InitializeMeasureCounterAndModsLevel(SongNumberInCourse)
+for player in ivalues(GAMESTATE:GetHumanPlayers()) do
+	InitializeMeasureCounterAndModsLevel(player)
+end
 
 -------------------------------------------------------------------------
 
