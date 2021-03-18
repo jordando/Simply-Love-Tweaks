@@ -113,7 +113,16 @@ Branch.AfterScreenSelectCharacter = function()
 		-- the engine, but I guess we're doing it here, in SL-Branches.lua, for now.
 		GAMESTATE:SetCurrentStyle( preferred_style )
 
-		return "ScreenSelectPlayMode"
+		--TODO: don't let people choose this right now
+		--return "ScreenSelectPlayMode"
+
+		SL.Global.GameMode = "Experiment"
+		-- now that a GameMode has been selected, set related preferences
+		SetGameModePreferences()
+		-- and reload the theme's Metrics
+		THEME:ReloadMetrics()
+		
+		return "ScreenProfileLoad"
 	end
 
 	return "ScreenSelectStyle"
