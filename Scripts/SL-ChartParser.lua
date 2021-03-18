@@ -212,9 +212,16 @@ local getStreamSequences = function(streamMeasures, totalMeasures)
 			-- Add any trailing breaks if they're larger than measureSequenceThreshold
 			local breakStart = curVal
 			local breakEnd = (nextVal ~= -1) and nextVal - 1 or totalMeasures
-			if (breakEnd - breakStart >= 2) then --don't show (1) breaks
-				table.insert(streamSequences,
-					{streamStart=breakStart, streamEnd=breakEnd, isBreak=true})
+			if (breakEnd - breakStart >= measureSequenceThreshold) then
+				if ThemePrefs.Get("HideIans") then
+					if (breakEnd - breakStart >= 2) then --don't show (1) breaks if we want to hide ians
+						table.insert(streamSequences,
+						{streamStart=breakStart, streamEnd=breakEnd, isBreak=true})
+					end
+				else
+					table.insert(streamSequences,
+						{streamStart=breakStart, streamEnd=breakEnd, isBreak=true})
+				end
 			end
 			counter = 1
 			streamEnd = nil
