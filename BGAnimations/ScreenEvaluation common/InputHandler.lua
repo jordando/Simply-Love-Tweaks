@@ -15,9 +15,6 @@ local players = GAMESTATE:GetHumanPlayers()
 
 local mpn = GAMESTATE:GetMasterPlayerNumber()
 
-local pickingSpecific = false
-local popUpWindow = false
-
 -- since we're potentially retrieving from player profile
 -- perform some rudimentary validation by clamping both
 -- values to be within permitted ranges
@@ -122,6 +119,8 @@ if style == "OnePlayerTwoSides" then
 	end
 end
 
+-- for use with ExperimentPane 5: when a player wants to look at the static replay for
+-- a certain judgment we use this to figure out what foot/arrow they're looking at
 local noteInfo = function(index)
 	local judgment = math.floor((index-.5) / 8) + 1
 	local arrows = {'left', 'down', 'up', 'right'}
@@ -146,6 +145,9 @@ local OtherController = {
 	GameController_2 = "GameController_1"
 }
 
+local judgmentMode = false --when input handler is used for choosing a judgment
+local popupMode = false --when input handler is used for choosing a specific note
+
 return function(event)
 	if not (event and event.PlayerNumber and event.button) then return false end
 	if not GAMESTATE:IsHumanPlayer(event.PlayerNumber) then return false end
@@ -159,151 +161,168 @@ return function(event)
 	local  cn = tonumber(ToEnumShortString(event.controller))
 	local ocn = tonumber(ToEnumShortString(OtherController[event.controller]))
 
-
-	if event.type == "InputEventType_FirstPress" and panes[cn] then
+	local defaultBehavior = function(event)
 		if event.GameButton == "Select" and #players == 1 and active_pane[cn] == 5 then
-			if popUpWindow then
-				popUpWindow = false
+			if SL[ToEnumShortString(GAMESTATE:GetMasterPlayerNumber())].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].heldTimes then
+				judgmentMode = true
 				af:GetChild("cursor"):visible(true)
-				MESSAGEMAN:Broadcast("EndPopup")
-			elseif pickingSpecific then
-				pickingSpecific = false
-				af:GetChild("cursor"):visible(false)
-				MESSAGEMAN:Broadcast("EndAnalyzeJudgment")
-				SM("Normal Mode")
+				af:GetChild("cursor"):xy(position[cursor_index][1], position[cursor_index][2])
+				SM("STATIC REPLAY")
+				for player in ivalues(PlayerNumber) do
+					SCREENMAN:set_input_redirected(player, judgmentMode)
+				end
 			else
-				if SL[ToEnumShortString(GAMESTATE:GetMasterPlayerNumber())].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].heldTimes then
-					pickingSpecific = true
-					af:GetChild("cursor"):visible(true)
-					af:GetChild("cursor"):xy(position[cursor_index][1], position[cursor_index][2])
-					SM("STATIC REPLAY")
-				else
-					SM("Enable held miss tracking to use this feature.")
-				end
+				SM("Enable held miss tracking to use this feature.")
 			end
-			for player in ivalues(PlayerNumber) do
-				SCREENMAN:set_input_redirected(player, pickingSpecific)
-			end
-		elseif popUpWindow then
-			--input for the popup window
-			if event.GameButton == "MenuRight" or event.GameButton == "MenuDown" then
-				MESSAGEMAN:Broadcast("ScrollPopUpRight")
-	
-			elseif event.GameButton == "MenuLeft" or event.GameButton == "MenuUp" then
-				MESSAGEMAN:Broadcast("ScrollPopUpLeft")
-			elseif event.GameButton == "Start" then
-				popUpWindow = false
-				af:GetChild("cursor"):visible(true)
-				MESSAGEMAN:Broadcast("EndPopup")
-			end
-		elseif not pickingSpecific then
-			-- input in normal screen eval (not analyzing judgments)
-			if event.GameButton == "MenuRight" or event.GameButton == "MenuLeft" then
-				SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
-				if event.GameButton == "MenuRight" then
+		elseif event.GameButton == "MenuRight" or event.GameButton == "MenuLeft" then
+			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+			if event.GameButton == "MenuRight" then
+				active_pane[cn] = (active_pane[cn] % #panes[cn]) + 1
+				-- don't allow duplicate panes to show in single/double
+				-- if the above change would result in duplicate panes, increment again
+				if #players==1 and active_pane[cn] == active_pane[ocn] then
 					active_pane[cn] = (active_pane[cn] % #panes[cn]) + 1
-					-- don't allow duplicate panes to show in single/double
-					-- if the above change would result in duplicate panes, increment again
-					if #players==1 and active_pane[cn] == active_pane[ocn] then
-						active_pane[cn] = (active_pane[cn] % #panes[cn]) + 1
-					end
-
-				elseif event.GameButton == "MenuLeft" then
-					active_pane[cn] = ((active_pane[cn] - 2) % #panes[cn]) + 1
-					-- don't allow duplicate panes to show in single/double
-					-- if the above change would result in duplicate panes, decrement again
-					if #players==1 and active_pane[cn] == active_pane[ocn] then
-						active_pane[cn] = ((active_pane[cn] - 2) % #panes[cn]) + 1
-					end
 				end
 
-				-- double
-				if style == "OnePlayerTwoSides" then
-					-- if this controller is switching to Pane2 or Pane5, both of which take over both pane widths
-					if panes[cn][active_pane[cn]]:GetChild(""):GetCommand("ExpandForDouble") then
+			elseif event.GameButton == "MenuLeft" then
+				active_pane[cn] = ((active_pane[cn] - 2) % #panes[cn]) + 1
+				-- don't allow duplicate panes to show in single/double
+				-- if the above change would result in duplicate panes, decrement again
+				if #players==1 and active_pane[cn] == active_pane[ocn] then
+					active_pane[cn] = ((active_pane[cn] - 2) % #panes[cn]) + 1
+				end
+			end
 
-						-- hide all panes for both controllers
-						for controller=1,2 do
-							for pane in ivalues(panes[controller]) do
-								pane:visible(false)
-							end
+			-- double
+			if style == "OnePlayerTwoSides" then
+				-- if this controller is switching to Pane2 or Pane5, both of which take over both pane widths
+				if panes[cn][active_pane[cn]]:GetChild(""):GetCommand("ExpandForDouble") then
+
+					-- hide all panes for both controllers
+					for controller=1,2 do
+						for pane in ivalues(panes[controller]) do
+							pane:visible(false)
 						end
-						-- and only show the one full-width pane
-						panes[cn][active_pane[cn]]:visible(true)
-
-
-					-- if this controller is switching panes while the OTHER controller was viewing Pane2 or Pane5
-					elseif panes[ocn][active_pane[ocn]]:GetChild(""):GetCommand("ExpandForDouble") then
-						panes[ocn][active_pane[ocn]]:visible(false)
-						panes[cn][active_pane[cn]]:visible(true)
-						-- atribitarily choose to decrement other controller pane
-						active_pane[ocn] = ((active_pane[ocn] - 2) % #panes[ocn]) + 1
-						if active_pane[cn] == active_pane[ocn] then
-							active_pane[ocn] = ((active_pane[ocn] - 2) % #panes[ocn]) + 1
-						end
-						panes[ocn][active_pane[ocn]]:visible(true)
-
-					else
-
-						-- hide all panes for this side
-						for i=1,#panes[cn] do
-							panes[cn][i]:visible(false)
-						end
-						-- show the panes we want on both sides
-						panes[cn][active_pane[cn]]:visible(true)
-						panes[ocn][active_pane[ocn]]:visible(true)
 					end
+					-- and only show the one full-width pane
+					panes[cn][active_pane[cn]]:visible(true)
 
+				-- if this controller is switching panes while the OTHER controller was viewing Pane2 or Pane5
+				elseif panes[ocn][active_pane[ocn]]:GetChild(""):GetCommand("ExpandForDouble") then
+					panes[ocn][active_pane[ocn]]:visible(false)
+					panes[cn][active_pane[cn]]:visible(true)
+					-- atribitarily choose to decrement other controller pane
+					active_pane[ocn] = ((active_pane[ocn] - 2) % #panes[ocn]) + 1
+					if active_pane[cn] == active_pane[ocn] then
+						active_pane[ocn] = ((active_pane[ocn] - 2) % #panes[ocn]) + 1
+					end
+					panes[ocn][active_pane[ocn]]:visible(true)
 
-				-- single, versus
 				else
 					-- hide all panes for this side
 					for i=1,#panes[cn] do
 						panes[cn][i]:visible(false)
 					end
-					-- only show the pane we want on this side
+					-- show the panes we want on both sides
 					panes[cn][active_pane[cn]]:visible(true)
-				end
-				-- hide all the alt panes
-				if next(altPanes) then
-					for i = 1,#altPaneNames do
-						altPanes[altPaneNames[i]]:visible(false)
-					end
+					panes[ocn][active_pane[ocn]]:visible(true)
 				end
 
-				af:queuecommand("PaneSwitch")
-			elseif event.GameButton == "MenuUp" and #players == 1 then
-				SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
-				if altPanes['ExperimentPane'..active_pane[cn]..'_Alt'] then
-					altPanes['ExperimentPane'..active_pane[cn]..'_Alt']:visible(true)
-					for i=1,#panes[cn] do
-						panes[cn][i]:visible(false)
-					end
+			-- single, versus
+			else
+				-- hide all panes for this side
+				for i=1,#panes[cn] do
+					panes[cn][i]:visible(false)
 				end
-			elseif event.GameButton == "MenuDown" and #players == 1 then
-				SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
-				if altPanes['ExperimentPane'..active_pane[cn]..'_Alt'] then
-					altPanes['ExperimentPane'..active_pane[cn]..'_Alt']:visible(false)
-					panes[cn][active_pane[cn]]:visible(true)
+				-- only show the pane we want on this side
+				panes[cn][active_pane[cn]]:visible(true)
+			end
+			-- hide all the alt panes
+			if next(altPanes) then
+				for i = 1,#altPaneNames do
+					altPanes[altPaneNames[i]]:visible(false)
 				end
 			end
-		else
-			-- input analyzing judgments
+			af:queuecommand("PaneSwitch")
+		elseif event.GameButton == "MenuUp" and #players == 1 then
 			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
-			if event.GameButton == "MenuRight" then
-				if cursor_index < (row * col) then cursor_index = cursor_index + 1 end
-			elseif event.GameButton == "MenuLeft" then
-				if cursor_index > 1 then cursor_index = cursor_index - 1 end
-			elseif event.GameButton == "MenuDown" then
-				if cursor_index <= ((row-1) * col) then cursor_index = cursor_index + col end
-			elseif event.GameButton == "MenuUp" then
-				if cursor_index > col then cursor_index = cursor_index - col end
-			elseif event.GameButton == "Start" then
-				popUpWindow = true
-				af:GetChild("cursor"):visible(false)
-				MESSAGEMAN:Broadcast("AnalyzeJudgment",noteInfo(cursor_index))
+			if altPanes['ExperimentPane'..active_pane[cn]..'_Alt'] then
+				altPanes['ExperimentPane'..active_pane[cn]..'_Alt']:visible(true)
+				for i=1,#panes[cn] do
+					panes[cn][i]:visible(false)
+				end
 			end
-			af:GetChild("cursor"):smooth(.1):xy(position[cursor_index][1], position[cursor_index][2])
+		elseif event.GameButton == "MenuDown" and #players == 1 then
+			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+			if altPanes['ExperimentPane'..active_pane[cn]..'_Alt'] then
+				altPanes['ExperimentPane'..active_pane[cn]..'_Alt']:visible(false)
+				panes[cn][active_pane[cn]]:visible(true)
+			end
+		end
+	end
+
+	local popupBehavior = function(event)
+		if event.GameButton == "Select" and #players == 1 and active_pane[cn] == 5 then
+			popupMode = false
+			af:GetChild("cursor"):visible(true)
+			MESSAGEMAN:Broadcast("EndPopup")
+		--input for the popup window
+		elseif event.GameButton == "MenuRight" or event.GameButton == "MenuDown" then
+			MESSAGEMAN:Broadcast("ScrollPopUpRight")
+		elseif event.GameButton == "MenuLeft" or event.GameButton == "MenuUp" then
+			MESSAGEMAN:Broadcast("ScrollPopUpLeft")
+		elseif event.GameButton == "Start" then
+			popupMode = false
+			af:GetChild("cursor"):visible(true)
+			MESSAGEMAN:Broadcast("EndPopup")
+		end
+	end
+
+	local choosingJudgmentBehavior = function(event)
+		if event.GameButton == "Select" and #players == 1 and active_pane[cn] == 5 then
+			judgmentMode = false
+			af:GetChild("cursor"):visible(false)
+			MESSAGEMAN:Broadcast("EndAnalyzeJudgment")
+			SM("Normal Mode")
+			for player in ivalues(PlayerNumber) do
+				SCREENMAN:set_input_redirected(player, judgmentMode)
+			end
+		elseif event.GameButton == "MenuRight" then
+			if cursor_index < (row * col) then 
+				SOUND:PlayOnce( THEME:GetPathS("FF", "move.wav") )
+				cursor_index = cursor_index + 1 
+			end
+		elseif event.GameButton == "MenuLeft" then
+			if cursor_index > 1 then 
+				SOUND:PlayOnce( THEME:GetPathS("FF", "move.wav") )
+				cursor_index = cursor_index - 1
+			end
+		elseif event.GameButton == "MenuDown" then
+			if cursor_index <= ((row-1) * col) then 
+				SOUND:PlayOnce( THEME:GetPathS("FF", "move.wav") )
+				cursor_index = cursor_index + col
+			end
+		elseif event.GameButton == "MenuUp" then
+			if cursor_index > col then
+				SOUND:PlayOnce( THEME:GetPathS("FF", "move.wav") )
+				cursor_index = cursor_index - col
+			end
+		elseif event.GameButton == "Start" then
+			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+			popupMode = true
+			af:GetChild("cursor"):visible(false)
+			MESSAGEMAN:Broadcast("AnalyzeJudgment",noteInfo(cursor_index))
+		end
+		af:GetChild("cursor"):smooth(.1):xy(position[cursor_index][1], position[cursor_index][2])
+	end
+
+	if event.type == "InputEventType_FirstPress" and panes[cn] then
+		if popupMode then
+			popupBehavior(event)
+		elseif judgmentMode then
+			choosingJudgmentBehavior(event)
+		else
+			defaultBehavior(event)
 		end
 	end
 

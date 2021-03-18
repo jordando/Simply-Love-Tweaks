@@ -3,11 +3,7 @@ local character = SL.Global.Character
 
 local t = Def.ActorFrame{
     InitCommand=function(self) self:y(_screen.cy-100)
-        if player == PLAYER_2 then
-            self:x(_screen.cx - 155)
-        elseif player == PLAYER_1 then
-            self:x(_screen.cx + 270)
-        end
+        self:x(_screen.cx + (player == PLAYER_1 and 270 or -182))
     end
 }
 
