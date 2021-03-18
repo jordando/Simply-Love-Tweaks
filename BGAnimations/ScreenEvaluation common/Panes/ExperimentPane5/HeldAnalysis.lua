@@ -123,9 +123,12 @@ end
 
 local getHeldTimes = function(time, note)
     local relevantNotes = {}
+    --heldTime should be of the form {startTime, length, note}
     for heldTime in ivalues(heldTimes) do
         if math.abs(heldTime[1] - time.Time) < (interval/2) then
-            relevantNotes[#relevantNotes+1] = {"hold",heldTime[3],heldTime[1],heldTime[2]}
+            -- encountered an error where heldTime had 4 values instead of 3 (second value was entered twice)
+            -- was unable to reproduce it
+            relevantNotes[#relevantNotes+1] = {"hold",heldTime[#heldTime],heldTime[1],heldTime[2]}
         end
         if heldTime[1] - time.Time > (interval/2) then break end
     end
