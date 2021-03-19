@@ -345,8 +345,8 @@ local t = Def.ActorFrame{
 	},
 }
 
-t[#t+1] = LoadActor( THEME:GetPathS("FF", "move.wav") )..{ Name="change_sound", SupportPan = false }
-t[#t+1] = LoadActor( THEME:GetPathS("FF", "accept.wav") )..{ Name="start_sound", SupportPan = false }
-t[#t+1] = LoadActor( THEME:GetPathS("FF", "cancel.wav") )..{ Name="cancel_sound", SupportPan = false }
+t[#t+1] = LoadActor( THEME:GetPathS("FF", "move.ogg") )..{ Name="change_sound", SupportPan = false }
+t[#t+1] = LoadActor( THEME:GetPathS("FF", "accept.ogg") )..{ Name="start_sound", SupportPan = false }
+t[#t+1] = LoadActor( THEME:GetPathS("FF", "cancel.ogg") )..{ Name="cancel_sound", SupportPan = false }
 
 return t

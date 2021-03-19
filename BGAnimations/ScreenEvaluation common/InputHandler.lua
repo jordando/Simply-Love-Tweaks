@@ -175,7 +175,7 @@ return function(event)
 				SM("Enable held miss tracking to use this feature.")
 			end
 		elseif event.GameButton == "MenuRight" or event.GameButton == "MenuLeft" then
-			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+			SOUND:PlayOnce( THEME:GetPathS("FF", "select.ogg") )
 			if event.GameButton == "MenuRight" then
 				active_pane[cn] = (active_pane[cn] % #panes[cn]) + 1
 				-- don't allow duplicate panes to show in single/double
@@ -245,7 +245,7 @@ return function(event)
 			end
 			af:queuecommand("PaneSwitch")
 		elseif event.GameButton == "MenuUp" and #players == 1 then
-			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+			SOUND:PlayOnce( THEME:GetPathS("FF", "select.ogg") )
 			if altPanes['ExperimentPane'..active_pane[cn]..'_Alt'] then
 				altPanes['ExperimentPane'..active_pane[cn]..'_Alt']:visible(true)
 				for i=1,#panes[cn] do
@@ -253,7 +253,7 @@ return function(event)
 				end
 			end
 		elseif event.GameButton == "MenuDown" and #players == 1 then
-			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+			SOUND:PlayOnce( THEME:GetPathS("FF", "select.ogg") )
 			if altPanes['ExperimentPane'..active_pane[cn]..'_Alt'] then
 				altPanes['ExperimentPane'..active_pane[cn]..'_Alt']:visible(false)
 				panes[cn][active_pane[cn]]:visible(true)
@@ -289,26 +289,26 @@ return function(event)
 			end
 		elseif event.GameButton == "MenuRight" then
 			if cursor_index < (row * col) then 
-				SOUND:PlayOnce( THEME:GetPathS("FF", "move.wav") )
+				SOUND:PlayOnce( THEME:GetPathS("FF", "move.ogg") )
 				cursor_index = cursor_index + 1 
 			end
 		elseif event.GameButton == "MenuLeft" then
 			if cursor_index > 1 then 
-				SOUND:PlayOnce( THEME:GetPathS("FF", "move.wav") )
+				SOUND:PlayOnce( THEME:GetPathS("FF", "move.ogg") )
 				cursor_index = cursor_index - 1
 			end
 		elseif event.GameButton == "MenuDown" then
 			if cursor_index <= ((row-1) * col) then 
-				SOUND:PlayOnce( THEME:GetPathS("FF", "move.wav") )
+				SOUND:PlayOnce( THEME:GetPathS("FF", "move.ogg") )
 				cursor_index = cursor_index + col
 			end
 		elseif event.GameButton == "MenuUp" then
 			if cursor_index > col then
-				SOUND:PlayOnce( THEME:GetPathS("FF", "move.wav") )
+				SOUND:PlayOnce( THEME:GetPathS("FF", "move.ogg") )
 				cursor_index = cursor_index - col
 			end
 		elseif event.GameButton == "Start" then
-			SOUND:PlayOnce( THEME:GetPathS("FF", "select.mp3") )
+			SOUND:PlayOnce( THEME:GetPathS("FF", "select.ogg") )
 			popupMode = true
 			af:GetChild("cursor"):visible(false)
 			MESSAGEMAN:Broadcast("AnalyzeJudgment",noteInfo(cursor_index))

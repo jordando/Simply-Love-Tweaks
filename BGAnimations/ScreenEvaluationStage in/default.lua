@@ -26,12 +26,23 @@ local af = Def.ActorFrame {
 	end,
 }
 
+local audio
 if img == "vic.png" then
+	audio = THEME:GetPathS("FF","fanfare.ogg")
+	if SL.Global.Character and SL.Global.Character.name == "nanami" then
+		audio = THEME:GetPathS("FF", "bang clear.ogg")
+	end
+else
+	if SL.Global.Character and SL.Global.Character.name == "nanami" then
+		audio = THEME:GetPathS("FF","bang fail.ogg")
+	end
+end
+if audio then
 	af[#af+1] = Def.Sound{
-			File=THEME:GetPathS("FF","fanfare.mp3"),
-			OnCommand=function(self) self:play() end,
-			OffCommand=function(self) self:stop() end
-		}
+		File=audio,
+		OnCommand=function(self) self:play() end,
+		OffCommand=function(self) self:stop() end
+	}
 end
 
 return af

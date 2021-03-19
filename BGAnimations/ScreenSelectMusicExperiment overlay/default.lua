@@ -427,22 +427,22 @@ t[#t+1] = Def.ActorFrame{
 	Name="sounds",
 	Def.Sound{
 		Name="accept",
-		File=THEME:GetPathS("FF","accept.wav"),
+		File=THEME:GetPathS("FF","accept.ogg"),
 		PlayStartSoundMessageCommand=function(self) self:play() end,
 	},
 	Def.Sound{
 		Name="move",
-		File=THEME:GetPathS("FF","move.wav"),
+		File=THEME:GetPathS("FF","move.ogg"),
 		PlayMove1SoundMessageCommand=function(self) self:play() end,
 	},
 	Def.Sound{
 		Name="select",
-		File=THEME:GetPathS("FF", "select.mp3"),
+		File=THEME:GetPathS("FF", "select.ogg"),
 		PlayMove2SoundMessageCommand=function(self) self:play() end,
 	},
 	Def.Sound{
 		Name="cancel",
-		File=THEME:GetPathS("FF","cancel.mp3"),
+		File=THEME:GetPathS("FF","cancel.ogg"),
 		PlayCancelSoundMessageCommand=function(self) self:play() end,
 	},
 }
