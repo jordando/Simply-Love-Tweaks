@@ -32,9 +32,8 @@ end
 -- if measure stuff isn't on screenselect music then we might end up going in without stream data
 -- this causes FF battle to not work so check beforehand if we have it or not and add it in if
 -- necessary
-for player in ivalues(GAMESTATE:GetHumanPlayers()) do
-	local pn = ToEnumShortString(player)
-	if not next(SL[pn].Streams) then
+if not ThemePrefs.Get("ShowExtraSongInfo") then
+	for player in ivalues(GAMESTATE:GetHumanPlayers()) do
 		InitializeMeasureCounterAndModsLevel(player)
 	end
 end
