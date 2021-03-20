@@ -1,7 +1,6 @@
 LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
 local character = SL.Global.Character
 local enemy = GetRandomEnemy()
-
 local player = ...
 local pn = ToEnumShortString(player)
 character = GetCharacter(ThemePrefs.Get("Character"))
@@ -132,10 +131,33 @@ af[#af+1] = Def.ActorFrame{
             Name="EnemySprite",
             Texture=enemy.load,
             InitCommand=function(self)
-                self:zoom(enemy.zoom)
+                self:zoom(enemy.zoom and enemy.zoom or 1)
                 self:SetStateProperties(enemy.idle)
                 self:xy(enemy.xy[1],enemy.xy[2])
                 :horizalign(left)
+            end,
+            -- if there are more than 500 measures then replace the small enemy with a big boy
+            OnCommand=function(self)
+                if streams.TotalStreams > 500 then
+                    self:sleep(3):queuecommand("BigEnemy1")
+                end
+            end,
+            BigEnemy1Command=function(self)
+                self:linear(.2):x(enemy.xy[1] - 100):diffusealpha(0):queuecommand("BigEnemy2")
+            end,
+            BigEnemy2Command=function(self)
+                self:Load(THEME:GetPathG("","warning.png"))
+                self:xy(40,-100):linear(.4):diffusealpha(1):sleep(.2):linear(.4):diffusealpha(0)
+                :linear(.4):diffusealpha(1):sleep(.2):linear(.4):diffusealpha(0)
+                :queuecommand("BigEnemy3")
+            end,
+            BigEnemy3Command=function(self)
+                enemy = GetRandomBigEnemy()
+                self:zoom(enemy.zoom and enemy.zoom or 1)
+                self:Load(enemy.load)
+                self:SetStateProperties(enemy.idle)
+                self:xy(enemy.xy[1],enemy.xy[2]-100)
+                self:linear(1):diffusealpha(1):y(enemy.xy[2])
             end,
             AttackMessageCommand=function(self)
                 if PlayerState:GetHealthState() ~= "HealthState_Dead" then

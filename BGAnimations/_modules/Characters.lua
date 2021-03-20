@@ -337,119 +337,272 @@ local Character = {
     }
 }
 
-local Enemy = {
-    x001 = {
+local BigEnemy = {
+    {
         idle = NewLinearFrames(0,3,0.5),
         damage = NewLinearFrames(4,5,0.1),
         xy = {0,0},
         zoom = 1,
         load = THEME:GetPathG("","Characters/Enemies/001 2x3.png")
     },
-    x002 = {
+    {
         idle = NewLinearFrames(0,5,0.5),
         damage = NewLinearFrames(6,7,0.1),
         xy = {-30,-50},
         zoom = 1,
         load = THEME:GetPathG("","Characters/Enemies/002 1x8.png")
     },
-    x003 = {
+    {
         idle = NewLinearFrames(0,3,0.5),
         damage = NewLinearFrames(4,5,0.1),
         xy = {-100,-90},
         zoom = .75,
         load = THEME:GetPathG("","Characters/Enemies/003 3x2.png")
     },
-    x004 = {
+    {
         idle = NewLinearFrames(2,5,0.5),
         damage = NewLinearFrames(0,1,0.1),
         xy = {-38,-50},
         zoom = .5,
         load = THEME:GetPathG("","Characters/Enemies/004 6x1.png")
     },
+}
 
+local Enemy = {
     {
-        idle = NewLinearFrames(2,5,0.5),
-        damage = NewLinearFrames(0,1,0.1),
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
         xy = {0,0},
-        zoom = 1,
         load = THEME:GetPathG("","Characters/Enemies/e001 6x1.png")
     },
     {
-        idle = NewLinearFrames(2,5,0.5),
-        damage = NewLinearFrames(0,1,0.1),
+        idle = NewLinearFrames(2,9,0.5),damage = NewLinearFrames(0,1,0.1),
         xy = {0,0},
-        zoom = 1,
-        load = THEME:GetPathG("","Characters/Enemies/e002 6x1.png")
+        load = THEME:GetPathG("","Characters/Enemies/e002 10x1.png")
     },
     {
-        idle = NewLinearFrames(2,5,0.5),
-        damage = NewLinearFrames(0,1,0.1),
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
         xy = {0,0},
-        zoom = 1,
         load = THEME:GetPathG("","Characters/Enemies/e003 6x1.png")
     },
     {
-        idle = NewLinearFrames(2,9,0.5),
-        damage = NewLinearFrames(0,1,0.1),
-        xy = {0,0},
-        zoom = 1,
-        load = THEME:GetPathG("","Characters/Enemies/e004 10x1.png")
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e004 6x1.png")
     },
     {
-        idle = NewLinearFrames(2,9,0.5),
-        damage = NewLinearFrames(0,1,0.1),
-        xy = {0,0},
-        zoom = 1,
-        load = THEME:GetPathG("","Characters/Enemies/e005 10x1.png")
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e005 6x1.png")
     },
     {
-        idle = NewLinearFrames(2,9,0.5),
-        damage = NewLinearFrames(0,1,0.1),
-        xy = {0,0},
-        zoom = 1,
-        load = THEME:GetPathG("","Characters/Enemies/e006 10x1.png")
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,10},
+        zoom = .8,
+        load = THEME:GetPathG("","Characters/Enemies/e006 1x6.png")
     },
     {
-        idle = NewLinearFrames(2,5,0.5),
-        damage = NewLinearFrames(0,1,0.1),
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
         xy = {0,0},
-        zoom = 1,
         load = THEME:GetPathG("","Characters/Enemies/e007 6x1.png")
     },
     {
-        idle = NewLinearFrames(2,5,0.5),
-        damage = NewLinearFrames(0,1,0.1),
-        xy = {0,0},
-        zoom = 1,
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-20},
         load = THEME:GetPathG("","Characters/Enemies/e008 6x1.png")
     },
     {
-        idle = NewLinearFrames(2,5,0.5),
-        damage = NewLinearFrames(0,1,0.1),
-        xy = {0,0},
-        zoom = 1,
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-20},
         load = THEME:GetPathG("","Characters/Enemies/e009 6x1.png")
     },
     {
-        idle = NewLinearFrames(2,5,0.5),
-        damage = NewLinearFrames(0,1,0.1),
-        xy = {0,-20},
-        zoom = 1,
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {-30,-30},
         load = THEME:GetPathG("","Characters/Enemies/e010 6x1.png")
     },
     {
-        idle = NewLinearFrames(2,5,0.5),
-        damage = NewLinearFrames(0,1,0.1),
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
         xy = {0,-20},
-        zoom = 1,
         load = THEME:GetPathG("","Characters/Enemies/e011 6x1.png")
     },
     {
-        idle = NewLinearFrames(2,5,0.5),
-        damage = NewLinearFrames(0,1,0.1),
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
         xy = {0,-20},
-        zoom = 1,
         load = THEME:GetPathG("","Characters/Enemies/e012 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,0},
+        load = THEME:GetPathG("","Characters/Enemies/e013 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e014 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,0},
+        load = THEME:GetPathG("","Characters/Enemies/e015 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e016 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {-20,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e017 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-10},
+        load = THEME:GetPathG("","Characters/Enemies/e018 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,7,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e019 8x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {-20,-25},
+        load = THEME:GetPathG("","Characters/Enemies/e020 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,9,1),damage = NewLinearFrames(0,1,0.1),
+        xy = {-10,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e021 10x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {-20,-25},
+        load = THEME:GetPathG("","Characters/Enemies/e022 6x1.png")
+    },    {
+        idle = NewLinearFrames(2,9,1),damage = NewLinearFrames(0,1,0.1),
+        xy = {-10,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e023 10x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {00,-15},
+        load = THEME:GetPathG("","Characters/Enemies/e024 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,10},
+        zoom = .8,
+        load = THEME:GetPathG("","Characters/Enemies/e025 6x1.png")
+    },
+    {
+        --TODO SUPER DUMB ENEMY???
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e026 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.7),damage = NewLinearFrames(0,1,0.1),
+        xy = {-20,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e027 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.7),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-10},
+        load = THEME:GetPathG("","Characters/Enemies/e028 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.7),damage = NewLinearFrames(0,1,0.1),
+        xy = {-10,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e029 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,0},
+        load = THEME:GetPathG("","Characters/Enemies/e030 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,7,0.75),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-10},
+        load = THEME:GetPathG("","Characters/Enemies/e031 8x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {00,-30},
+        load = THEME:GetPathG("","Characters/Enemies/e032 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.6),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-10},
+        load = THEME:GetPathG("","Characters/Enemies/e033 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.6),damage = NewLinearFrames(0,1,0.1),
+        xy = {0,-10},
+        load = THEME:GetPathG("","Characters/Enemies/e034 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.7),damage = NewLinearFrames(0,1,0.1),
+        xy = {-20,-10},
+        load = THEME:GetPathG("","Characters/Enemies/e035 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.7),damage = NewLinearFrames(0,1,0.1),
+        xy = {-20,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e036 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.7),damage = NewLinearFrames(0,1,0.1),
+        xy = {-10,-20},
+        load = THEME:GetPathG("","Characters/Enemies/e037 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {-35,-10},
+        load = THEME:GetPathG("","Characters/Enemies/e038 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,1),damage = NewLinearFrames(0,1,0.1),
+        xy = {-40,-30},
+        load = THEME:GetPathG("","Characters/Enemies/e039 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {-30,-50},
+        load = THEME:GetPathG("","Characters/Enemies/e040 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {-20,-25},
+        load = THEME:GetPathG("","Characters/Enemies/e041 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.7),damage = NewLinearFrames(0,1,0.1),
+        xy = {-20,00},
+        load = THEME:GetPathG("","Characters/Enemies/e042 6x1.png")
+    },
+    {
+        --BIG?
+        idle = NewLinearFrames(2,5,0.7),damage = NewLinearFrames(0,1,0.1),
+        xy = {-40,-50},
+        load = THEME:GetPathG("","Characters/Enemies/e043 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.7),damage = NewLinearFrames(0,1,0.1),
+        xy = {-20,-10},
+        load = THEME:GetPathG("","Characters/Enemies/e044 6x1.png")
+    },
+    {
+        idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
+        xy = {-20,-30},
+        load = THEME:GetPathG("","Characters/Enemies/e045 6x1.png")
+    },
+    {
+        --BIG?
+        idle = NewLinearFrames(2,5,0.7),damage = NewLinearFrames(0,1,0.1),
+        xy = {-30,-30},
+        zoom = .9,
+        load = THEME:GetPathG("","Characters/Enemies/e046 6x1.png")
     },
 }
 
@@ -458,7 +611,7 @@ for i=1, 5 do
     backgrounds[#backgrounds+1] = THEME:GetPathG("","Characters/BGs/bg ("..i..").jpg")
 end
 
-GetEnemy = function(bg)
+GetBackground = function(bg)
     if backgrounds[bg] then return backgrounds[bg] end
     return nil
 end
@@ -487,4 +640,13 @@ end
 
 GetRandomEnemy = function()
     return Enemy[math.random(#Enemy)]
+end
+
+GetBigEnemy = function(char)
+    if BigEnemy[char] then return BigEnemy[char] end
+    return nil
+end
+
+GetRandomBigEnemy = function()
+    return BigEnemy[math.random(#BigEnemy)]
 end
