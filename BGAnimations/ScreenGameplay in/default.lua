@@ -29,14 +29,8 @@ else
 	text = THEME:GetString("Stage", "Event")
 end
 
--- if measure stuff isn't on screenselect music then we might end up going in without stream data
--- this causes FF battle to not work so check beforehand if we have it or not and add it in if
--- necessary
 for player in ivalues(GAMESTATE:GetHumanPlayers()) do
-	local pn = ToEnumShortString(player)
-	if not ThemePrefs.Get("ShowExtraSongInfo") or not next(SL[pn].Streams) then
-		InitializeMeasureCounterAndModsLevel(player)
-	end
+	InitializeMeasureCounterAndModsLevel(player)
 end
 
 -------------------------------------------------------------------------
@@ -98,7 +92,9 @@ af[#af+1] = LoadFont("FF/_enge")..{
 	HideCommand=function(self) self:visible(false) end,
 	CurrentSongChangedMessageCommand=function(self)
 		if GAMESTATE:IsCourseMode() then
-			InitializeMeasureCounterAndModsLevel(SongNumberInCourse)
+			for player in ivalues(GAMESTATE:GetHumanPlayers()) do
+				InitializeMeasureCounterAndModsLevel(player)
+			end
 			SongNumberInCourse = SongNumberInCourse + 1
 			self:settext(("%s %d / %d"):format(THEME:GetString("Stage", "Stage"), SongNumberInCourse, SongsInCourse))
 		end
