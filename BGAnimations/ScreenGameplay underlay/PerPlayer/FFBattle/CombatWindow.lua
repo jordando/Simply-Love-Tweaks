@@ -1,6 +1,7 @@
 LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
 local character = SL.Global.Character
 local enemy = GetRandomEnemy()
+
 local player = ...
 local pn = ToEnumShortString(player)
 character = GetCharacter(ThemePrefs.Get("Character"))
@@ -138,7 +139,7 @@ af[#af+1] = Def.ActorFrame{
             end,
             -- if there are more than 500 measures then replace the small enemy with a big boy
             OnCommand=function(self)
-                if streams.TotalStreams > 500 then
+                if tonumber(streams.TotalStreams) > 500 then
                     self:sleep(3):queuecommand("BigEnemy1")
                 end
             end,
