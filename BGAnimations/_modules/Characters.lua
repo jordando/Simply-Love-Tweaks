@@ -275,6 +275,33 @@ local Character = {
         text = "I'm gonna take it easy today.",
         game = "ITG",
     },
+    shake = {
+        name = "shake",
+        displayName = "Master Shake",
+        zoom = .4,
+        stillZoom = .3,
+        attack = NewLinearFrames(22,23, .5),
+        idle = NewLinearFrames(5,12,2),
+        magic2 = NewLinearFrames(13,16,.2),
+        win = NewLinearFrames(17,21,1),
+        winIntro = NewLinearFrames(17,21,.65),
+        still = NewLinearFrames(5,5,1),
+        danger = NewLinearFrames(0,3,1),
+        dead = NewLinearFrames(4,4,1),
+        stillXY = {0,-10,9.5,-10}, --second set is for when character is idling in Select a character
+        idleXY = {10,-20},
+        magic2XY = {0,-20},
+        winIntroXY = {-10,-20},
+        winXY = {-10,-20},
+        deadXY = {10,-20},
+        dangerXY = {0,-20},
+        attackXY = {0,-20},
+        load = THEME:GetPathG("","Characters/shake/shake 8x3.png"),
+        icon = THEME:GetPathG("","Characters/shake/unit_icon.png"),
+        splash = THEME:GetPathG("","Characters/shake/splash.png"),
+        text = "SEXOOO",
+        game = "ITG",
+    },
     nanami = {
         name = "nanami",
         displayName = "Nanami",
@@ -443,11 +470,13 @@ local Enemy = {
     {
         idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
         xy = {0,0},
+        zoom = 1.1,
         load = THEME:GetPathG("","Characters/Enemies/e015 6x1.png")
     },
     {
         idle = NewLinearFrames(2,5,0.5),damage = NewLinearFrames(0,1,0.1),
         xy = {0,-20},
+        zoom = 1.1,
         load = THEME:GetPathG("","Characters/Enemies/e016 6x1.png")
     },
     {
