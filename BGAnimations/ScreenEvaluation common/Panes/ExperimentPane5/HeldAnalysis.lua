@@ -137,7 +137,18 @@ local getHeldTimes = function(time, note)
             local time = ordered_offsets[i].Time
             local offset = ordered_offsets[i].Offset
             if offset then time = time + offset end
-            relevantNotes[#relevantNotes+1] = {"note", footStats[i].Note,time,offset}
+            -- handle jumps. footStats[i].Note will be either a string like "up", "left", "down", "right" or 0110
+            -- which is a jump (the 1s are the notes, 0s aren't)
+            if tonumber(footStats[i].Note) then
+                local sub = string.sub
+                local str = footStats[i].Note
+                if sub(str, 1,1) == "1" then relevantNotes[#relevantNotes+1] = {"note", "left",time,offset} end
+                if sub(str, 2,2) == "1"  then relevantNotes[#relevantNotes+1] = {"note", "down",time,offset} end
+                if sub(str, 3,3) == "1"  then relevantNotes[#relevantNotes+1] = {"note", "up",time,offset} end
+                if sub(str, 4,4) == "1"  then relevantNotes[#relevantNotes+1] = {"note", "right",time,offset} end
+            else
+                relevantNotes[#relevantNotes+1] = {"note", footStats[i].Note,time,offset}
+            end
         end
     end
     table.sort(relevantNotes,function(k1,k2) return k1[3] < k2[3] end)
