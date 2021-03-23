@@ -273,6 +273,8 @@ end
 -- right now this just has the black rectangle going across the screen.
 -- there's also a different style of text that are disabled
 t[#t+1] = LoadActor("./SongWheelShared.lua", {row, col, songwheel_y_offset})
+-- Shared items on the OptionWheel GUI
+t[#t+1] = LoadActor("./PlayerOptionsShared.lua", {row, col, Input})
 -- Songwheel
 t[#t+1] = SongWheel:create_actors( "SongWheel", 14, song_mt, WideScale(25,50), songwheel_y_offset - 40)
 --Information about the song - including the grid/stream info, nps histogram, and step information
@@ -320,8 +322,7 @@ t[#t+1] = Def.ActorFrame{
 		end
 	},
 }
--- Shared items on the OptionWheel GUI
-t[#t+1] = LoadActor("./PlayerOptionsShared.lua", {row, col, Input})
+
 -- this has information about the groups - number of songs/charts/filters/# of passed charts
 t[#t+1] = LoadActor("./GroupWheelShared.lua", {row, col, group_info})
 -- elements we need two of - panes for the OptionWheel GUI

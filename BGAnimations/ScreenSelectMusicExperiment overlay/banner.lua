@@ -3,30 +3,27 @@ local banner_directory = FILEMAN:DoesFileExist(path) and path or THEME:GetPathG(
 
 local SongOrCourse
 
+local bannerWheelX = _screen.cx + (IsUsingWideScreen() and WideScale(-65, -170) or -130)
+local bannerSongX = _screen.cx + (IsUsingWideScreen() and WideScale(-55,-122) or -70)
+
 local t = Def.ActorFrame{
 	OnCommand=function(self)
 		if IsUsingWideScreen() then
 			self:zoom(0.7655)
-			self:xy(_screen.cx - 170, 112)
+			self:xy(bannerWheelX, 111)
 		else
 			self:zoom(0.75)
-			self:xy(_screen.cx - 166, 112)
+			self:xy(bannerWheelX, 112)
 		end
-		--self:xy(_screen.cx + 205,300)
 	end,
 	SwitchFocusToSingleSongMessageCommand=function(self)
-		self:finishtweening():linear(0.3):xy(_screen.cx - 122, _screen.cy - 130/1.6):rotationy(360):sleep(.1):rotationy(0)
+		self:finishtweening():linear(0.3):xy(bannerSongX, _screen.cy - 130/1.6):rotationy(360):sleep(.1):rotationy(0)
 	end,
 	SwitchFocusToSongsMessageCommand=function(self)
-		if self:GetDiffuseAlpha() == 0 then self:linear(.3):diffusealpha(1)
+		if self:GetDiffuseAlpha() == 0 then
+			self:linear(.3):diffusealpha(1)
 		else
-			if IsUsingWideScreen() then
-				--self:zoom(0.7655)
-				self:finishtweening():linear(.3):xy(_screen.cx - 170, 112):rotationy(360):sleep(.1):rotationy(0)
-			else
-				--self:zoom(0.75)
-				self:finishtweening():linear(.3):xy(_screen.cx - 166, 112):rotationy(360):sleep(.1):rotationy(0)
-			end
+			self:finishtweening():linear(.3):xy(bannerWheelX, 112):rotationy(360):sleep(.1):rotationy(0)
 		end
 	end,
 	SwitchFocusToGroupsMessageCommand=function(self) self:linear(0.3):diffusealpha(0) end,

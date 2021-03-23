@@ -21,7 +21,7 @@ local t = Def.ActorFrame{
 		tagItems:set_info_set(toInsert, 0)
 	end,
 	OnCommand=function(self)
-		self:xy(_screen.cx - (IsUsingWideScreen() and 170 or 165), _screen.cy - 28)
+		self:xy(_screen.cx - (IsUsingWideScreen() and WideScale(65,170) or 165), _screen.cy - 28)
 	end,
 
 	-- ----------------------------------------
@@ -268,7 +268,7 @@ local t = Def.ActorFrame{
 					end
 				end
 			},
-		},	
+		},
 	}
 }
 t[#t+1] = tagItems:create_actors( "tagItems", 8, tagItemMT, -210,-48) --TODO get rid of magic numbers

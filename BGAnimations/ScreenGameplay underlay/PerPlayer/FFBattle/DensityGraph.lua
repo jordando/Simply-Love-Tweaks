@@ -37,7 +37,8 @@ local UpdateRate, first_second, last_second
 
 local af = Def.ActorFrame{
 	InitCommand=function(self)
-		self:xy( -33, 138 ):zoom(.9):queuecommand("Update")
+		local zoom = GetNotefieldX(player) == _screen.cx and WideScale(1.3,.9) or WideScale(.99,.9)
+		self:xy( -33, 138 ):zoom(zoom):queuecommand("Update")
 		if (NoteFieldIsCentered and IsUsingWideScreen()) then
 			self:addx(30)
 		end

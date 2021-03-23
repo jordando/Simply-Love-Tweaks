@@ -185,7 +185,7 @@ for i=1,num_columns do
 end
 for i, column in ipairs( cols ) do
 
-	local _x = xSpacing * i
+	local _x = xSpacing * i - WideScale(115,0)
 
 	-- GetNoteSkinActor() is defined in ./Scripts/SL-Helpers.lua, and performs some
 	-- rudimentary error handling because NoteSkins From The Internet™ may contain Lua errors
@@ -203,7 +203,7 @@ end
 
 -- visual for replay stuff
 local amv = Def.ActorMultiVertex{
-    InitCommand=function(self) self:xy(75,135) end,
+    InitCommand=function(self) self:xy(WideScale(-40,75),160) end,
     OnCommand=function(self)
         self:SetDrawState({Mode="DrawMode_Quads"})
     end,

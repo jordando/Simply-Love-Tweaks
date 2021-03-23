@@ -6,8 +6,10 @@ local Input = args[3]
 local bg_color = {0,0,0,0.9}
 local divider_color = {1,1,1,0.75}
 
+local xOffset = WideScale(107,0)
+
 local af = Def.ActorFrame{
-	InitCommand=function(self) self:diffusealpha(0) end,
+	InitCommand=function(self) self:diffusealpha(0):x(WideScale(-50,0)) end,
 	SwitchFocusToSongsMessageCommand=function(self) self:linear(0.1):diffusealpha(0) end,
 	SwitchFocusToGroupsMessageCommand=function(self) self:linear(0.1):diffusealpha(0) end,
 	SwitchFocusToSingleSongMessageCommand=function(self) self:sleep(0.3):linear(0.1):diffusealpha(1) end,
@@ -35,7 +37,7 @@ local af = Def.ActorFrame{
 			self:diffuse(bg_color):zoomto(_screen.w/WideScale(1.15,1.5), row.h+2)
 			self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
 		end,
-		OnCommand=function(self) self:xy(_screen.cx, _screen.cy - row.h/1.6 -1) end,
+		OnCommand=function(self) self:xy(_screen.cx + xOffset, _screen.cy - row.h/1.6 -1) end,
 	},
 	Def.Quad{
 		Name="PlayerOptionsBG",
@@ -43,13 +45,13 @@ local af = Def.ActorFrame{
 			self:diffuse(bg_color):zoomto(_screen.w/WideScale(1.15,1.5), row.h*1.5)
 			self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
 		end,
-		OnCommand=function(self) self:xy(_screen.cx, _screen.cy + row.h/1.5 ) end,
+		OnCommand=function(self) self:xy(_screen.cx + xOffset, _screen.cy + row.h/1.5 ) end,
 	},
 
 	Def.Quad{
 		Name="PlayerOptionsDivider",
 		InitCommand=function(self) self:diffuse(divider_color):zoomto(2, row.h*1.25) end,
-		OnCommand=function(self) self:xy(_screen.cx, _screen.cy + row.h/1.5 ) end,
+		OnCommand=function(self) self:xy(_screen.cx + xOffset, _screen.cy + row.h/1.5 ) end,
 	},
 }
 local position = GAMESTATE:GetMasterPlayerNumber() == PLAYER_1 and 17 or 440

@@ -108,37 +108,6 @@ local af =
 	end
 }
 
-af[#af+1] = LoadActor( THEME:GetPathG("FF","CardEdge.png") )..{
-	InitCommand=function(self)
-		self:diffuse(Color.White)
-		self:zoomto(450, 450)
-		self:MaskDest():xy(0,350)
-		--self:visible(false)
-	end,
-}
-
--- colored background for chart statistics
-af[#af + 1] = Def.Quad {
-	Name = "BackgroundQuad",
-	InitCommand = function(self)
-		self:zoomto(_screen.w / 2 - 18, _screen.h / 8 + 1):y(_screen.h / 2 - 67)
-	end,
-	SetCommand = function(self)
-		if GAMESTATE:IsHumanPlayer(player) then
-			local StepsOrTrail = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentTrail(player) or GAMESTATE:GetCurrentSteps(player)
-
-			if StepsOrTrail then
-				local difficulty = StepsOrTrail:GetDifficulty()
-				self:diffuse(DifficultyColor(difficulty))
-			else
-				self:diffuse(PlayerColor(player))
-			end
-			self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
-		end
-	end
-}
-
-
 -- chart difficulty meter
 af[#af + 1] =
 	LoadFont("Wendy/_wendy small") ..

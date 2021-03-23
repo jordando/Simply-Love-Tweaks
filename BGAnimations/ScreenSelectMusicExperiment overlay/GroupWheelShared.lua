@@ -8,7 +8,7 @@ local group_info = args[3]
 LoadActor("./BarGraph.lua", group_info)
 local initializeBarGraph = CreateBarGraph(250,100)..{
 	OnCommand=function(self)
-		self:xy(WideScale(350,70),375):zoom(WideScale(.95,1))
+		self:xy(WideScale(100,70),375):zoom(WideScale(.95,1))
 	end
 }
 ----------------------------------------------------------------------
@@ -28,14 +28,6 @@ local af = Def.ActorFrame{
 	end
 }
 
-
-af[#af+1] = Def.Quad{
-	InitCommand=function(self) self:zoomto(_screen.w, _screen.h-200):xy(_screen.cx, _screen.cy+60):diffuse(0,0,0,0.5):cropbottom(1) end,
-	SwitchFocusToGroupsMessageCommand=function(self) self:sleep(0.3):smooth(0.3):cropbottom(0) end,
-	SwitchFocusToSongsMessageCommand=function(self) self:cropbottom(1) end,
-	SwitchFocusToSingleSongMessageCommand=function(self) self:cropbottom(1) end,
-}
-
 -----------------------------------------------------------------
 -- text
 
@@ -53,7 +45,7 @@ af[#af+1] = Def.ActorFrame{
 	SetGroupWheelCommand=function(self) self:xy( _screen.cx, _screen.cy+60 ) end,
 	
 	Def.ActorFrame{
-		InitCommand=function(self) self:y(-150):x(50) end,
+		InitCommand=function(self) self:y(-150):x(WideScale(0,50)) end,
 		SwitchFocusToGroupsMessageCommand=function(self) self:playcommand("Reset") end,
 		CurrentSongChangedMessageCommand=function(self,params) if params.song then self:playcommand("Reset") end end,
 		CurrentCourseChangedMessageCommand=function(self) self:playcommand("Reset") end,
@@ -68,13 +60,13 @@ af[#af+1] = Def.ActorFrame{
 		Def.Sprite{
 			Texture=THEME:GetPathG("FF","CardEdge.png"),
 			InitCommand=function(self)
-				self:zoomto(468,400):xy(-210,65)
+				self:zoomto(468,400):xy(WideScale(-150,-210),65)
 			end
 		},
 		--blue box
 		Def.Quad{
 			InitCommand=function(self)
-				self:zoomto(425,345):xy(-210,53):diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
+				self:zoomto(425,345):xy(WideScale(-150,-210),53):diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
 			end
 		},
 		-- Group Label
@@ -259,7 +251,7 @@ af[#af+1] = Def.ActorFrame{
 	Def.BitmapText{ --TODO make this pretty
 		Font="Common Normal",
 		InitCommand=function(self)
-			self:zoom(0.75):diffuse(Color.White):xy(WideScale(200,-85), WideScale(-70,-35)):horizalign(left):vertalign(top)
+			self:zoom(0.75):diffuse(Color.White):xy(WideScale(50,-85), WideScale(-70,-35)):horizalign(left):vertalign(top)
 		end,
 		CurrentGroupChangedMessageCommand=function(self)
 			self:visible(true):settext(GetActiveFiltersString())

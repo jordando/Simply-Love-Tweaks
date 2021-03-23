@@ -6,7 +6,7 @@ local t = Def.ActorFrame{}
 t[#t+1] = Def.ActorFrame {
     OnCommand= function(self)
         self:draworder(101)
-        :x(_screen.cx)
+        :x(IsUsingWideScreen() and WideScale(40,0) + _screen.cx or _screen.cx + 20)
         :y(SCREEN_CENTER_Y-150)
         :playcommand("SetCD")
     end,

@@ -38,9 +38,10 @@ end
 local af = Def.ActorFrame{
     Name="StepStatsPane"..pn,
     InitCommand=function(self)
+        self:zoom(WideScale(.75,1))
         self:xy(SCREEN_CENTER_X,250)
         if NoteFieldIsCentered and IsUsingWideScreen() then
-            self:addx(150)
+            self:addx(150 + WideScale(-25,0))
         elseif player==PLAYER_2 then
             self:x(SCREEN_CENTER_X+200)
         end
@@ -61,7 +62,8 @@ local normalStuff = Def.ActorFrame{
     InitCommand=function(self) self:x(player==PLAYER_1 and 0 or -555) end
 }
 
---background for banner and judgments
+--background for judgments
+--frame
 normalStuff[#normalStuff+1] = Def.Sprite{
     Texture=THEME:GetPathG("FF","CardEdge.png"),
     InitCommand=function(self)
@@ -71,6 +73,7 @@ normalStuff[#normalStuff+1] = Def.Sprite{
         end
     end
 }
+--quad
 normalStuff[#normalStuff+1] = Def.Quad{
     InitCommand=function(self)
         self:zoomto(133,200):xy(71+175,-35+70):align(0,1)
@@ -140,7 +143,7 @@ local otherStuff = Def.ActorFrame{
         self:xy(175,70)
         local zoomfactor = {
             ultrawide    = 0.725,
-            sixteen_ten  = 0.825,
+            sixteen_ten  = 0.9,
             sixteen_nine = 0.9
         }
         if not IsUltraWide then

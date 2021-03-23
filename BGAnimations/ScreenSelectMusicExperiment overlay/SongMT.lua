@@ -88,21 +88,10 @@ local song_mt = {
 				},
 				-- AF for MusicWheel item
 				Def.ActorFrame{
+					InitCommand=function(self) self:x(IsUsingWideScreen() and WideScale(40,0) or 15) end,
 					GainFocusCommand=function(subself) subself:y(0) end,
 					LoseFocusCommand=function(subself) subself:y(0) end,
 					SlideBackIntoGridCommand=function(subself) subself:linear(0.12):diffusealpha(1) end,
-					Def.ActorMultiVertex{
-						InitCommand=function(self)
-							local verts = {}
-							table.insert(verts,{{0,0,0}, color("#23279e")})
-							table.insert(verts,{{0,songHeight-2,0}, color("#23279e")})
-							table.insert(verts,{{songWidth,songHeight-2,0}, Color.Black})
-							table.insert(verts,{{songWidth,0,0}, Color.Black})
-							self:SetNumVertices(#verts):SetVertices(verts)
-							self:SetDrawState({Mode="DrawMode_Quads"})
-							self:xy(-175,-20)
-						end
-					},
 					--box behind song name
 					Def.ActorFrame {
 						InitCommand = function(subself) self.song_box = subself end,
@@ -158,7 +147,7 @@ local song_mt = {
 							if self.song ~= "CloseThisFolder" then subself:zoom(.8):y(30):maxwidth(250):settext( self.song:GetDisplaySubTitle()) end end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
-								if not SL.Global.GroupType == "Courses" then
+								if SL.Global.GroupType ~= "Courses" then
 									subself:settext( self.song:GetDisplaySubTitle() ):y(11):maxwidth(250):zoom(.65)
 								end
 							end
@@ -176,12 +165,15 @@ local song_mt = {
 			--Things we need two of
 			for pn in ivalues({'P1','P2'}) do
 				local side = pn == 'P1' and -1 or 1
-				local grade_position = WideScale(140,150)
-				local pass_position = 180
+				local grade_position = IsUsingWideScreen() and WideScale(120,150) or 110
+				local pass_position = WideScale(130,180)
 				--A box for the pass type
 				--TODO this might be better as an AMV
 				af[#af+1] = Def.ActorFrame {
-					InitCommand=function(subself) subself:visible(true) self.pass_box_outline = subself  end,
+					InitCommand=function(subself)
+						subself:visible(true) self.pass_box_outline = subself
+						subself:x(IsUsingWideScreen() and WideScale(40,0) or 15)
+					end,
 					--Box on the side of the musicwheel item
 					Def.ActorFrame{
 						SlideToTopCommand=function(subself) subself:linear(.12):diffusealpha(0) end,

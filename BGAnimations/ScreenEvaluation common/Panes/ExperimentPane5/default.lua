@@ -39,6 +39,8 @@ af[#af+1] = LoadActor("./Percentage.lua", {player = player, side = "left"})..{In
 af[#af+1] = LoadActor("./JudgmentLabels.lua", {player = player, side = "left"})..{InitCommand=function(self) self:visible(true) end}
 af[#af+1] = LoadActor("./Arrows.lua", {player = player, side = "left", footBreakdown = footBreakdown})..{InitCommand=function(self) self:visible(true) end}
 
+local xOffset = IsUsingWideScreen() and WideScale(105,0) or 0
+
 af[#af+1] = Def.ActorFrame{
 	InitCommand=function(self)
 		if not IsUsingWideScreen() then
@@ -49,13 +51,19 @@ af[#af+1] = Def.ActorFrame{
 		InitCommand=function(self)
 			self:diffuse( color("#101519") )
 				:y(_screen.cy + 34 )
-				:x(_screen.cx - 275)
+				:x(_screen.cx - 275 + xOffset)
 				:zoomto(5, 180)
 		end
 	},
-	LoadActor("./Percentage.lua", {player = player, side = "right"})..{InitCommand=function(self) self:visible(true):x(_screen.cx - 2) end},
-	LoadActor("./JudgmentLabels.lua", {player = PLAYER_1, side = "right"})..{InitCommand=function(self) self:visible(true):x(_screen.cx+155) end},
-	LoadActor("./Arrows.lua", {player = player, side = "right", footBreakdown = footBreakdown})..{InitCommand=function(self) self:visible(true):x(_screen.cx-305) end}
+	LoadActor("./Percentage.lua", {player = player, side = "right"})..{
+		InitCommand=function(self) self:visible(true):x(_screen.cx - 2 + xOffset) end
+	},
+	LoadActor("./JudgmentLabels.lua", {player = PLAYER_1, side = "right"})..{
+		InitCommand=function(self) self:visible(true):x(_screen.cx+155 + xOffset) end
+	},
+	LoadActor("./Arrows.lua", {player = player, side = "right", footBreakdown = footBreakdown})..{
+		InitCommand=function(self) self:visible(true):x(_screen.cx-305 + xOffset) end
+	}
 }
 
 if heldTimes then

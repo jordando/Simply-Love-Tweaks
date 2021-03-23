@@ -13,7 +13,7 @@ for player in ivalues( GAMESTATE:GetHumanPlayers() ) do
 	--panes to look at when player is on options wheel.
 	for i=1, 3 do
 			af[#af+1] = LoadActor("./Pane"..i, player)..{
-				InitCommand=function(self) self:xy( _screen.cx + 150 * (player==PLAYER_1 and 1 or -1), _screen.cy + 80 ) end
+				InitCommand=function(self) self:xy( _screen.cx + 150 * (player==PLAYER_1 and 1 or -1) + WideScale(50,0), _screen.cy + 80 ) end
 			}
 	end
 end

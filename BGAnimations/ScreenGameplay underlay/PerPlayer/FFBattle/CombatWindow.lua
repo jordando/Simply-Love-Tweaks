@@ -139,7 +139,7 @@ af[#af+1] = Def.ActorFrame{
             end,
             -- if there are more than 500 measures then replace the small enemy with a big boy
             OnCommand=function(self)
-                if tonumber(streams.TotalStreams) > 500 then
+                if streams.TotalStreams and tonumber(streams.TotalStreams) > 500 then
                     self:sleep(3):queuecommand("BigEnemy1")
                 end
             end,
@@ -174,7 +174,7 @@ af[#af+1] = Def.ActorFrame{
         -- The damage text is nested in multiple actor frames so we can use multiple
         -- simultaneous tweens
         Def.ActorFrame{
-            InitCommand=function(self) 
+            InitCommand=function(self)
                 self:y(self:GetParent():GetChild("EnemySprite"):GetHeight() * -(1/4))
                 self:x(self:GetParent():GetChild("EnemySprite"):GetWidth() / 4)
             end,
@@ -246,7 +246,7 @@ af[#af+1] = Def.ActorFrame{
             end
             if streams.Measures then
                 -- if we get through every stream measure then start the victory dance
-                if currentEnemyHealth==0 then--streamIndex == #streams.Measures and streams.Measures[streamIndex].isBreak then
+                if currentEnemyHealth==0 then
                     self:queuecommand("WinIntro")
                 -- sometimes runs start while the attack animation is still playing. if we're still updating
                 -- the progress bar then jump in to the standby command

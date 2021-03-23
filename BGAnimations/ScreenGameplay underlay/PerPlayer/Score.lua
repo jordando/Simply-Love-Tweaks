@@ -47,7 +47,7 @@ local ar_scale = {
 	sixteen_ten  = 0.825,
 	sixteen_nine = 1
 }
-local zoom_factor = clamp(scale(GetScreenAspectRatio(), 16/10, 16/9, ar_scale.sixteen_ten, ar_scale.sixteen_nine), 0, 1.125)
+--local zoom_factor = clamp(scale(GetScreenAspectRatio(), 16/10, 16/9, ar_scale.sixteen_ten, ar_scale.sixteen_nine), 0, 1.125)
 
 -- -----------------------------------------------------------------------
 
@@ -92,12 +92,12 @@ return LoadFont("Wendy/_wendy monospace numbers")..{
 				if step_stats then
 					self:y( 282 )
 					if player==PLAYER_1 then
-						if mods.DataVisualizations=="Battle Statistics" then self:addy(25) end
+						if mods.DataVisualizations=="Battle Statistics" then self:addy(WideScale(10,25)) end
 						if NoteFieldIsCentered then
 							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale( 94, 112.5) ):addy(5)
 						else
 							self:x( pos[ OtherPlayer[player] ].x - SL_WideScale(-84, -60) )
-							if mods.DataVisualizations=="Battle Statistics" then self:addx(5) end
+							if mods.DataVisualizations=="Battle Statistics" then self:addx(WideScale(-30,5)):addy(1) end
 						end
 
 					-- PLAYER_2
@@ -107,7 +107,8 @@ return LoadFont("Wendy/_wendy monospace numbers")..{
 						else
 							self:x( pos[ OtherPlayer[player] ].x - SL_WideScale(-6, -2))
 						end
-						if mods.DataVisualizations=="Battle Statistics" then self:addy(25):addx(220) end
+						if mods.DataVisualizations=="Battle Statistics" then
+							self:addx(WideScale(200,220)):addy(WideScale(10,25)) end
 					end
 				end
 

@@ -166,7 +166,7 @@ return function(event)
 			if SL[ToEnumShortString(GAMESTATE:GetMasterPlayerNumber())].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].heldTimes then
 				judgmentMode = true
 				af:GetChild("cursor"):visible(true)
-				af:GetChild("cursor"):xy(position[cursor_index][1], position[cursor_index][2])
+				af:GetChild("cursor"):xy(position[cursor_index][1] - WideScale(95,0), position[cursor_index][2])
 				SM("STATIC REPLAY")
 				for player in ivalues(PlayerNumber) do
 					SCREENMAN:set_input_redirected(player, judgmentMode)
@@ -313,7 +313,7 @@ return function(event)
 			af:GetChild("cursor"):visible(false)
 			MESSAGEMAN:Broadcast("AnalyzeJudgment",noteInfo(cursor_index))
 		end
-		af:GetChild("cursor"):smooth(.1):xy(position[cursor_index][1], position[cursor_index][2])
+		af:GetChild("cursor"):smooth(.1):xy(position[cursor_index][1] - WideScale(95,0), position[cursor_index][2])
 	end
 
 	if event.type == "InputEventType_FirstPress" and panes[cn] then

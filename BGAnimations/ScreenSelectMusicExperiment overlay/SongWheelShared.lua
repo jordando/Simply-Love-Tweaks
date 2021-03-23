@@ -34,7 +34,7 @@ af[#af+1] = Def.Quad{
 
 af[#af+1] = Def.Quad{
 	InitCommand=function(self)
-		self:align(0,0):xy(0,240):zoomto(_screen.w / 2 + 50,_screen.h / 8)
+		self:align(0,0):xy(IsUsingWideScreen() and 0 or 20,240):zoomto(_screen.w / 2 + 50,_screen.h / 8)
 		self:diffuseleftedge(color("#23279e")):diffuserightedge(Color.Black)
 	end,
 		SwitchFocusToGroupsMessageCommand=function(self) self:smooth(0.3):cropright(1) end,
@@ -45,7 +45,7 @@ af[#af+1] = Def.Quad{
 -- a lightly styled png asset that is not so different than a Quad
 af[#af+1] = Def.ActorFrame{
 	InitCommand=function(self)
-		self:xy(257,295)
+		self:xy(IsUsingWideScreen() and 257 or 180,295)
 	end,
 	CloseThisFolderHasFocusMessageCommand = function(self) self:stoptweening():smooth(0.3):diffusealpha(0) end, --don't display any of this when we're on the close folder item
 	CurrentSongChangedMessageCommand = function(self, params) --brings things back after CloseThisFolderHasFocusMessageCommand runs

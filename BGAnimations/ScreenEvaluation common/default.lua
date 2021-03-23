@@ -96,7 +96,7 @@ t[#t+1] = LoadActor("./Panes/default.lua", {NumPanes = NumPanes,hash = hash, Alt
 t[#t+1] = Def.Sprite{
 	Name="cursor",
 	Texture=THEME:GetPathG("FF","finger.png"),
-	InitCommand=function(self) self:xy(_screen.cx-10, _screen.cy+110):zoom(.15):visible(false) end,
+	InitCommand=function(self) self:zoom(.15):visible(false) end,
 }
 
 return t

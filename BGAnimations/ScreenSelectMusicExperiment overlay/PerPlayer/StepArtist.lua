@@ -27,7 +27,7 @@ return Def.ActorFrame{
 		self:visible(true):halign( p ):ease(0.5, 275)
 		if #GAMESTATE:GetHumanPlayers() ~= 2 then
 			self:y(_screen.cy + 14)
-			self:x( _screen.cx - (IsUsingWideScreen() and 356 or 346))
+			self:x( _screen.cx - (IsUsingWideScreen() and WideScale(250,356) or 346))
 		elseif player == PLAYER_1 then
 			self:y(_screen.cy + 14)
 			self:x( _screen.cx - (IsUsingWideScreen() and 356 or 346))

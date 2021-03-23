@@ -5,10 +5,10 @@ local BlockZoomY = 0.275
 local StepsToDisplay, SongOrCourse, StepsOrTrails
 
 local GetStepsToDisplay = LoadActor("./StepsToDisplay.lua")
-
+local xOffset = IsUsingWideScreen() and WideScale(-75,-170) or -150
 local t = Def.ActorFrame{
 	Name="StepsDisplayList",
-	InitCommand=function(self) self:vertalign(top):xy(_screen.cx-170, _screen.cy + 70) end,
+	InitCommand=function(self) self:vertalign(top):xy(_screen.cx + xOffset, _screen.cy + 70) end,
 	-- - - - - - - - - - - - - -
 
 	OnCommand=function(self) self:queuecommand("RedrawStepsDisplay") end,
@@ -71,7 +71,7 @@ local t = Def.ActorFrame{
 
 local Grid = Def.ActorFrame{
 	Name="Grid",
-	InitCommand=function(self) self:horizalign(left):vertalign(top):xy(8, -52 ) end,
+	InitCommand=function(self) self:horizalign(left):vertalign(top):xy(WideScale(25,8), -52 ) end,
 }
 
 -- A grid of decorative faux-blocks that will exist
@@ -137,7 +137,7 @@ for RowNumber=1,num_rows do
 			local height = self:GetParent():GetChild("Blocks_"..RowNumber):GetHeight()
 			self:horizalign(right)
 			self:y(RowNumber * height * BlockZoomY)
-			self:x( IsUsingWideScreen() and -146 or -126 )
+			self:x( -146 )
 			self:zoom(0.3)
 		end,
 		SetCommand=function(self, params)
