@@ -119,7 +119,7 @@ local song_mt = {
 							subself:zoom(1):x(-100):diffuse(Color.White):shadowlength(0.75):maxwidth(200):horizalign(left)
 						end,
 						SlideToTopCommand=function(subself)
-							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):halign(.18):maxwidth(200):settext( self.song:GetDisplayMainTitle()) end end,
+							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):halign(.18):maxwidth(200) end end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
 								subself:horizalign(left)
@@ -144,7 +144,10 @@ local song_mt = {
 							subself:zoom(.5):diffuse(.9,.9,.9,1):shadowlength(0.75):maxwidth(200):xy(50,12):halign(1)
 						end,
 						SlideToTopCommand=function(subself)
-							if self.song ~= "CloseThisFolder" then subself:zoom(.8):y(30):maxwidth(250):settext( self.song:GetDisplaySubTitle()) end end,
+							if self.song ~= "CloseThisFolder" then
+								subself:zoom(.8):y(30):maxwidth(250)
+							end
+						end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
 								if SL.Global.GroupType ~= "Courses" then

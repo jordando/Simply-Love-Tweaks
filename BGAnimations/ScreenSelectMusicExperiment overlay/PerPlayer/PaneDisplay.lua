@@ -89,7 +89,7 @@ local af = Def.ActorFrame{
 			else
 				--clear out whatever might have been in Streams and try to parse the chart
 				SL[pn].Streams = {}
-				InitializeMeasureCounterAndModsLevel(player)
+				InitializeMeasureCounterAndModsLevel()
 			end
 			self:GetChild("Measures"):ClearAttributes()
 			self:GetChild("Breakdown"):diffuse(Color.White)

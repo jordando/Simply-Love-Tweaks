@@ -29,9 +29,7 @@ else
 	text = THEME:GetString("Stage", "Event")
 end
 
-for player in ivalues(GAMESTATE:GetHumanPlayers()) do
-	InitializeMeasureCounterAndModsLevel(player)
-end
+InitializeMeasureCounterAndModsLevel(SongNumberInCourse)
 
 -------------------------------------------------------------------------
 
@@ -92,9 +90,7 @@ af[#af+1] = LoadFont("FF/_enge")..{
 	HideCommand=function(self) self:visible(false) end,
 	CurrentSongChangedMessageCommand=function(self)
 		if GAMESTATE:IsCourseMode() then
-			for player in ivalues(GAMESTATE:GetHumanPlayers()) do
-				InitializeMeasureCounterAndModsLevel(player)
-			end
+				InitializeMeasureCounterAndModsLevel(SongNumberInCourse)
 			SongNumberInCourse = SongNumberInCourse + 1
 			self:settext(("%s %d / %d"):format(THEME:GetString("Stage", "Stage"), SongNumberInCourse, SongsInCourse))
 		end
