@@ -60,6 +60,7 @@ Branch.AllowScreenSelectProfile = function()
 	if ThemePrefs.Get("GoStraightToGameplay") then --we want to skip everything and go straight to ScreenSelectMusic
 		local preferred_style = ThemePrefs.Get("AutoStyle") --style still needs to be set. Defaults to single if there's no preference.
 		GAMESTATE:SetCurrentStyle( preferred_style ~= "none" and preferred_style or "single" )
+		SL.Global.GameMode = "Experiment"
 		return "ScreenProfileLoad"
 	elseif ThemePrefs.Get("AllowScreenSelectProfile") then
 		return "ScreenSelectProfile"
