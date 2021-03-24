@@ -2,9 +2,10 @@ LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
 
 local wheel = setmetatable({disable_wrapping = true}, sick_wheel_mt)
 
-local row, col = 3,4
+local row, col = 4,4
 local row_height, col_height = 100, 100
 local grid_offsetX = 0
+local grid_offsetY = 50
 
 local characters = GetAllCharacters()
 
@@ -31,7 +32,7 @@ local item_index = 1
 local position = {}
 for x = 0, row-1 do
 	for y = 0, col-1 do
-		position[#position+1] = {grid_offsetX + (col_height * y), -row_height + (row_height * x)}
+		position[#position+1] = {grid_offsetX + (col_height * y), -grid_offsetY -row_height + (row_height * x)}
 	end
 end
 
@@ -279,7 +280,7 @@ local t = Def.ActorFrame{
 		SCREENMAN:GetTopScreen():StartTransitioningScreen("SM_GoToNextScreen")
 	end,
 
-	wheel:create_actors( "CharacterWheel", NumCharactersToDraw, wheel_item_mt, _screen.cx-grid_offsetX, _screen.cy-200 ),
+	wheel:create_actors( "CharacterWheel", NumCharactersToDraw, wheel_item_mt, _screen.cx-grid_offsetX, _screen.cy-250 ),
 
 	--Info BG
 	Def.Sprite{
@@ -341,7 +342,7 @@ local t = Def.ActorFrame{
 	Def.Sprite{
 		Name="cursor",
 		Texture=THEME:GetPathG("FF","finger.png"),
-		InitCommand=function(self) self:xy(_screen.cx-50-grid_offsetX, _screen.cy-100 ):zoom(.15) end,
+		InitCommand=function(self) self:xy(_screen.cx-50-grid_offsetX, _screen.cy-100-grid_offsetY ):zoom(.15) end,
 	},
 }
 

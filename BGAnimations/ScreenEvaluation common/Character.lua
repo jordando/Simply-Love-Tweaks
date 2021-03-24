@@ -22,11 +22,18 @@ t[#t+1] = Def.Sprite{
         if not STATSMAN:GetCurStageStats():GetPlayerStageStats(player):GetFailed() then
             self:SetStateProperties(character.winIntro):sleep(self:GetAnimationLengthSeconds()):queuecommand("FinalWin")
         else
-            self:SetStateProperties(character.dead):xy(character.deadXY[1],character.deadXY[2])
+            if character.deadIntro then 
+                self:SetStateProperties(character.deadIntro):sleep(self:GetAnimationLengthSeconds()):queuecommand("FinalLose")
+            else
+                self:SetStateProperties(character.dead):xy(character.deadXY[1],character.deadXY[2])
+            end
         end
     end,
     FinalWinCommand=function(self)
         self:SetStateProperties(character.win):xy(character.winXY[1],character.winXY[2])
+    end,
+    FinalLoseCommand=function(self)
+        self:SetStateProperties(character.dead):xy(character.deadXY[1],character.deadXY[2])
     end,
 }
 

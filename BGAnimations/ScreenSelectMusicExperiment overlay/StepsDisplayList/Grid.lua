@@ -37,7 +37,7 @@ local t = Def.ActorFrame{
 						local meter = chart:GetMeter()
 						local difficulty = chart:GetDifficulty()
 						self:GetChild("Grid"):GetChild("Meter_"..RowNumber):playcommand("Set", {Meter=meter, Difficulty=difficulty, Chart=chart})
-						if not ThemePrefs.Get("ShowExtraSongInfo") or GAMESTATE:GetNumSidesJoined() == 2 then
+						if not GAMESTATE:IsCourseMode() and (not ThemePrefs.Get("ShowExtraSongInfo") or GAMESTATE:GetNumSidesJoined() == 2) then
 							self:GetChild("Grid"):GetChild("Blocks_"..RowNumber):playcommand("Set", {Meter=meter, Difficulty=difficulty, Chart=chart})
 						end
 					else
@@ -88,18 +88,20 @@ Grid[#Grid+1] = Def.Sprite{
 		self:y( 3 * height * BlockZoomY )
 		self:customtexturerect(0, 0, num_columns, num_rows)
 		if ThemePrefs.Get("ShowExtraSongInfo") then
-			self:diffusealpha(0)
+			self:visible(false)
 		end
 	end,
 	RedrawStepsDisplayCommand=function(self)
-		if not  ThemePrefs.Get("ShowExtraSongInfo") or GAMESTATE:GetNumSidesJoined() == 2 then
-			self:diffusealpha(1)
+		if not GAMESTATE:IsCourseMode() and (not ThemePrefs.Get("ShowExtraSongInfo") or GAMESTATE:GetNumSidesJoined() == 2) then
+			self:visible(true)
+		else
+			self:visible(false)
 		end
 	end,
 }
 
 for RowNumber=1,num_rows do
-
+	--Actual blocks
 	Grid[#Grid+1] =	Def.Sprite{
 		Name="Blocks_"..RowNumber,
 		Texture=THEME:GetPathB("ScreenSelectMusic", "overlay/StepsDisplayList/_block.png"),
@@ -124,11 +126,14 @@ for RowNumber=1,num_rows do
 			if ValidateChart(GAMESTATE:GetCurrentSong(),params.Chart) then self:diffuse( DifficultyColor(params.Difficulty) )
 			else self:diffuse(.5,.5,.5,1) end
 		end,
+		GroupTypeChangedMessageCommand=function(self)
+			if GAMESTATE:IsCourseMode() then self:playcommand("Unset") end
+		end,
 		UnsetCommand=function(self)
 			self:customtexturerect(0,0,0,0)
 		end
 	}
-
+	-- Text for the block
 	Grid[#Grid+1] = Def.BitmapText{
 		Name="Meter_"..RowNumber,
 		Font="Wendy/_wendy small",

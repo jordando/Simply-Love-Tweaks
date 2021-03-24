@@ -1,11 +1,10 @@
-LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
+local _ = LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
 local character = SL.Global.Character
 local enemy = GetRandomEnemy()
 
 local player = ...
 local pn = ToEnumShortString(player)
 character = GetCharacter(ThemePrefs.Get("Character"))
-
 -- -----------------------------------------------------------------------
 
 local PlayerState = GAMESTATE:GetPlayerState(player)
@@ -24,6 +23,10 @@ local InitializeMeasureCounter = function()
 	streams = SL[pn].Streams
 	streamIndex = 1
     prevMeasure = -1
+    if not streams.TotalStreams then
+        streams.TotalStreams = 0
+        streams.Measures = {}
+    end
     currentEnemyHealth = streams.TotalStreams
 end
 
@@ -271,10 +274,19 @@ af[#af+1] = Def.ActorFrame{
         WinCommand=function(self)
             self:SetStateProperties(character["win"]):xy(character.winXY[1],character.winXY[2])
         end,
+        DeadCommand=function(self)
+            self:SetStateProperties(character["dead"]):xy(character["deadXY"][1],character["deadXY"][2])
+        end,
         HealthStateChangedMessageCommand=function(self, param)
             if param.PlayerNumber == player and param.HealthState == "HealthState_Dead" then
-                self:SetStateProperties(character["dead"]):xy(character["deadXY"][1],character["deadXY"][2])
                 continueUpdating = false
+                if character["deadIntro"] then
+                    self:xy(character.deadIntroXY[1],character.deadIntroXY[2])
+                    currentAnimation="deadIntro"
+                    self:SetStateProperties(character["deadIntro"]):sleep(self:GetAnimationLengthSeconds()):queuecommand("Dead")
+                else
+                    self:queuecommand("Dead")
+                end
             elseif currentAnimation ~= "attack" then
                 if param.HealthState == "HealthState_Danger" then
                     danger = true
