@@ -183,6 +183,8 @@ local t = Def.ActorFrame {
 	CodeMessageCommand=function(self, params)
 		if params.Name == "EscapeFromEventMode" then
 			Input.Enabled = false
+		elseif params.Name == "SortList3" then
+			MESSAGEMAN:Broadcast("DirectInputToSortMenu")
 		end
 	end,
 
@@ -430,21 +432,37 @@ t[#t+1] = Def.ActorFrame{
 		Name="accept",
 		File=THEME:GetPathS("FF","accept.ogg"),
 		PlayStartSoundMessageCommand=function(self) self:play() end,
+		OnCommand=function(self)
+			local rageSound = self:get()
+			rageSound:volume(ThemePrefs.Get("MenuSoundVolume"))
+		end
 	},
 	Def.Sound{
 		Name="move",
 		File=THEME:GetPathS("FF","move.ogg"),
 		PlayMove1SoundMessageCommand=function(self) self:play() end,
+		OnCommand=function(self)
+			local rageSound = self:get()
+			rageSound:volume(ThemePrefs.Get("MenuSoundVolume"))
+		end
 	},
 	Def.Sound{
 		Name="select",
 		File=THEME:GetPathS("FF", "select.ogg"),
 		PlayMove2SoundMessageCommand=function(self) self:play() end,
+		OnCommand=function(self)
+			local rageSound = self:get()
+			rageSound:volume(ThemePrefs.Get("MenuSoundVolume"))
+		end
 	},
 	Def.Sound{
 		Name="cancel",
 		File=THEME:GetPathS("FF","cancel.ogg"),
 		PlayCancelSoundMessageCommand=function(self) self:play() end,
+		OnCommand=function(self)
+			local rageSound = self:get()
+			rageSound:volume(ThemePrefs.Get("MenuSoundVolume"))
+		end
 	},
 }
 

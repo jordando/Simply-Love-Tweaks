@@ -99,4 +99,42 @@ t[#t+1] = Def.Sprite{
 	InitCommand=function(self) self:zoom(.15):visible(false) end,
 }
 
+
+t[#t+1] = Def.Sound{
+	Name="accept",
+	File=THEME:GetPathS("FF","accept.ogg"),
+	PlayStartSoundMessageCommand=function(self) self:play() end,
+	OnCommand=function(self)
+		local rageSound = self:get()
+		rageSound:volume(ThemePrefs.Get("MenuSoundVolume"))
+	end
+}
+t[#t+1] = Def.Sound{
+	Name="move",
+	File=THEME:GetPathS("FF","move.ogg"),
+	PlayMove1SoundMessageCommand=function(self) self:play() end,
+	OnCommand=function(self)
+		local rageSound = self:get()
+		rageSound:volume(ThemePrefs.Get("MenuSoundVolume"))
+	end
+}
+t[#t+1] = Def.Sound{
+	Name="select",
+	File=THEME:GetPathS("FF", "select.ogg"),
+	PlayMove2SoundMessageCommand=function(self) self:play() end,
+	OnCommand=function(self)
+		local rageSound = self:get()
+		rageSound:volume(ThemePrefs.Get("MenuSoundVolume"))
+	end
+}
+t[#t+1] = Def.Sound{
+	Name="cancel",
+	File=THEME:GetPathS("FF","cancel.ogg"),
+	PlayCancelSoundMessageCommand=function(self) self:play() end,
+	OnCommand=function(self)
+		local rageSound = self:get()
+		rageSound:volume(ThemePrefs.Get("MenuSoundVolume"))
+	end
+}
+
 return t

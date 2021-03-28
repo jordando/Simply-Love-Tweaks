@@ -33,7 +33,7 @@ SL_CustomPrefs.Get = function()
 			Values 	= { true, false }
 		},
 		ShowExtraSongInfo = {
-			Default = false,
+			Default = true,
 			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values 	= { true, false }
 		},
@@ -103,6 +103,12 @@ SL_CustomPrefs.Get = function()
 				THEME:GetString("ThemePrefs","Scroll")
 			},
 			Values 	= { "none", "rate", "scroll"}
+		},
+		MenuSoundVolume =
+		{
+			Default = .8,
+			Choices = { 0,10,20,30,40,50,60,70,80,90,100 },
+			Values = { 0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1 }
 		},
 		---------------------------------------------------------------------------------
 		AllowFailingOutOfSet =
