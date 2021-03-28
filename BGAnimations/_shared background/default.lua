@@ -3,9 +3,25 @@ if HolidayCheer() then
 	return LoadActor( THEME:GetPathB("", "_shared background/Snow.lua") )
 end
 
-return Def.Sprite{
-	Texture=THEME:GetPathG("", "videos/dots.mp4"),
-	InitCommand=function(self) self:FullScreen() end
+return Def.ActorFrame{
+	LoadActor(THEME:GetPathB("","_black"))..{
+		InitCommand=function(self)
+			self:visible(ThemePrefs.Get("BlackBackground"))
+		end,
+		BackgroundImageChangedMessageCommand=function(self)
+			self:visible(ThemePrefs.Get("BlackBackground"))
+		end,
+	},
+	Def.Sprite{
+		Texture=THEME:GetPathG("", "videos/dots.mp4"),
+		InitCommand=function(self)
+			self:FullScreen()
+			self:visible(not ThemePrefs.Get("BlackBackground"))
+		end,
+		BackgroundImageChangedMessageCommand=function(self)
+			self:visible(not ThemePrefs.Get("BlackBackground"))
+		end,
+	}
 }
 --[[
 local af = Def.ActorFrame{}
