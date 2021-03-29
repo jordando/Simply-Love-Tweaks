@@ -195,6 +195,8 @@ Handler.ResetHeldButtons = function()
 	HeldButtons["MenuUp"] = false
 	HeldButtons["MenuDown"] = false
 	HeldButtons["Ctrl"] = false
+	HeldButtons["Start"] = false
+	HeldButtons["Select"] = false
 end
 
 local saveOption = function(event)
@@ -286,24 +288,31 @@ Handler.MenuLeft=function(event)
 end
 
 Handler.MenuUp=function(event)
--- change difficulty with MenuUp
-	local song = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentCourse() or GAMESTATE:GetCurrentSong() -- don't do anything if we're on Close This Folder
-	-- don't do anything if there's no easier difficulty or we're not on the songwheel or we're on Close This Folder
-	if Handler.WheelWithFocus==SongWheel and song and NextEasiest(event.PlayerNumber) then
-		MESSAGEMAN:Broadcast("PlayMove2Sound")
-		if GAMESTATE:IsCourseMode() then
-			GAMESTATE:SetCurrentTrail( event.PlayerNumber, NextEasiest(event.PlayerNumber) )
-			args['DifficultyIndex'..PlayerNumber:Reverse()[event.PlayerNumber]] = Difficulty:Reverse()[GAMESTATE:GetCurrentTrail(event.PlayerNumber):GetDifficulty()]
-		else
-			GAMESTATE:SetCurrentSteps( event.PlayerNumber, NextEasiest(event.PlayerNumber) )
-			args['DifficultyIndex'..PlayerNumber:Reverse()[event.PlayerNumber]] = Difficulty:Reverse()[GAMESTATE:GetCurrentSteps(event.PlayerNumber):GetDifficulty()]
+	if HeldButtons["MenuDown"] == true then --Start and Select are held at the same time so open the sort menu
+		MESSAGEMAN:Broadcast("PlayCancelSound")
+		Handler.ResetHeldButtons()
+		CloseCurrentFolder()
+		return false
+	else
+	-- change difficulty with MenuUp
+		local song = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentCourse() or GAMESTATE:GetCurrentSong() -- don't do anything if we're on Close This Folder
+		-- don't do anything if there's no easier difficulty or we're not on the songwheel or we're on Close This Folder
+		if Handler.WheelWithFocus==SongWheel and song and NextEasiest(event.PlayerNumber) then
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
+			if GAMESTATE:IsCourseMode() then
+				GAMESTATE:SetCurrentTrail( event.PlayerNumber, NextEasiest(event.PlayerNumber) )
+				args['DifficultyIndex'..PlayerNumber:Reverse()[event.PlayerNumber]] = Difficulty:Reverse()[GAMESTATE:GetCurrentTrail(event.PlayerNumber):GetDifficulty()]
+			else
+				GAMESTATE:SetCurrentSteps( event.PlayerNumber, NextEasiest(event.PlayerNumber) )
+				args['DifficultyIndex'..PlayerNumber:Reverse()[event.PlayerNumber]] = Difficulty:Reverse()[GAMESTATE:GetCurrentSteps(event.PlayerNumber):GetDifficulty()]
+			end
+			-- if we change the difficulty we want to update things like grades we show on the music wheel and
+			-- the song information in \PerPlayer\PaneDisplay. These are controlled by StepsHaveChangedMessageCommand which
+			-- SongMT broadcasts. We can indirectly call it by using scroll_by_amount(0) which will go nowhere
+			-- but still call transform and therefore StepsHaveChangedMessageCommand
+			Handler.WheelWithFocus:scroll_by_amount(0)
+			MESSAGEMAN:Broadcast("LessLag")
 		end
-		-- if we change the difficulty we want to update things like grades we show on the music wheel and
-		-- the song information in \PerPlayer\PaneDisplay. These are controlled by StepsHaveChangedMessageCommand which
-		-- SongMT broadcasts. We can indirectly call it by using scroll_by_amount(0) which will go nowhere
-		-- but still call transform and therefore StepsHaveChangedMessageCommand
-		Handler.WheelWithFocus:scroll_by_amount(0)
-		MESSAGEMAN:Broadcast("LessLag")
 	end
 	return false
 end
@@ -311,55 +320,74 @@ end
 Handler.MenuDown=function(event)
 --change difficulty with down
 --TODO doesn't work well with edits
-	local song = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentCourse() or GAMESTATE:GetCurrentSong() -- don't do anything if we're on Close This Folder
-	-- do nothing if there's no harder difficulty or we're not on the songwheel or we're on Close This Folder
-	if Handler.WheelWithFocus==SongWheel and song and NextHardest(event.PlayerNumber) then
-		MESSAGEMAN:Broadcast("PlayMove2Sound")
-		if GAMESTATE:IsCourseMode() then
-			GAMESTATE:SetCurrentTrail( event.PlayerNumber, NextHardest(event.PlayerNumber) )
-			args['DifficultyIndex'..PlayerNumber:Reverse()[event.PlayerNumber]] = Difficulty:Reverse()[GAMESTATE:GetCurrentTrail(event.PlayerNumber):GetDifficulty()]
-		else
-			GAMESTATE:SetCurrentSteps( event.PlayerNumber, NextHardest(event.PlayerNumber) )
-			args['DifficultyIndex'..PlayerNumber:Reverse()[event.PlayerNumber]] = Difficulty:Reverse()[GAMESTATE:GetCurrentSteps(event.PlayerNumber):GetDifficulty()]
+	if HeldButtons["MenuUp"] == true then --Start and Select are held at the same time so open the sort menu
+		MESSAGEMAN:Broadcast("PlayCancelSound")
+		Handler.ResetHeldButtons()
+		CloseCurrentFolder()
+		return false
+	else
+		local song = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentCourse() or GAMESTATE:GetCurrentSong() -- don't do anything if we're on Close This Folder
+		-- do nothing if there's no harder difficulty or we're not on the songwheel or we're on Close This Folder
+		if Handler.WheelWithFocus==SongWheel and song and NextHardest(event.PlayerNumber) then
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
+			if GAMESTATE:IsCourseMode() then
+				GAMESTATE:SetCurrentTrail( event.PlayerNumber, NextHardest(event.PlayerNumber) )
+				args['DifficultyIndex'..PlayerNumber:Reverse()[event.PlayerNumber]] = Difficulty:Reverse()[GAMESTATE:GetCurrentTrail(event.PlayerNumber):GetDifficulty()]
+			else
+				GAMESTATE:SetCurrentSteps( event.PlayerNumber, NextHardest(event.PlayerNumber) )
+				args['DifficultyIndex'..PlayerNumber:Reverse()[event.PlayerNumber]] = Difficulty:Reverse()[GAMESTATE:GetCurrentSteps(event.PlayerNumber):GetDifficulty()]
+			end
+				-- if we change the difficulty we want to update things like grades we show on the music wheel and
+			-- the song information in \PerPlayer\PaneDisplay. These are controlled by StepsHaveChangedMessageCommand which
+			-- SongMT broadcasts. We can indirectly call it by using scroll_by_amount(0) which will go nowhere 
+			-- but still call transform and therefore StepsHaveChangedMessageCommand
+			Handler.WheelWithFocus:scroll_by_amount(0)
+			MESSAGEMAN:Broadcast("LessLag")
 		end
-			-- if we change the difficulty we want to update things like grades we show on the music wheel and
-		-- the song information in \PerPlayer\PaneDisplay. These are controlled by StepsHaveChangedMessageCommand which
-		-- SongMT broadcasts. We can indirectly call it by using scroll_by_amount(0) which will go nowhere 
-		-- but still call transform and therefore StepsHaveChangedMessageCommand
-		Handler.WheelWithFocus:scroll_by_amount(0)
-		MESSAGEMAN:Broadcast("LessLag")
 	end
 	return false
 end
 
 Handler.Start=function(event)
-	-- proceed to the next wheel
-	if Handler.WheelWithFocus == SongWheel and Handler.WheelWithFocus:get_info_at_focus_pos().song == "CloseThisFolder" then
-		MESSAGEMAN:Broadcast("PlayCancelSound")
-		CloseCurrentFolder()
-		return false
-	end
-	Handler.Enabled = false
-	Handler.WheelWithFocus.container:queuecommand("Start")
-	SwitchInputFocus(event.GameButton,{PlayerNumber=event.PlayerNumber})
-	if Handler.WheelWithFocus.container then --going from group to song
-		Handler.WheelWithFocus.container:queuecommand("Unhide")
-	else --going from song to options
-		for pn in ivalues(Players) do
-			UnhideOptionRows(pn)
+	if HeldButtons["Select"] == true then --Start and Select are held at the same time so open the sort menu
+		MESSAGEMAN:Broadcast("DirectInputToSortMenu")
+		Handler.Enabled = false
+		Handler.ResetHeldButtons()
+	else
+		-- proceed to the next wheel
+		if Handler.WheelWithFocus == SongWheel and Handler.WheelWithFocus:get_info_at_focus_pos().song == "CloseThisFolder" then
+			MESSAGEMAN:Broadcast("PlayCancelSound")
+			CloseCurrentFolder()
+			return false
 		end
+		Handler.Enabled = false
+		Handler.WheelWithFocus.container:queuecommand("Start")
+		SwitchInputFocus(event.GameButton,{PlayerNumber=event.PlayerNumber})
+		if Handler.WheelWithFocus.container then --going from group to song
+			Handler.WheelWithFocus.container:queuecommand("Unhide")
+		else --going from song to options
+			for pn in ivalues(Players) do
+				UnhideOptionRows(pn)
+			end
+		end
+		MESSAGEMAN:Broadcast("PlayMove2Sound")
 	end
-	MESSAGEMAN:Broadcast("PlayMove2Sound")
 	return false
 end
 
 Handler.Select=function(event)
--- back out of the current wheel to the previous wheel if we're on the songwheel. if we're on the groupwheel then back out to main menu
-	if Handler.WheelWithFocus == SongWheel then
-		CloseCurrentFolder()
-		MESSAGEMAN:Broadcast("PlayCancelSound")
-	elseif event.GameButton == "Back" then
-		SCREENMAN:GetTopScreen():SetNextScreenName( Branch.SSMCancel() ):StartTransitioningScreen("SM_GoToNextScreen") 
+	if HeldButtons["Start"] == true then --Start and Select are held at the same time so open the sort menu
+		MESSAGEMAN:Broadcast("DirectInputToSortMenu")
+		Handler.Enabled = false
+		Handler.ResetHeldButtons()
+	else
+		-- back out of the current wheel to the previous wheel if we're on the songwheel. if we're on the groupwheel then back out to main menu
+		if Handler.WheelWithFocus == SongWheel then
+			CloseCurrentFolder()
+			MESSAGEMAN:Broadcast("PlayCancelSound")
+		elseif event.GameButton == "Back" then
+			SCREENMAN:GetTopScreen():SetNextScreenName( Branch.SSMCancel() ):StartTransitioningScreen("SM_GoToNextScreen") 
+		end
 	end
 	return false
 end
@@ -514,6 +542,9 @@ Handler.Handler = function(event)
 				MESSAGEMAN:Broadcast("SwitchFocusToSongs", {"OptionsWheel"})
 			end
 		end
+	end	
+	if event.type == "InputEventType_Release" then
+		HeldButtons[event.GameButton] = false
 	end
 	if Handler.Enabled == false or not event or not event.PlayerNumber or not event.button then return false end
 	if not GAMESTATE:IsSideJoined(event.PlayerNumber) then
@@ -530,10 +561,7 @@ Handler.Handler = function(event)
 		end
 		return false
 	end
-	if event.type == "InputEventType_Release" then
-		HeldButtons[event.GameButton] = false
-		return false
-	else
+	if event.type ~= "InputEventType_Release" then
 		HeldButtons[event.GameButton] = true
 		if Handler[event.GameButton] then
 			if Handler.WheelWithFocus ~= OptionsWheel then Handler[event.GameButton](event)

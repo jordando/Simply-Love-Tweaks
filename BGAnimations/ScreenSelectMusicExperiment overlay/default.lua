@@ -183,8 +183,6 @@ local t = Def.ActorFrame {
 	CodeMessageCommand=function(self, params)
 		if params.Name == "EscapeFromEventMode" then
 			Input.Enabled = false
-		elseif params.Name == "SortList3" then
-			MESSAGEMAN:Broadcast("DirectInputToSortMenu")
 		end
 	end,
 
@@ -268,10 +266,6 @@ local t = Def.ActorFrame {
 -- Visual elements
 ---------------------------------------------------------------------------
 
--- If the players want a black background, set it here. TODO: would be better to disable the actual background
-if ThemePrefs.Get("BlackBackground") then
-	t[#t+1] = table.insert(t,1,LoadActor( THEME:GetPathB("", "_black")))
-end
 -- right now this just has the black rectangle going across the screen.
 -- there's also a different style of text that are disabled
 t[#t+1] = LoadActor("./SongWheelShared.lua", {row, col, songwheel_y_offset})
