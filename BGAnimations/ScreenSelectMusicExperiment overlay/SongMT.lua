@@ -10,7 +10,10 @@ table.insert(awards,Color.Blue)
 
 local GetSongDisplayName = function(song, index)
 	local main, sub
-	if IsSpecialOrder() and index then
+	if SL.Global.GroupType == "Courses" then
+		main = song:GetDisplayFullTitle()
+		sub = ""
+	elseif IsSpecialOrder() and index then
 		local block = GetSpecialOrder(index)
 		local special = IsSpecialOrder()
 		if block[special[1]] and block[special[2]] then
@@ -27,7 +30,8 @@ local GetSongDisplayName = function(song, index)
 	end
 	return main, sub
 end
-local songWidth = WideScale(250,250)
+local songWidth = WideScale(250,350)
+local songHeight = 40
 
 local song_mt = {
 	__index = {
@@ -48,34 +52,33 @@ local song_mt = {
 				OnCommand=function(subself)
 					subself:finishtweening():sleep(0.25):linear(0.25):diffusealpha(1):queuecommand("PlayMusicPreview")
 				end,
-
+				-- someone pressed start on the song wheel so hide everything except the focus
 				StartCommand=function(subself)
 					-- slide the chosen Actor into place
 					if self.index == SongWheel:get_actor_item_at_focus_pos().index then
 						subself:queuecommand("SlideToTop")
-						MESSAGEMAN:Broadcast("SwitchFocusToSingleSong")
-
 					-- hide everything else
 					else
 						subself:visible(false)
 					end
 				end,
+				-- hide the song wheel including the focus song
 				HideCommand=function(subself)
 					stop_music()
 					subself:visible(false):diffusealpha(0)
 				end,
+				-- unhide the song wheel
 				UnhideCommand=function(subself)
 					-- we're going back to song selection
 					-- slide the chosen song ActorFrame back into grid position
 					if self.index == SongWheel:get_actor_item_at_focus_pos().index then
 						subself:playcommand("SlideBackIntoGrid")
-						MESSAGEMAN:Broadcast("SwitchFocusToSongs")
 					end
-
 					subself:visible(true):sleep(0.3):linear(0.2):diffusealpha(1)
 				end,
+				SetSongViaSearchMessageCommand=function(subself) subself:playcommand("Unhide") end,
 				SlideToTopCommand=function(subself) subself:linear(0.2):xy(_screen.cx + 150, row.h+43) end,
-				SlideBackIntoGridCommand=function(subself) subself:linear(0.2):y( math.floor(13/2)*47 ):x( _screen.w/1.5+25 )end, --y = num_items/2 * 47
+				SlideBackIntoGridCommand=function(subself) subself:linear(0.2):y( math.floor(14/2)*(songHeight + 1) ):x( _screen.w/1.5+25 )end, --y = num_items/2 * 47
 
 				-- wrap the function that plays the preview music in its own Actor so that we can
 				-- call sleep() and queuecommand() and stoptweening() on it and not mess up other Actors
@@ -85,10 +88,18 @@ local song_mt = {
 				},
 				-- AF for MusicWheel item
 				Def.ActorFrame{
+					InitCommand=function(self) self:x(IsUsingWideScreen() and WideScale(40,0) or 15) end,
 					GainFocusCommand=function(subself) subself:y(0) end,
 					LoseFocusCommand=function(subself) subself:y(0) end,
 					SlideBackIntoGridCommand=function(subself) subself:linear(0.12):diffusealpha(1) end,
-
+					--box behind song name
+					Def.ActorFrame {
+						InitCommand = function(subself) self.song_box = subself end,
+						Def.Quad { InitCommand=function(self) self:zoomto(songWidth, songHeight):diffuseleftedge(color("#23279e")):diffuserightedge(Color.Black) end },
+						Def.Quad { InitCommand=function(self) self:zoomto(songWidth-2, songHeight-2*2):MaskSource(true) end },
+						Def.Quad { InitCommand=function(self) self:zoomto(songWidth,songHeight):MaskDest() end },
+						Def.Quad { InitCommand=function(self) self:diffusealpha(0):clearzbuffer(true) end },
+					},
 					-- blinking quad behind focus box
 					Def.Quad{
 						InitCommand=function(subself) subself:diffuse(0,0,0,0):zoomto(0,0) end,
@@ -100,30 +111,21 @@ local song_mt = {
 						SlideToTopCommand=function(subself) subself:visible( false) end,
 						SlideBackIntoGridCommand=function(subself) subself:visible( true) end,
 					},
-					--box behind song name
-					Def.ActorFrame {
-						InitCommand = function(subself) self.song_box = subself end,
-						SlideToTopCommand=function(subself) subself:linear(.12):diffusealpha(0):visible(false) end,
-						SlideBackIntoGridCommand=function(subself) subself:linear(.12):diffusealpha(1):visible( true) end,
-						Def.Quad { InitCommand=function(subself) subself:zoomto(songWidth,40):diffuse(.5,.5,.5,.5):diffusealpha(.5) end },
-						Def.Quad { InitCommand=function(self) self:zoomto(songWidth-2, 40-2*2):MaskSource(true) end },
-						Def.Quad { InitCommand=function(self) self:zoomto(songWidth,40):MaskDest() end },
-						Def.Quad { InitCommand=function(self) self:diffusealpha(0):clearzbuffer(true) end },
-					},
 					-- title
 					Def.BitmapText{
 						Font="Common Normal",
 						InitCommand=function(subself)
 							self.title_bmt = subself
-							subself:zoom(1):y(0):diffuse(Color.White):shadowlength(0.75):maxwidth(190)
+							subself:zoom(1):x(-100):diffuse(Color.White):shadowlength(0.75):maxwidth(200):horizalign(left)
 						end,
 						SlideToTopCommand=function(subself)
-							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):maxwidth(125):settext( self.song:GetDisplayMainTitle()) end end,
+							if self.song ~= "CloseThisFolder" then subself:zoom(1.5):halign(.18):maxwidth(200) end end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
+								subself:horizalign(left)
 								local main, sub = GetSongDisplayName(self.song, self.index)
-								self.title_bmt:settext(main):maxwidth(190):zoom(1.2)
-								self.subtitle_bmt:settext(sub):maxwidth(190):zoom(1.2)
+								self.title_bmt:settext(main):maxwidth(200):zoom(1.2)
+								self.subtitle_bmt:settext(sub):maxwidth(200):zoom(1.2)
 							end
 						end,
 						GainFocusCommand=function(subself) --make the words a little bigger to make it seem like they're popping out
@@ -139,13 +141,18 @@ local song_mt = {
 						Font="Common Normal",
 						InitCommand=function(subself)
 							self.subtitle_bmt = subself
-							subself:zoom(.5):diffuse(.9,.9,.9,1):shadowlength(0.75):maxwidth(190):xy(100,12):halign(1)
+							subself:zoom(.5):diffuse(.9,.9,.9,1):shadowlength(0.75):maxwidth(200):xy(50,12):halign(1)
 						end,
 						SlideToTopCommand=function(subself)
-							if self.song ~= "CloseThisFolder" then subself:zoom(.8):y(17):maxwidth(250):settext( self.song:GetDisplaySubTitle()) end end,
+							if self.song ~= "CloseThisFolder" then
+								subself:zoom(.8):y(30):maxwidth(250)
+							end
+						end,
 						SlideBackIntoGridCommand=function(subself)
 							if self.song  ~= "CloseThisFolder" then
-								subself:settext( self.song:GetDisplaySubTitle() ):y(11):maxwidth(250):zoom(.65)
+								if SL.Global.GroupType ~= "Courses" then
+									subself:settext( self.song:GetDisplaySubTitle() ):y(11):maxwidth(250):zoom(.65)
+								end
 							end
 						end,
 						GainFocusCommand=function(subself) --make the words a little bigger to make it seem like they're popping out
@@ -156,26 +163,27 @@ local song_mt = {
 							subself:y(12):visible(true)
 						end,
 					},
-					
-
 				},
 			}
 			--Things we need two of
 			for pn in ivalues({'P1','P2'}) do
 				local side = pn == 'P1' and -1 or 1
-				local grade_position = WideScale(140,150)
-				local pass_position = 120
+				local grade_position = IsUsingWideScreen() and WideScale(120,150) or 110
+				local pass_position = WideScale(130,180)
 				--A box for the pass type
 				--TODO this might be better as an AMV
 				af[#af+1] = Def.ActorFrame {
-					InitCommand=function(subself) subself:visible(true) self.pass_box_outline = subself  end,
+					InitCommand=function(subself)
+						subself:visible(true) self.pass_box_outline = subself
+						subself:x(IsUsingWideScreen() and WideScale(40,0) or 15)
+					end,
 					--Box on the side of the musicwheel item
 					Def.ActorFrame{
 						SlideToTopCommand=function(subself) subself:linear(.12):diffusealpha(0) end,
 						SlideBackIntoGridCommand=function(subself) subself:linear(.12):diffusealpha(1) end,
-						Def.Quad { InitCommand=function(self) self:zoomto(10,40):x(side*pass_position):diffuse(.25,.25,.25,.25):diffusealpha(.5) end, },
-						Def.Quad { InitCommand=function(self) self:zoomto(10-2, 40-2*2):x(side*pass_position):MaskSource(true) end },
-						Def.Quad { InitCommand=function(self) self:zoomto(10,40):x(side*pass_position):MaskDest() end },
+						Def.Quad { InitCommand=function(self) self:zoomto(10,songHeight):x(side*pass_position):diffuse(.25,.25,.25,.25):diffusealpha(.5) end, },
+						Def.Quad { InitCommand=function(self) self:zoomto(10-2, songHeight-2*2):x(side*pass_position):MaskSource(true) end },
+						Def.Quad { InitCommand=function(self) self:zoomto(10,songHeight):x(side*pass_position):MaskDest() end },
 						Def.Quad { InitCommand=function(self) self:diffusealpha(0):clearzbuffer(true) end },
 					},
 					--Colors to fill in the box
@@ -183,14 +191,14 @@ local song_mt = {
 						InitCommand=function(subself) subself:visible(false) self[pn..'pass_box'] = subself end,
 						SlideToTopCommand=function(subself) subself:linear(.12):diffusealpha(0) end,
 						SlideBackIntoGridCommand=function(subself) subself:linear(.12):diffusealpha(1) end,
-						Def.Quad {InitCommand=function(self) self:zoomto(10-2, 40-2*2):x(side*pass_position) end},
+						Def.Quad {InitCommand=function(self) self:zoomto(10-2, songHeight-2*2):x(side*pass_position) end},
 					},
 					-- The grade shown to the right of the song box
 					Def.Sprite{
 						Texture=THEME:GetPathG("MusicWheelItem","Grades/grades 1x18.png"),
 						InitCommand=function(subself) subself:visible(false):zoom(WideScale(.25,.3)):x(side*grade_position):animate(0) self[pn..'grade_sprite'] = subself end,
 						SlideToTopCommand=function(subself)
-							subself:linear(.12):diffusealpha(0):xy(side*-1*-55,60):zoom(1):linear(.12):diffusealpha(1)
+							subself:linear(.12):diffusealpha(0):xy(-35+(side*-1*-45),70):zoom(1):linear(.12):diffusealpha(1)
 						end,
 						SlideBackIntoGridCommand=function(subself)
 							subself:linear(.12):diffusealpha(0):zoom( WideScale(.25, 0.3)):xy(side*grade_position,0):linear(.12):diffusealpha(1)
@@ -207,19 +215,28 @@ local song_mt = {
 			if has_focus then
 				--TODO find out why this is called twice every time we go to ScreenSelectMusicExperiment
 				if self.song ~= "CloseThisFolder" then
-					SL.Global.LastSeenSong = self.song
+					if SL.Global.GroupType ~= "Courses" then SL.Global.LastSeenSong = self.song end
 					--Input.lua will transform the wheel when changing difficulty (to change the grade sprite) but we
 					--don't need to restart the preview music because only difficulty changed
 					--so check here that transform was called because we're moving to a new song
 					--or because we're initializing ScreenSelectMusicExperiment
-					if self.song ~= GAMESTATE:GetCurrentSong() or SL.Global.GroupToSong or SL.Global.LastSeenIndex ~= self.index then
-						if SL.Global.Debug then  Trace("SongMT setting current song: "..self.song:GetMainTitle()) end
-						GAMESTATE:SetCurrentSong(self.song)
+					if self.song ~= GAMESTATE:GetCurrentSong() and self.song ~= GAMESTATE:GetCurrentCourse()
+					or SL.Global.GroupToSong or SL.Global.LastSeenIndex ~= self.index then
+						if SL.Global.Debug then
+							local title
+							if SL.Global.GroupType == "Courses" then title = self.song:GetDisplayFullTitle()
+							else title = self.song:GetMainTitle() end
+							Trace("SongMT setting current song: "..title) end
+						if SL.Global.GroupType == "Courses" then GAMESTATE:SetCurrentCourse(self.song)
+						else
+							GAMESTATE:SetCurrentSong(self.song)
+							SL.Global.LastSongPlayedName = GAMESTATE:GetCurrentSong():GetDisplayMainTitle()
+							SL.Global.LastSongPlayedGroup = GAMESTATE:GetCurrentSong():GetGroupName()
+						end
 						SL.Global.GroupToSong = false
 						SL.Global.LastSeenIndex = self.index
 						SL.Global.SongTransition = true
-						SL.Global.LastSongPlayedName = GAMESTATE:GetCurrentSong():GetDisplayMainTitle()
-						SL.Global.LastSongPlayedGroup = GAMESTATE:GetCurrentSong():GetGroupName()
+
 						MESSAGEMAN:Broadcast("CurrentSongChanged", {song=self.song, index=self.index})
 						MESSAGEMAN:Broadcast("BeginSongTransition") --See the MessageCommand in ScreenSelectMusicExperiment/default.lua for details
 						stop_music()
@@ -246,11 +263,15 @@ local song_mt = {
 					local current_difficulty
 					local grade
 					local steps
-					if GAMESTATE:GetCurrentSteps(pn) then
-						current_difficulty = GAMESTATE:GetCurrentSteps(pn):GetDifficulty() --are we looking at steps?
-					end
-					if current_difficulty and self.song:GetOneSteps(GetStepsType(),current_difficulty) then
-						steps = self.song:GetOneSteps(GetStepsType(),current_difficulty)
+					if SL.Global.GroupType == "Courses" then
+						--what we do for courses
+					else
+						if GAMESTATE:GetCurrentSteps(pn) then
+							current_difficulty = GAMESTATE:GetCurrentSteps(pn):GetDifficulty() --are we looking at steps?
+						end
+						if current_difficulty and self.song:GetOneSteps(GetStepsType(),current_difficulty) then
+							steps = self.song:GetOneSteps(GetStepsType(),current_difficulty)
+						end
 					end
 					if steps then
 						--color the pass_box
@@ -290,7 +311,7 @@ local song_mt = {
 					self.title_bmt:diffuse(Color.Red)
 				end
 				--handle row hiding
-				if item_index == 1 or item_index > 11 then
+				if item_index == 1 or item_index > 12 then
 					self.container:visible(false)
 				else
 					self.container:visible(true)
@@ -299,18 +320,8 @@ local song_mt = {
 				-- handle row shifting speed
 				self.container:linear(0.2)
 
-				local middle_index = math.floor(num_items/2)
+				self.container:y( 41*item_index ):x( _screen.w/1.5+25 )
 
-				-- top row
-				if item_index < middle_index  then
-						self.container:y( 47*item_index ):x(_screen.w/1.5+25*WideScale(1,(middle_index-item_index)) )
-				-- bottom row
-				elseif item_index > middle_index then
-						self.container:y( 47*item_index ):x(_screen.w/1.5+25*WideScale(1,(item_index-middle_index)) )
-				-- center row
-				elseif item_index == middle_index then
-					self.container:y( 47*item_index ):x( _screen.w/1.5+25 )
-				end
 			end
 		end,
 

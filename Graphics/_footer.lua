@@ -6,17 +6,17 @@ return Def.Quad{
 	Name="Footer",
 	InitCommand=function(self)
 		self:draworder(90):zoomto(_screen.w, 32):vertalign(bottom):y(32)
+		self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
+		-- old SL values
 		if DarkUI() then
-			self:diffuse(dark)
+		--	self:diffuse(dark)
 		else
-			self:diffuse(light)
+		--	self:diffuse(light)
 		end
 	end,
 	ScreenChangedMessageCommand=function(self)
 		if SCREENMAN:GetTopScreen():GetName() == "ScreenSelectMusicCasual" then
 			self:diffuse(dark)
-		elseif SCREENMAN:GetTopScreen():GetName() == "ScreenSelectMusicExperiment" then
-			self:diffuse(light)  
 		end
 	end
 }

@@ -1,4 +1,4 @@
-local af, num_panes = unpack(...)
+local af, num_panes, altPaneNames = unpack(...)
 
 if not af
 or type(num_panes) ~= "number"
@@ -24,6 +24,21 @@ local mpn = GAMESTATE:GetMasterPlayerNumber()
 local primary_i   = clamp(SL[ToEnumShortString(mpn)].EvalPanePrimary,   1, num_panes)
 local secondary_i = clamp(SL[ToEnumShortString(mpn)].EvalPaneSecondary, 1, num_panes)
 if SL.Global.GameMode == "Experiment" then secondary_i = 1 end
+
+local altPanes = {}
+
+local position = {}
+
+local row, col = 6,8
+for y = 1, row do
+	for x = 1, col do
+		position[#position+1] = {130 + (57 * x), 205 + (25 * y)}
+		if x <= (col/2) then table.insert(position[#position],"left")
+		else table.insert(position[#position],"right") end
+
+	end
+end
+local cursor_index = 1
 -- -----------------------------------------------------------------------
 -- initialize local tables (panes, active_pane) for the the input handling function to use
 for controller=1,2 do
@@ -31,7 +46,9 @@ for controller=1,2 do
 	panes[controller] = {}
 	-- Iterate through all potential panes, and only add the non-nil ones to the
 	-- list of panes we want to consider.
-
+	for i = 1, #altPaneNames do
+		altPanes[altPaneNames[i]] = af:GetChild("Panes"):GetChild(altPaneNames[i])
+	end
 	for i=1,num_panes do
 		local pane = af:GetChild("Panes"):GetChild( ("Pane%i_SideP%i"):format(i, controller) )
 
@@ -63,7 +80,6 @@ for controller=1,2 do
 		end
 	end
 end
-
 -- -----------------------------------------------------------------------
 -- don't allow double to initialize into a configuration like
 -- EvalPanePrimary=2
@@ -103,6 +119,24 @@ if style == "OnePlayerTwoSides" then
 	end
 end
 
+-- for use with ExperimentPane 5: when a player wants to look at the static replay for
+-- a certain judgment we use this to figure out what foot/arrow they're looking at
+local noteInfo = function(index)
+	local judgment = math.floor((index-.5) / 8) + 1
+	local arrows = {'left', 'down', 'up', 'right'}
+	local tempArrow = index % 8
+	local foot = 'left'
+	if tempArrow > 4 then
+		tempArrow = tempArrow - 4
+		foot = 'right'
+	end
+	if tempArrow == 0 then
+		tempArrow = 4
+		foot = 'right'
+	end
+	local arrow = arrows[tempArrow]
+	return {Foot = foot, Arrow = arrow, Judgment = judgment}
+end
 -- -----------------------------------------------------------------------
 -- input handling function
 
@@ -110,6 +144,9 @@ local OtherController = {
 	GameController_1 = "GameController_2",
 	GameController_2 = "GameController_1"
 }
+
+local judgmentMode = false --when input handler is used for choosing a judgment
+local popupMode = false --when input handler is used for choosing a specific note
 
 return function(event)
 	if not (event and event.PlayerNumber and event.button) then return false end
@@ -124,10 +161,21 @@ return function(event)
 	local  cn = tonumber(ToEnumShortString(event.controller))
 	local ocn = tonumber(ToEnumShortString(OtherController[event.controller]))
 
-
-	if event.type == "InputEventType_FirstPress" and panes[cn] then
-
-		if event.GameButton == "MenuRight" or event.GameButton == "MenuLeft" then
+	local defaultBehavior = function(event)
+		if event.GameButton == "Select" and #players == 1 and active_pane[cn] == 5 then
+			if SL[ToEnumShortString(GAMESTATE:GetMasterPlayerNumber())].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].heldTimes then
+				judgmentMode = true
+				af:GetChild("cursor"):visible(true)
+				af:GetChild("cursor"):xy(position[cursor_index][1] - WideScale(95,0), position[cursor_index][2])
+				SM("STATIC REPLAY")
+				for player in ivalues(PlayerNumber) do
+					SCREENMAN:set_input_redirected(player, judgmentMode)
+				end
+			else
+				SM("Enable held miss tracking to use this feature.")
+			end
+		elseif event.GameButton == "MenuRight" or event.GameButton == "MenuLeft" then
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
 			if event.GameButton == "MenuRight" then
 				active_pane[cn] = (active_pane[cn] % #panes[cn]) + 1
 				-- don't allow duplicate panes to show in single/double
@@ -159,7 +207,6 @@ return function(event)
 					-- and only show the one full-width pane
 					panes[cn][active_pane[cn]]:visible(true)
 
-
 				-- if this controller is switching panes while the OTHER controller was viewing Pane2 or Pane5
 				elseif panes[ocn][active_pane[ocn]]:GetChild(""):GetCommand("ExpandForDouble") then
 					panes[ocn][active_pane[ocn]]:visible(false)
@@ -172,7 +219,6 @@ return function(event)
 					panes[ocn][active_pane[ocn]]:visible(true)
 
 				else
-
 					-- hide all panes for this side
 					for i=1,#panes[cn] do
 						panes[cn][i]:visible(false)
@@ -181,7 +227,6 @@ return function(event)
 					panes[cn][active_pane[cn]]:visible(true)
 					panes[ocn][active_pane[ocn]]:visible(true)
 				end
-
 
 			-- single, versus
 			else
@@ -192,8 +237,96 @@ return function(event)
 				-- only show the pane we want on this side
 				panes[cn][active_pane[cn]]:visible(true)
 			end
-
+			-- hide all the alt panes
+			if next(altPanes) then
+				for i = 1,#altPaneNames do
+					altPanes[altPaneNames[i]]:visible(false)
+				end
+			end
 			af:queuecommand("PaneSwitch")
+		elseif event.GameButton == "MenuUp" and #players == 1 then
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
+			if altPanes['ExperimentPane'..active_pane[cn]..'_Alt'] then
+				altPanes['ExperimentPane'..active_pane[cn]..'_Alt']:visible(true)
+				for i=1,#panes[cn] do
+					panes[cn][i]:visible(false)
+				end
+			end
+		elseif event.GameButton == "MenuDown" and #players == 1 then
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
+			if altPanes['ExperimentPane'..active_pane[cn]..'_Alt'] then
+				altPanes['ExperimentPane'..active_pane[cn]..'_Alt']:visible(false)
+				panes[cn][active_pane[cn]]:visible(true)
+			end
+		end
+	end
+
+	local popupBehavior = function(event)
+		if event.GameButton == "Select" and #players == 1 and active_pane[cn] == 5 then
+			popupMode = false
+			af:GetChild("cursor"):visible(true)
+			MESSAGEMAN:Broadcast("EndPopup")
+			MESSAGEMAN:Broadcast("PlayCancelSound")
+		--input for the popup window
+		elseif event.GameButton == "MenuRight" or event.GameButton == "MenuDown" then
+			MESSAGEMAN:Broadcast("ScrollPopUpRight")
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
+		elseif event.GameButton == "MenuLeft" or event.GameButton == "MenuUp" then
+			MESSAGEMAN:Broadcast("ScrollPopUpLeft")
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
+		elseif event.GameButton == "Start" then
+			popupMode = false
+			af:GetChild("cursor"):visible(true)
+			MESSAGEMAN:Broadcast("EndPopup")
+			MESSAGEMAN:Broadcast("PlayCancelSound")
+		end
+	end
+
+	local choosingJudgmentBehavior = function(event)
+		if event.GameButton == "Select" and #players == 1 and active_pane[cn] == 5 then
+			judgmentMode = false
+			af:GetChild("cursor"):visible(false)
+			MESSAGEMAN:Broadcast("EndAnalyzeJudgment")
+			SM("Normal Mode")
+			for player in ivalues(PlayerNumber) do
+				SCREENMAN:set_input_redirected(player, judgmentMode)
+			end
+		elseif event.GameButton == "MenuRight" then
+			if cursor_index < (row * col) then 
+				MESSAGEMAN:Broadcast("PlayMove1Sound")
+				cursor_index = cursor_index + 1 
+			end
+		elseif event.GameButton == "MenuLeft" then
+			if cursor_index > 1 then 
+				MESSAGEMAN:Broadcast("PlayMove1Sound")
+				cursor_index = cursor_index - 1
+			end
+		elseif event.GameButton == "MenuDown" then
+			if cursor_index <= ((row-1) * col) then 
+				MESSAGEMAN:Broadcast("PlayMove1Sound")
+				cursor_index = cursor_index + col
+			end
+		elseif event.GameButton == "MenuUp" then
+			if cursor_index > col then
+				MESSAGEMAN:Broadcast("PlayMove1Sound")
+				cursor_index = cursor_index - col
+			end
+		elseif event.GameButton == "Start" then
+			MESSAGEMAN:Broadcast("PlayStartSound")
+			popupMode = true
+			af:GetChild("cursor"):visible(false)
+			MESSAGEMAN:Broadcast("AnalyzeJudgment",noteInfo(cursor_index))
+		end
+		af:GetChild("cursor"):smooth(.1):xy(position[cursor_index][1] - WideScale(95,0), position[cursor_index][2])
+	end
+
+	if event.type == "InputEventType_FirstPress" and panes[cn] then
+		if popupMode then
+			popupBehavior(event)
+		elseif judgmentMode then
+			choosingJudgmentBehavior(event)
+		else
+			defaultBehavior(event)
 		end
 	end
 

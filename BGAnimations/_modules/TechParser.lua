@@ -158,7 +158,7 @@ local function ParseTech(lines)
             if debug then Trace("Potential footswitch at line "..i) end
             if debug then Trace("Doublestep. Keeping "..previousFoot.." on "..note) end
         else
-            --validSteps is a table of what panels [foot] can hit depending on where the [previousFoot] is 
+            --validSteps is a table of what panels [foot] can hit depending on where the [previousFoot] is
             if validSteps[foot][currentFoot[previousFoot]][note] then
                 techType = "none"
             else
@@ -267,7 +267,7 @@ local function ParseTech(lines)
                         if debug then Trace("Begin new segment") end
                         possibleStart = #parsedSteps+1
                         BeginNewSegment()
-                        parsedSteps[#parsedSteps+1] = {Stream = false, Note = note, Foot = GetPreviousFoot(), TechType = "none"}
+                        parsedSteps[#parsedSteps+1] = {Stream = false, Note = note, Foot = GetPreviousFoot(), TechType = "none", Pattern = "none"}
                     --if we're in the middle of a pattern then check to see what the next step is like
                     else
                         --the note before this was the actual start of the stream
@@ -275,11 +275,19 @@ local function ParseTech(lines)
                             parsedSteps[possibleStart].Stream = true
                         end
                         local techType = CheckNextFoot(GetNextFoot())
-                        parsedSteps[#parsedSteps+1] = {Stream = checkingPattern,Foot = GetPreviousFoot(), TechType = techType, Note = note}
+                        local pattern = "none"
+                        if #parsedSteps > 1 and techType == "none" then
+                            local prev = parsedSteps[#parsedSteps-1].Note
+                            if prev == note then pattern = "repeated step"
+                            elseif note == "up" and prev == "down" then pattern = "candle D>U"
+                            elseif note == "down" and prev == "up" then pattern = "candle U>D"
+                            end
+                        end
+                        parsedSteps[#parsedSteps+1] = {Stream = checkingPattern,Foot = GetPreviousFoot(), TechType = techType, Note = note, Pattern = pattern}
                     end
                 else
                     if debug then Trace("Jump") end
-                    parsedSteps[#parsedSteps+1] = {Stream = checkingPattern,Note = sanitizedLine, TechType = "Jump"}
+                    parsedSteps[#parsedSteps+1] = {Stream = checkingPattern,Note = sanitizedLine, TechType = "Jump", Pattern = "none"}
                     if checkingPattern then jumpstream = jumpstream + 1 end
                 end
             end

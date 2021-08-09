@@ -44,13 +44,12 @@ Branch.AfterScreenRankingDouble = function()
 end
 
 SelectMusicOrCourse = function()
+	if SL.Global.GameMode == "Experiment" then return "ScreenSelectMusicExperiment" end
 	if GAMESTATE:IsCourseMode() then
 		return "ScreenSelectCourse"
 	else
 		if SL.Global.GameMode == "Casual" then
 			return "ScreenSelectMusicCasual"
-		elseif SL.Global.GameMode == "Experiment" then
-			return "ScreenSelectMusicExperiment"
 		end
 
 		return "ScreenSelectMusic"
@@ -61,6 +60,7 @@ Branch.AllowScreenSelectProfile = function()
 	if ThemePrefs.Get("GoStraightToGameplay") then --we want to skip everything and go straight to ScreenSelectMusic
 		local preferred_style = ThemePrefs.Get("AutoStyle") --style still needs to be set. Defaults to single if there's no preference.
 		GAMESTATE:SetCurrentStyle( preferred_style ~= "none" and preferred_style or "single" )
+		SL.Global.GameMode = "Experiment"
 		return "ScreenProfileLoad"
 	elseif ThemePrefs.Get("AllowScreenSelectProfile") then
 		return "ScreenSelectProfile"
@@ -73,11 +73,23 @@ Branch.AllowScreenSelectColor = function()
 	if ThemePrefs.Get("AllowScreenSelectColor") and not ThemePrefs.Get("RainbowMode") then
 		return "ScreenSelectColor"
 	else
-		return Branch.AfterScreenSelectColor()
+		return Branch.AllowScreenSelectCharacter()
 	end
 end
 
 Branch.AfterScreenSelectColor = function()
+	return Branch.AllowScreenSelectCharacter()
+end
+
+Branch.AllowScreenSelectCharacter = function()
+	if ThemePrefs.Get("AllowScreenSelectCharacter") then
+		return "ScreenSelectCharacter"
+	else
+		return Branch.AfterScreenSelectCharacter()
+	end
+end
+
+Branch.AfterScreenSelectCharacter = function()
 	local preferred_style = ThemePrefs.Get("AutoStyle")
 
 	if preferred_style ~= "none"
@@ -102,7 +114,16 @@ Branch.AfterScreenSelectColor = function()
 		-- the engine, but I guess we're doing it here, in SL-Branches.lua, for now.
 		GAMESTATE:SetCurrentStyle( preferred_style )
 
-		return "ScreenSelectPlayMode"
+		--TODO: don't let people choose this right now
+		--return "ScreenSelectPlayMode"
+
+		SL.Global.GameMode = "Experiment"
+		-- now that a GameMode has been selected, set related preferences
+		SetGameModePreferences()
+		-- and reload the theme's Metrics
+		THEME:ReloadMetrics()
+		
+		return "ScreenProfileLoad"
 	end
 
 	return "ScreenSelectStyle"

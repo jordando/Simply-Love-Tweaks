@@ -73,7 +73,12 @@ local aliveSeconds = pss:GetAliveSeconds() / rate
 
 return Def.ActorFrame{
 	OnCommand=function(self) self:y(_screen.cy+200.5) end,
-
+    Def.Sprite{
+        Texture=THEME:GetPathG("FF","SkinnyCard.png"),
+        InitCommand=function(self)
+            self:zoomy(.6):zoomx(.98):xy(160,73)
+        end
+    },
 	LoadFont("Common Normal")..{
         InitCommand=function(self)
             self:zoom(font_zoom):xy(width/1.4,-5):align(1,0):vertspacing(-6):_wrapwidthpixels((width-10) / font_zoom)

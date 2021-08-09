@@ -75,16 +75,17 @@ CreateBarGraph = function(_w, _h)
 		self:SetDrawState({Mode="DrawMode_Quads"})
 	end
 
-	local af=Def.ActorFrame{}
+	local af=Def.ActorFrame{InitCommand=function(self) self:visible(false) end}
 	af[#af+1]=amv
 	af[#af+1]=legend
 	af.UpdateGroupInfoMessageCommand=function(self, params) group_info = params[1] end
 	af.CurrentGroupChangedMessageCommand=function(self, params)
+		if SL.Global.GroupType == "Courses" then return end -- no bar graph on groupwheel shared for course mode
 		local group = nil
 		--see if we were passed a group
-		if params and params.group and group_info[params.group] then group = params.group
+		if params and params.group and group_info and group_info[params.group] then group = params.group
 		--the first time we run we won't have params.group passed so we set based on the current group
-		elseif group_info[GetCurrentGroup()] then group = GetCurrentGroup() end
+		elseif group_info and group_info[GetCurrentGroup()] then group = GetCurrentGroup() end
 		--if UpdateGroupInfoMessageCommand needs to be called then we won't have the correct group in group_info. only run if we have good group info
 		if group then
 			--these are local variables that the legend and bargraph both need to use

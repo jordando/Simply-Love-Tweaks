@@ -2,7 +2,7 @@ local w, h = 75, 33
 
 return Def.ActorFrame{
 	Name="StartButton",
-	InitCommand=function(self) self:diffusealpha(0):xy(_screen.cx, _screen.h-76) end,
+	InitCommand=function(self) self:diffusealpha(0):xy(_screen.cx + WideScale(50,0), _screen.h-76) end,
 	SwitchFocusToSongsMessageCommand=function(self) self:linear(0.1):diffusealpha(0) end,
 	SwitchFocusToGroupsMessageCommand=function(self) self:linear(0.1):diffusealpha(0) end,
 	SwitchFocusToSingleSongMessageCommand=function(self) self:sleep(0.3):linear(0.1):diffusealpha(1) end,

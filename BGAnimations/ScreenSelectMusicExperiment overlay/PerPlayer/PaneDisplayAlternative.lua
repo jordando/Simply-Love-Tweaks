@@ -1,16 +1,16 @@
 local player = ...
 local pn = ToEnumShortString(player)
 local rv
-local zoom_factor = WideScale(0.8, 0.9)
+local zoom_factor = WideScale(0.8, 0.85)
 
 local dataX_col1 = WideScale(-75, -96)
 local highscoreX = WideScale(56, 80)
-
+local row_height = 154
 
 
 local GetNameAndScoreAndDate = function(profile)
 	local song = (GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentCourse()) or GAMESTATE:GetCurrentSong()
-	local steps = (GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentTrail(player)) or GAMESTATE:GetCurrentSteps(player)
+	local steps = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentTrail(player) or GAMESTATE:GetCurrentSteps(player)
 	local score = ""
 	local name = ""
 	local scoredate = ""
@@ -48,6 +48,8 @@ local af =
 	CurrentCourseChangedMessageCommand = function(self) self:queuecommand("Set") end,
 	StepsHaveChangedMessageCommand = function(self) self:queuecommand("Set") end,
 	SetCommand = function(self)
+		-- Don't bother if not a human player
+		if not GAMESTATE:IsHumanPlayer(player) then return end
 		local player_score, player_date, first_pass, last_played, times_played
 		if GAMESTATE:GetCurrentSong() then --if there's no song there won't be a hash
 			local hash = GetCurrentHash(player)
@@ -106,34 +108,13 @@ local af =
 	end
 }
 
--- colored background for chart statistics
-af[#af + 1] =
-	Def.Quad {
-	Name = "BackgroundQuad",
-	InitCommand = function(self)
-		self:zoomto(_screen.w / 2 - 10, _screen.h / 8):y(_screen.h / 2 - 67)
-	end,
-	SetCommand = function(self)
-		if GAMESTATE:IsHumanPlayer(player) then
-			local StepsOrTrail = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentTrail(player) or GAMESTATE:GetCurrentSteps(player)
-
-			if StepsOrTrail then
-				local difficulty = StepsOrTrail:GetDifficulty()
-				self:diffuse(DifficultyColor(difficulty))
-			else
-				self:diffuse(PlayerColor(player))
-			end
-		end
-	end
-}
-
 -- chart difficulty meter
 af[#af + 1] =
 	LoadFont("Wendy/_wendy small") ..
 	{
 		Name = "DifficultyMeter",
 		InitCommand = function(self)
-			self:horizalign(right):diffuse(Color.Black)
+			self:horizalign(right):diffuse(Color.White)
 				:xy(_screen.w / 4 - 10, _screen.h / 2 - 65):queuecommand("Set")
 		end,
 		SetCommand = function(self)
@@ -155,7 +136,7 @@ af[#af +1] =
 		{
 			Name = "Steps",
 			InitCommand = function(self)
-				self:zoom(zoom_factor):xy(-_screen.w / 10 + dataX_col1, 156):diffuse(Color.Black):halign(0)
+				self:zoom(zoom_factor):xy(-_screen.w / 10 + dataX_col1, row_height):diffuse(Color.White):halign(0)
 			end
 		}
 
@@ -165,7 +146,7 @@ af[#af + 1] =
 	{
 		Name = "PlayerHighScore",
 		InitCommand = function(self)
-			self:xy(-_screen.w / 10 + highscoreX, 156):zoom(zoom_factor):diffuse(Color.Black):halign(0)
+			self:xy(-_screen.w / 10 + highscoreX, row_height):zoom(zoom_factor):diffuse(Color.White):halign(0)
 		end
 	}
 
@@ -175,7 +156,7 @@ af[#af + 1] =
 	{
 		Name = "LastPlayedDate",
 		InitCommand = function(self)
-			self:xy(-_screen.w / 10 + dataX_col1, 176):zoom(zoom_factor):diffuse(Color.Black):halign(0)
+			self:xy(-_screen.w / 10 + dataX_col1, row_height + 18):zoom(zoom_factor):diffuse(Color.White):halign(0)
 		end
 	}
 
@@ -185,7 +166,7 @@ af[#af + 1] =
 	{
 		Name = "TimesPlayed",
 		InitCommand = function(self)
-			self:xy(-_screen.w / 10 + dataX_col1, 196):zoom(zoom_factor):diffuse(Color.Black):halign(0)
+			self:xy(-_screen.w / 10 + dataX_col1, row_height + 18 * 2):zoom(zoom_factor):diffuse(Color.White):halign(0)
 		end
 	}
 --PlayerHighScoreDate
@@ -194,7 +175,7 @@ af[#af + 1] =
 	{
 		Name = "PlayerHighScoreDate",
 		InitCommand = function(self)
-			self:xy(-_screen.w / 10 + highscoreX, 176):zoom(zoom_factor):diffuse(Color.Black):halign(0)
+			self:xy(-_screen.w / 10 + highscoreX, row_height + 18):zoom(zoom_factor):diffuse(Color.White):halign(0)
 		end
 	}
 
@@ -204,7 +185,7 @@ af[#af + 1] =
 	{
 		Name = "FirstPass",
 		InitCommand = function(self)
-			self:xy(-_screen.w / 10 + highscoreX, 193):zoom(zoom_factor):diffuse(Color.Black):halign(0)
+			self:xy(-_screen.w / 10 + highscoreX, row_height + 18 * 2):zoom(zoom_factor):diffuse(Color.White):halign(0)
 		end
 	}
 return af

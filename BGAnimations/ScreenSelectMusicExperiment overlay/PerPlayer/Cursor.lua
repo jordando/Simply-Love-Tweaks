@@ -9,22 +9,22 @@ local GlobalOffsetSeconds = PREFSMAN:GetPreference("GlobalOffsetSeconds")
 local RowIndex = 1
 
 return Def.Sprite{
-	Texture=THEME:GetPathB("ScreenSelectMusic", "overlay/PerPlayer/arrow.png"),
+	Texture=THEME:GetPathG("FF","finger.png"),
 	Name="Cursor"..pn,
 	InitCommand=function(self)
 		self:visible( GAMESTATE:IsHumanPlayer(player) )
 		self:halign( p )
 
-		self:zoom(0.575)
+		self:zoom(0.08)
 		self:bounce():effectclock("beatnooffset")
 
 		if player == PLAYER_1 then
-			self:x( IsUsingWideScreen() and _screen.cx-330 or 0)
+			self:x( IsUsingWideScreen() and _screen.cx- WideScale(250, 360) or 0)
 			self:effectmagnitude(-3,0,0)
 
 		elseif player == PLAYER_2 then
-			self:rotationz(180)
-			self:x(IsUsingWideScreen() and _screen.cx-28 or 276)
+			self:rotationy(180)
+			self:x(IsUsingWideScreen() and _screen.cx- WideScale(200,325) or 276)
 			self:effectmagnitude(3,0,0)
 		end
 
@@ -54,8 +54,6 @@ return Def.Sprite{
 			local StepsToDisplay = GetStepsToDisplay(AllStepsOrTrails)
 			local CurrentStepsOrTrail = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentTrail(player) or GAMESTATE:GetCurrentSteps(player)
 
-
-
 			for i,chart in pairs(StepsToDisplay) do
 				if chart == CurrentStepsOrTrail then
 					RowIndex = i
@@ -63,7 +61,6 @@ return Def.Sprite{
 				end
 			end
 		end
-
 		-- keep within reasonable limits because Edit charts are a thing
 		RowIndex = clamp(RowIndex, 1, 5)
 
@@ -71,7 +68,7 @@ return Def.Sprite{
 		local sdl = self:GetParent():GetParent():GetChild("StepsDisplayList")
 		if sdl then
 			local grid = sdl:GetChild("Grid")
-			self:y(sdl:GetY() + grid:GetY() + grid:GetChild("Blocks_"..RowIndex):GetY() + 1 )
+			self:y(sdl:GetY() + grid:GetY() + grid:GetChild("Blocks_"..RowIndex):GetY() + 3 )
 		end
 	end
 }

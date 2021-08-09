@@ -21,7 +21,7 @@ local t = Def.ActorFrame{
 		tagItems:set_info_set(toInsert, 0)
 	end,
 	OnCommand=function(self)
-		self:xy(_screen.cx - (IsUsingWideScreen() and 170 or 165), _screen.cy - 28)
+		self:xy(_screen.cx - (IsUsingWideScreen() and WideScale(65,170) or 165), _screen.cy - 28)
 	end,
 
 	-- ----------------------------------------
@@ -140,12 +140,12 @@ local t = Def.ActorFrame{
 					if #GAMESTATE:GetHumanPlayers() == 1 then
 						local player = GAMESTATE:GetMasterPlayerNumber()
 						-- StringifyDisplayBPMs() is defined in ./Scipts/SL-BPMDisplayHelpers.lua
-						self:settext(StringifyDisplayBPMs(player,GAMESTATE:GetCurrentSteps(player)) or ""):zoom(1)
+						self:settext(StringifyDisplayBPMs(player)):zoom(1)
 						return
 					end
 					-- otherwise there is more than one player joined and the possibility of split BPMs
-					local p1bpm = StringifyDisplayBPMs(PLAYER_1, GAMESTATE:GetCurrentSteps(PLAYER_1))
-					local p2bpm = StringifyDisplayBPMs(PLAYER_2, GAMESTATE:GetCurrentSteps(PLAYER_2))
+					local p1bpm = StringifyDisplayBPMs(PLAYER_1)
+					local p2bpm = StringifyDisplayBPMs(PLAYER_2)
 
 					-- it's likely that BPM range is the same for both charts
 					-- no need to show BPM ranges for both players if so
@@ -268,7 +268,7 @@ local t = Def.ActorFrame{
 					end
 				end
 			},
-		},	
+		},
 	}
 }
 t[#t+1] = tagItems:create_actors( "tagItems", 8, tagItemMT, -210,-48) --TODO get rid of magic numbers

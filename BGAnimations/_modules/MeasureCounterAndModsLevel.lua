@@ -10,10 +10,11 @@ return function(SongNumberInCourse)
 		-- the old-school (ie. ITG) way of GAMESTATE:ApplyGameCommand()
 		local pn = ToEnumShortString(player)
 		SL[pn].PlayerOptionsString = GAMESTATE:GetPlayerState(player):GetPlayerOptionsString("ModsLevel_Preferred")
-
-		-- Check if MeasureCounter is turned on.  We may need to parse the chart.
+		-- If measure counter or battle statistics is on then we need
+		-- parse the chart. If measure counter is off but battle statistics
+		-- is on then just use 16 notes per measure as the cutoff of stream
 		local mods = SL[pn].ActiveModifiers
-		if mods.MeasureCounter and mods.MeasureCounter ~= "None" then
+		if mods.MeasureCounter and (mods.MeasureCounter ~= "None" or (mods.MeasureCounter == "None" and mods.DataVisualizations=="Battle Statistics")) then
 			local song_dir, steps
 			if GAMESTATE:GetCurrentSong() or GAMESTATE:IsCourseMode() then --if it's not these then we're not currently on a song
 				if GAMESTATE:IsCourseMode() then
@@ -27,7 +28,8 @@ return function(SongNumberInCourse)
 
 				local steps_type = ToEnumShortString( steps:GetStepsType() ):gsub("_", "-"):lower()
 				local difficulty = ToEnumShortString( steps:GetDifficulty() )
-				local notes_per_measure = tonumber(mods.MeasureCounter:match("%d+"))
+				local npm = mods.MeasureCounter ~= "None" and mods.MeasureCounter:match("%d+") or 16
+				local notes_per_measure = tonumber(npm)
 				local threshold_to_be_stream = 2
 
 				-- if any of these don't match what we're currently looking for...

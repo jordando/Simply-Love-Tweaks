@@ -432,7 +432,7 @@ local Overrides = {
 	-------------------------------------------------------------------------
 	DataVisualizations = {
 		Values = function()
-			local choices = { "None", "Target Score Graph", "Step Statistics", "Alt. Step Statistics"}
+			local choices = { "None", "Target Score Graph", "Step Statistics", "Alt. Step Statistics", "Battle Statistics"}
 
 			-- None and Target Score Graph should always be available to players
 			-- but Step Statistics needs a lot of space and isn't always possible
@@ -454,6 +454,7 @@ local Overrides = {
 			then
 				table.remove(choices, 3)
 				table.remove(choices, 4)
+				table.remove(choices, 5)
 			end
 
 			return choices

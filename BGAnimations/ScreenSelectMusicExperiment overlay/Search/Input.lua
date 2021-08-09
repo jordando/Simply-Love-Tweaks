@@ -28,7 +28,7 @@ Handle.Start = function(event)
 			end
 			MESSAGEMAN:Broadcast("SetSongViaSearch") --heard by ScreenSelectMusicExperiment default.lua. Jumps straight into the song folder
 		end
-		MESSAGEMAN:Broadcast("StartButton")
+		MESSAGEMAN:Broadcast("PlayStartSound")
 		topscreen:sleep(.2):queuecommand("Off"):sleep(0.4)
 	end
 end
@@ -45,7 +45,7 @@ Handle.MenuLeft = function(event)
 		-- and then just don't scroll to to the first 3 filler rows
 		local index = type(info)=="table" and info.index or 0
 		if index - 1 >= 4 then
-			MESSAGEMAN:Broadcast("DirectionButton")
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
 			scrollers[mpn]:scroll_by_amount(-1)
 			local frame = af:GetChild(ToEnumShortString(mpn) .. 'Frame')
 			frame:playcommand("Set", {index=index})
@@ -65,7 +65,7 @@ Handle.MenuRight = function(event)
 		-- and then just don't scroll to 0 or lower
 		local index = type(info)=="table" and info.index or 0
 		if info.type ~= "exit" then
-			MESSAGEMAN:Broadcast("DirectionButton")
+			MESSAGEMAN:Broadcast("PlayMove2Sound")
 			scrollers[mpn]:scroll_by_amount(1)
 			local frame = af:GetChild(ToEnumShortString(mpn) .. 'Frame')
 			frame:playcommand("Set", {index=index+2})
@@ -80,7 +80,7 @@ Handle.Back = function(event)
 	local topscreen = SCREENMAN:GetTopScreen()
 
 	if GAMESTATE:IsHumanPlayer(event.PlayerNumber) then
-		MESSAGEMAN:Broadcast("BackButton")
+		MESSAGEMAN:Broadcast("PlayCancelSound")
 		-- queue the Finish for the entire screen
 		topscreen:queuecommand("Off"):sleep(0.4)
 	end

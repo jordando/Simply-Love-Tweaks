@@ -1,5 +1,5 @@
 -- This screen is called right before going in to SelectMusic when Experiment mode custom scores are enabled.
-
+-- Also load the character for Fantasy. TODO either rename this screen or move this somewhere else
 local tweentime = 0.325
 local co, text
 local count = 0
@@ -10,25 +10,16 @@ return Def.ActorFrame{
 		self:Center():draworder(101)
 		if SL.Global.GameMode == "Experiment" then
 			self:sleep(1):queuecommand("LoadScores")
-		end
+        end
+        LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
+        SL.Global.Character = GetCharacter(ThemePrefs.Get("Character"))
 	end,
-
-	Def.Quad{
-		Name="FadeToBlack",
-		InitCommand=function(self)
-			self:horizalign(right):vertalign(bottom):FullScreen()
-			--self:diffuse( ThemePrefs.Get("RainbowMode") and Color.White or Color.Black ):diffusealpha(0)
-		end,
-		OnCommand=function(self)
-			self:sleep(tweentime):linear(tweentime):diffusealpha(1)
-		end
-	},
 
 	Def.Quad{
 		Name="HorizontalWhiteSwoosh",
 		InitCommand=function(self)
 			self:horizalign(center):vertalign(middle)
-				:diffuse( ThemePrefs.Get("RainbowMode") and Color.Black or Color.White )
+				:diffuse( Color.White )
 				:zoomto(_screen.w + 100,50):faderight(0.1):fadeleft(0.1):cropright(1)
 		end,
 		OnCommand=function(self)
@@ -71,18 +62,18 @@ return Def.ActorFrame{
         SetupCoroutineCommand = function(self)
             self:stoptweening()
             if coroutine.status(co) == "suspended" then
-                Trace("COROUTINE SUSPENDED")
                 count = count + 1
                 self:settext(text..count)
                 Trace("COROUTINE: "..count)
-                coroutine.resume(co)
+                local ok, errorMsg = coroutine.resume(co)
+                if not ok then
+                    SM(errorMsg)
+                end
             end
             Trace("Yielded, checking dead")
             if coroutine.status(co) ~= "dead" then
-                Trace("COROUTINE NOT DEAD")
                 self:sleep(.3):queuecommand("SetupCoroutine")
             else
-            Trace("DEAD")
                 self:settext("DONE")
                 if finish then
                     Trace("FINISH")

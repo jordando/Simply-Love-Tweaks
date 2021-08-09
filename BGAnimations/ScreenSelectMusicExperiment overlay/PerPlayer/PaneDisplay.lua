@@ -3,7 +3,7 @@ local pn = ToEnumShortString(player)
 
 local zoom_factor = WideScale(0.8,0.9)
 
-local labelX_col1 = WideScale(-130,-90)
+local labelX_col1 = IsUsingWideScreen() and WideScale(-100,-90) or -170
 
 local InitializeMeasureCounterAndModsLevel = LoadActor(THEME:GetPathB("","_modules/MeasureCounterAndModsLevel.lua"))
 local TechParser
@@ -15,8 +15,12 @@ if not ThemePrefs.Get("ShowExtraSongInfo") then histogramHeight = 30 end --the g
 
 local InitializeDensity = NPS_Histogram(player, 275, histogramHeight)..{
 	OnCommand=function(self)
-		self:x(labelX_col1)
-			:y( _screen.h/3.5+6)
+		self:x(labelX_col1+20)
+			:y( _screen.h/3.5+3)
+	end,
+	GroupTypeChangedMessageCommand=function(self)
+		if SL.Global.GroupType == "Courses" then self:visible(false)
+		else self:visible(true) end
 	end
 }
 
@@ -26,7 +30,7 @@ local af = Def.ActorFrame{
 		self:visible(GAMESTATE:IsHumanPlayer(player))
 		--TODO for now if there's only one player the pane display is on the left. We only put things on the right if two people are joined
 		if GAMESTATE:GetNumSidesJoined() ~= 2 then
-			self:x(_screen.w * 0.25 - 5)
+			self:x(_screen.w * 0.25 - WideScale(-50,5))
 		else
 			if player == PLAYER_1 then
 				self:x(_screen.w * 0.25 - 5)
@@ -85,7 +89,7 @@ local af = Def.ActorFrame{
 			else
 				--clear out whatever might have been in Streams and try to parse the chart
 				SL[pn].Streams = {}
-				InitializeMeasureCounterAndModsLevel(player)
+				InitializeMeasureCounterAndModsLevel()
 			end
 			self:GetChild("Measures"):ClearAttributes()
 			self:GetChild("Breakdown"):diffuse(Color.White)
@@ -210,8 +214,39 @@ af[#af+1] = LoadFont("Common Normal")..{
 	InitCommand=function(self) self:xy(labelX_col1+20, _screen.h/8 - 10):zoom(zoom_factor):diffuse(Color.White):halign(0):maxwidth(315) end,
 }
 
-if ThemePrefs.Get("OriginalPaneDisplay") then af[#af+1] = LoadActor("./PaneDisplayOriginal.lua", player)
-else af[#af+1] = LoadActor("./PaneDisplayAlternative.lua", player) end
+--frame for chart statistics
+af[#af+1] = LoadActor( THEME:GetPathG("FF","CardEdge.png") )..{
+	InitCommand=function(self)
+		self:diffuse(Color.White)
+		self:zoomto(450, 450)
+		self:MaskDest():xy(IsUsingWideScreen() and 0 or -75,350)
+	end,
+}
+-- colored background for chart statistics
+af[#af+1] = Def.Quad {
+	Name = "BackgroundQuad",
+	InitCommand = function(self)
+		self:zoomto(_screen.w / 2 - WideScale(-87,18), _screen.h / 8 + 1)
+		:xy(IsUsingWideScreen() and 0 or -75,_screen.h / 2 - 67):visible(false)
+		if GAMESTATE:IsHumanPlayer(player) then
+			self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black):visible(true)
+		end
+	end
+}
+
+if ThemePrefs.Get("OriginalPaneDisplay") then 
+	af[#af+1] = LoadActor("./PaneDisplayOriginal.lua", player)..{
+		InitCommand = function(self)
+			if not IsUsingWideScreen() then self:x(-50) end
+		end,
+	}
+else
+	af[#af+1] = LoadActor("./PaneDisplayAlternative.lua", player)..{
+		InitCommand = function(self)
+			if not IsUsingWideScreen() then self:x(-50) end
+		end,
+	}
+end
 
 if not GAMESTATE:IsCourseMode() then af[#af+1] =  InitializeDensity end
 

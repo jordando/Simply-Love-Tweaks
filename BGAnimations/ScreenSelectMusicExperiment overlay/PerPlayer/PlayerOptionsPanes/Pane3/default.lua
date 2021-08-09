@@ -15,7 +15,9 @@ local pane = Def.ActorFrame{
 		if params.PlayerNumber == player then self:visible(false) end
 	end,
 	SetOptionPanesMessageCommand=function(self)
-		if SL[pn].Streams.TotalStreams == 0 or not SL[pn].Streams.Breakdown1 then 
+		if not ThemePrefs.Get("ShowExtraSongInfo") then
+			self:GetChild("FullBreakdown"):settext("Enable extra song info in Experiment\nOptions (from main menu) to display\nthe full song breakdown here")
+		elseif SL[pn].Streams.TotalStreams == 0 or not SL[pn].Streams.Breakdown1 then
 			self:GetChild("FullBreakdown"):settext("No stream or counter turned off")
 		else
 			self:GetChild("FullBreakdown"):settext(SL[pn].Streams.Breakdown1)

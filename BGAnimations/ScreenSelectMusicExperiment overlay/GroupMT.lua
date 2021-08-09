@@ -11,10 +11,13 @@ local banner_directory = FILEMAN:DoesFileExist(path) and path or THEME:GetPathG(
 
 local startTime, endTime
 
-function Switch_to_songs(group_name)
+function Switch_to_songs(group)
+	local group_name = group
+	if GAMESTATE:IsCourseMode() then group_name = "Courses" end
 	startTime = GetTimeSinceStart() - SL.Global.TimeAtSessionStart
 	if SL.Global.Debug then  Trace("Running Switch_to_songs: "..group_name) end
-	local songs = PruneSongList(GetSongList(group_name))
+	local songs = GetSongList(group_name)
+	if SL.Global.GroupType ~= "Courses" then songs = PruneSongList(songs) end
 	if #songs > 0 then --it's possible that filters can cause us to try and enter a group with no songs
 		if IsSpecialOrder() then --If we're using a special order than we need to further split the song list
 			songs = CreateSpecialSongList(songs)
@@ -26,8 +29,13 @@ function Switch_to_songs(group_name)
 		end
 		local current_song = GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
 		local index = SL.Global.LastSeenIndex
-		if SL.Global.Debug then  Trace("Current song is: "..current_song:GetMainTitle()) end
-
+		if SL.Global.Debug then
+			if GAMESTATE:IsCourseMode() then
+				Trace("Current course is: "..current_song:GetDisplayFullTitle())
+			else
+				Trace("Current song is: "..current_song:GetMainTitle())
+			end
+		end
 		--since each song can show up multiple times in special orders we can't rely just on songs being the same
 		--however, when we first switch order the indexes won't match up so rather than get a random song we
 		--go to the first instance of the song.
@@ -40,7 +48,13 @@ function Switch_to_songs(group_name)
 			for k,song in pairs(songs) do
 				if song == current_song then
 					index = k
-					if SL.Global.Debug then  Trace("Found: "..song:GetMainTitle()) end
+					if SL.Global.Debug then		
+						if GAMESTATE:IsCourseMode() then
+							Trace("Current course is: "..current_song:GetDisplayFullTitle())
+						else
+							Trace("Current song is: "..current_song:GetMainTitle())
+						end
+					end
 					break
 				end
 			end
@@ -49,7 +63,6 @@ function Switch_to_songs(group_name)
 		SL.Global.DifficultyGroup = group_name
 		SL.Global.GradeGroup = group_name
 		SongWheel:set_info_set(toAdd, index)
-		MESSAGEMAN:Broadcast("SwitchFocusToSongs")
 	else
 		-- if there are no songs in the current group then switch to the first available group/first song
 		-- TODO it should put you on the groupwheel instead
@@ -87,35 +100,32 @@ local item_mt = {
 							subself:playcommand("LoseFocus"):diffusealpha(0)
 						else
 							-- position this folder in the header and switch to the songwheel
-							subself:playcommand("GainFocus"):xy(70,28):zoom(0.35)
+							subself:playcommand("SlideToTop")
 							local starting_group = GetCurrentGroup()
 							Switch_to_songs(starting_group)
 							MESSAGEMAN:Broadcast("CurrentGroupChanged", {group=self.groupName})
 						end
 					end
 				end,
-				OnCommand=function(subself) subself:finishtweening() end,
+				OnCommand=function(subself)
+					subself:finishtweening()
+				end,
 				StartCommand=function(subself)
 					if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
 						-- slide the chosen Actor into place
 						subself:queuecommand("SlideToTop")
-						MESSAGEMAN:Broadcast("SwitchFocusToSongs")
 					else
 						-- hide everything else
 						subself:linear(0.2):diffusealpha(0)
 					end
 				end,
-				-- if we come straight here because of a search, make sure that the group title
-				-- moves to the top
-				SetSongViaSearchMessageCommand=function(subself)
-					if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
-						-- slide the chosen Actor into place
-						subself:sleep(.1):queuecommand("SlideToTop")
-					end
+				-- if we come straight here because of a search run start to get into songs
+				SetSongViaSearchMessageCommand=function(self)
+					self:playcommand("Start")
 				end,
+				-- we're going back to group selection
+				-- slide the chosen group Actor back into grid position
 				UnhideCommand=function(subself)
-					-- we're going back to group selection
-					-- slide the chosen group Actor back into grid position
 					if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
 						subself:playcommand("SlideBackIntoGrid")
 						MESSAGEMAN:Broadcast("SwitchFocusToGroups")
@@ -126,26 +136,59 @@ local item_mt = {
 				GainFocusCommand=function(subself) subself:linear(0.2):zoom(0.8) end,
 				LoseFocusCommand=function(subself) subself:linear(0.2):zoom(0.6) end,
 				SlideToTopCommand=function(subself)
-					subself:linear(0.12):y(28):zoom(0.35)
-					       :linear(0.2 ):x(70):queuecommand("Switch")
+					subself:linear(0.12):y(28 - 200):zoom(0.35)
+					       :linear(0.2 ):x(70 - 25):queuecommand("Switch")
 				end,
 				SlideBackIntoGridCommand=function(subself)
-					subself:linear( 0.2 ):x( _screen.cx )
-					       :linear( 0.12 ):zoom( 0.9 ):y( _screen.cy-100 )
+					subself:linear( 0.2 ):x(_screen.w/1.5 )
+						   :linear( 0.12 ):zoom( 0.8 ):y( 0 )
 				end,
 				SwitchCommand=function(subself) Switch_to_songs(self.groupName) end,
 
-				-- back of folder
-				LoadActor("./img/folderBack.png")..{
-					Name="back",
-					InitCommand=function(subself) subself:zoom(0.75):diffusealpha(0) end,
-					OnCommand=function(subself) subself:y(-10) end,
-					GainFocusCommand=function(subself) subself:diffuse(color("#c47215")) end,
-					LoseFocusCommand=function(subself) subself:diffuse(color("#4e4f54")) end,
-					SlideToTopCommand=function(subself) subself:sleep(.3):linear(.2):diffusealpha(0) end,
-					SlideBackIntoGridCommand=function(subself) subself:linear(.2):diffusealpha(1) end,
+				--card frame
+				Def.Sprite{
+					Texture=THEME:GetPathG("FF", "CardEdge.png"),
+					InitCommand=function(self)
+						self:horizalign(left):zoomto(385,85):xy(-68,-15)
+					end,
+					OnCommand=function(subself)
+						if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
+							subself:zoomto(926,92):x(-88)
+						end
+					end,
+					SlideToTopCommand=function(subself) subself:sleep(0.2):queuecommand("SlideToTop2") end,
+					SlideToTop2Command = function(subself)
+						subself:linear(.3):zoomto(926,92):x(-88)
+					end,
+					SlideBackIntoGridCommand = function(subself)
+						subself:zoomto(385,85):x(-68)
+					end,
 				},
-
+				--blue box behind banner
+				Def.Quad{
+					InitCommand=function(self)
+						self:horizalign(left):zoomto(350,75):xy(-50,-15):diffuseleftedge(color("#23279e")):diffuserightedge(Color.Black)
+					end,
+					OnCommand=function(subself)
+						if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
+							subself:zoomto(850,75)
+						end
+					end,
+					SlideToTopCommand=function(subself) subself:sleep(0.3):queuecommand("SlideToTop2") end,
+					SlideToTop2Command = function(self)
+						self:linear(.2):zoomto(850,75)
+					end,
+					SlideBackIntoGridCommand = function(self)
+						self:zoomto(350,75)
+					end,
+				},
+				
+				Def.Sprite{
+					Texture=THEME:GetPathG("FF", "SkinnyCard.png"),
+					InitCommand=function(self)
+						self:zoomto(228,625):xy(1,190):visible(false)
+					end,
+				},
 				-- group banner
 				LoadActor(banner_directory.."/banner"..SL.Global.ActiveColorIndex.." (doubleres).png" )..{
 					Name="FallbackBanner",
@@ -158,48 +201,37 @@ local item_mt = {
 					OnCommand=function(subself) subself:y(-30):setsize(418,164):zoom(0.48) end,
 				},
 
-				-- front of folder
-				LoadActor("./img/folderFront.png")..{
-					Name="front",
-					InitCommand=function(subself) subself:zoom(0.75):vertalign(bottom):diffusealpha(0) end,
-					OnCommand=function(subself) subself:y(64) end,
-					GainFocusCommand=function(subself) subself:diffusetopedge(color("#eebc54")):diffusebottomedge(color("#7c5505")):decelerate(0.33):rotationx(60) end,
-					LoseFocusCommand=function(subself) subself:diffusebottomedge(color("#3d3e43")):diffusetopedge(color("#8d8e93")):decelerate(0.15):rotationx(0) end,
-					SlideToTopCommand=function(subself) subself:sleep(.3):linear(.2):diffusealpha(0) end,
-					SlideBackIntoGridCommand=function(subself) subself:linear(.2):diffusealpha(1) end,
-				},
-
 				-- group title bmt
 				Def.BitmapText{
 					Font="Common Normal",
 					InitCommand=function(subself)
 						self.bmt = subself:maxwidth(225)
-						subself:_wrapwidthpixels(150):vertspacing(-4):shadowlength(0.5)
+						subself:_wrapwidthpixels(150):vertspacing(-4):shadowlength(0.5):horizalign(left):xy(125,-18)
 					end,
 					OnCommand=function(subself)
 						if self.index == GroupWheel:get_actor_item_at_focus_pos().index then
-							subself:horizalign(left):xy(150,-30):zoom(3):diffuse(Color.White):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate")
+							subself:horizalign(left):zoom(3):diffuse(Color.White):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate")
 						end
 					end,
 					--when the sort changes we may need to change the group text to whatever it becomes
 					GroupTypeChangedMessageCommand=function(subself)
 						if self.index == GroupWheel:get_actor_item_at_focus_pos().index and Input.WheelWithFocus ~= GroupWheel and GAMESTATE:GetCurrentSong() and self.groupName then --only if we're not on group wheel
-							subself:horizalign(left):xy(150,-30):zoom(3):diffuse(Color.White):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate")
+							subself:horizalign(left):zoom(3):diffuse(Color.White):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate")
 						end
 					end,
 					UntruncateCommand=function(subself) --group name to display is not necessarily the same so check in SL-SortHelpers
-						self.bmt:settext(GetGroupDisplayName(self.groupName))
+						self.bmt:settext(GetGroupDisplayName(self.groupName)):maxwidth(220)
 					end,
 					TruncateCommand=function(subself) --group name to display is not necessarily the same so check in SL-SortHelpers
 						self.bmt:settext(GetGroupDisplayName(self.groupName)):Truncate(max_chars)
 					end,
 
-					GainFocusCommand=function(subself) subself:x(0):horizalign(center):decelerate(0.33):y(35):zoom(1.1) end,
-					LoseFocusCommand=function(subself) subself:xy(0,6):horizalign(center):linear(0.15):zoom(1):diffuse(Color.White) end,
+					GainFocusCommand=function(subself) subself:decelerate(0.33):zoom(1.1) end,
+					LoseFocusCommand=function(subself) subself:linear(0.15):zoom(1):diffuse(Color.White) end,
 
 					SlideToTopCommand=function(subself) subself:sleep(0.3):diffuse(Color.White):queuecommand("SlideToTop2") end,
-					SlideToTop2Command=function(subself) subself:horizalign(left):linear(0.2):xy(150,-30):zoom(3):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate") end,
-					SlideBackIntoGridCommand=function(subself) subself:horizalign(center):decelerate(0.33):xy(0,35):zoom(1.1):diffuse(Color.White):_wrapwidthpixels(150):shadowlength(0.5):playcommand("Truncate") end,
+					SlideToTop2Command=function(subself) subself:linear(0.2):zoom(3):_wrapwidthpixels(480):shadowlength(0):playcommand("Untruncate") end,
+					SlideBackIntoGridCommand=function(subself) subself:decelerate(0.33):zoom(1.1):diffuse(Color.White):_wrapwidthpixels(150):shadowlength(0.5):playcommand("Truncate") end,
 				}
 			}
 
@@ -213,11 +245,19 @@ local item_mt = {
 			local ry = offset > 0 and 25 or (offset < 0 and -25 or 0)
 			self.container:finishtweening()
 
+			--handle row hiding
+			if item_index == 1 or item_index > 12 then
+				self.container:visible(false)
+			else
+				self.container:visible(true)
+			end
+
 			-- if we are initializing the screen, the focus starts (should start) on the SongWheel
 			-- so we want to position all the folders "behind the scenes", and then call Init
 			-- on the group folder with focus so that it is positioned correctly at the top
 			if Input.WheelWithFocus ~= GroupWheel then
-				self.container:x( offset * col.w * zm + _screen.cx ):z( -1 * math.abs(offset) ):zoom( zm ):rotationy( ry )
+				--self.container:x( offset * col.w * zm + _screen.cx ):z( -1 * math.abs(offset) ):zoom( zm ):rotationy( ry )
+				self.container:y( 70*offset ):x( _screen.w/1.5 )
 				if has_focus then self.container:playcommand("Init") end
 
 			-- otherwise, we are performing a normal transform
@@ -229,7 +269,8 @@ local item_mt = {
 				else
 					self.container:playcommand("LoseFocus")
 				end
-				self.container:x( offset * col.w * zm + _screen.cx ):z( -1 * math.abs(offset) ):zoom( zm ):rotationy( ry )
+				--self.container:x( offset * col.w * zm + _screen.cx ):z( -1 * math.abs(offset) ):zoom( zm ):rotationy( ry )
+				self.container:y( 70*offset ):x( _screen.w/1.5 )
 			end
 		end,
 

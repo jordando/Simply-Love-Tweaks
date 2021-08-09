@@ -5,10 +5,10 @@ local BlockZoomY = 0.275
 local StepsToDisplay, SongOrCourse, StepsOrTrails
 
 local GetStepsToDisplay = LoadActor("./StepsToDisplay.lua")
-
+local xOffset = IsUsingWideScreen() and WideScale(-75,-170) or -150
 local t = Def.ActorFrame{
 	Name="StepsDisplayList",
-	InitCommand=function(self) self:vertalign(top):xy(_screen.cx-170, _screen.cy + 70) end,
+	InitCommand=function(self) self:vertalign(top):xy(_screen.cx + xOffset, _screen.cy + 70) end,
 	-- - - - - - - - - - - - - -
 
 	OnCommand=function(self) self:queuecommand("RedrawStepsDisplay") end,
@@ -37,7 +37,7 @@ local t = Def.ActorFrame{
 						local meter = chart:GetMeter()
 						local difficulty = chart:GetDifficulty()
 						self:GetChild("Grid"):GetChild("Meter_"..RowNumber):playcommand("Set", {Meter=meter, Difficulty=difficulty, Chart=chart})
-						if not ThemePrefs.Get("ShowExtraSongInfo") or GAMESTATE:GetNumSidesJoined() == 2 then
+						if not GAMESTATE:IsCourseMode() and (not ThemePrefs.Get("ShowExtraSongInfo") or GAMESTATE:GetNumSidesJoined() == 2) then
 							self:GetChild("Grid"):GetChild("Blocks_"..RowNumber):playcommand("Set", {Meter=meter, Difficulty=difficulty, Chart=chart})
 						end
 					else
@@ -71,7 +71,7 @@ local t = Def.ActorFrame{
 
 local Grid = Def.ActorFrame{
 	Name="Grid",
-	InitCommand=function(self) self:horizalign(left):vertalign(top):xy(8, -52 ) end,
+	InitCommand=function(self) self:horizalign(left):vertalign(top):xy(WideScale(25,8), -52 ) end,
 }
 
 -- A grid of decorative faux-blocks that will exist
@@ -88,18 +88,20 @@ Grid[#Grid+1] = Def.Sprite{
 		self:y( 3 * height * BlockZoomY )
 		self:customtexturerect(0, 0, num_columns, num_rows)
 		if ThemePrefs.Get("ShowExtraSongInfo") then
-			self:diffusealpha(0)
+			self:visible(false)
 		end
 	end,
 	RedrawStepsDisplayCommand=function(self)
-		if not  ThemePrefs.Get("ShowExtraSongInfo") or GAMESTATE:GetNumSidesJoined() == 2 then
-			self:diffusealpha(1)
+		if not GAMESTATE:IsCourseMode() and (not ThemePrefs.Get("ShowExtraSongInfo") or GAMESTATE:GetNumSidesJoined() == 2) then
+			self:visible(true)
+		else
+			self:visible(false)
 		end
 	end,
 }
 
 for RowNumber=1,num_rows do
-
+	--Actual blocks
 	Grid[#Grid+1] =	Def.Sprite{
 		Name="Blocks_"..RowNumber,
 		Texture=THEME:GetPathB("ScreenSelectMusic", "overlay/StepsDisplayList/_block.png"),
@@ -124,11 +126,14 @@ for RowNumber=1,num_rows do
 			if ValidateChart(GAMESTATE:GetCurrentSong(),params.Chart) then self:diffuse( DifficultyColor(params.Difficulty) )
 			else self:diffuse(.5,.5,.5,1) end
 		end,
+		GroupTypeChangedMessageCommand=function(self)
+			if GAMESTATE:IsCourseMode() then self:playcommand("Unset") end
+		end,
 		UnsetCommand=function(self)
 			self:customtexturerect(0,0,0,0)
 		end
 	}
-
+	-- Text for the block
 	Grid[#Grid+1] = Def.BitmapText{
 		Name="Meter_"..RowNumber,
 		Font="Wendy/_wendy small",
@@ -137,12 +142,13 @@ for RowNumber=1,num_rows do
 			local height = self:GetParent():GetChild("Blocks_"..RowNumber):GetHeight()
 			self:horizalign(right)
 			self:y(RowNumber * height * BlockZoomY)
-			self:x( IsUsingWideScreen() and -140 or -126 )
+			self:x( -146 )
 			self:zoom(0.3)
 		end,
 		SetCommand=function(self, params)
 			-- diffuse and set each chart's difficulty meter
-			if ValidateChart(GAMESTATE:GetCurrentSong(),params.Chart) then self:diffuse( DifficultyColor(params.Difficulty) )
+			if GAMESTATE:IsCourseMode() then self:diffuse( DifficultyColor(params.Difficulty) )
+			elseif ValidateChart(GAMESTATE:GetCurrentSong(),params.Chart) then self:diffuse( DifficultyColor(params.Difficulty) )
 			else self:diffuse(.5,.5,.5,1) end
 			self:settext(params.Meter)
 		end,

@@ -3,21 +3,23 @@ return function(AllSteps)
 	local StepsToShow, edits = {}, {}
 
 	for stepchart in ivalues(AllSteps) do
-
+		local stepsType = GetStepsType()
 		local difficulty = stepchart:GetDifficulty()
 
-		if difficulty == "Difficulty_Edit" then
-			-- gather edit charts into a separate table for now
-			edits[#edits+1] = stepchart
-		else
-			-- use the reverse lookup functionality available to all SM enums
-			-- to map a difficulty string to a number
-			-- SM's enums are 0 indexed, so Beginner is 0, Challenge is 4, and Edit is 5
-			-- for our purposes, increment by 1 here
-			StepsToShow[ Difficulty:Reverse()[difficulty] + 1 ] = stepchart
-			-- assigning a stepchart directly to numerical index like this^
-			-- can leave "holes" in the indexing, or indexing might not start at 1
-			-- so be sure to use pairs() instead of ipairs() if iterating over later
+		if stepchart:GetStepsType() == stepsType then
+			if difficulty == "Difficulty_Edit" then
+				-- gather edit charts into a separate table for now
+				edits[#edits+1] = stepchart
+			else
+				-- use the reverse lookup functionality available to all SM enums
+				-- to map a difficulty string to a number
+				-- SM's enums are 0 indexed, so Beginner is 0, Challenge is 4, and Edit is 5
+				-- for our purposes, increment by 1 here
+				StepsToShow[ Difficulty:Reverse()[difficulty] + 1 ] = stepchart
+				-- assigning a stepchart directly to numerical index like this^
+				-- can leave "holes" in the indexing, or indexing might not start at 1
+				-- so be sure to use pairs() instead of ipairs() if iterating over later
+			end
 		end
 	end
 

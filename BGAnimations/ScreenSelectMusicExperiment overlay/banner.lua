@@ -3,29 +3,27 @@ local banner_directory = FILEMAN:DoesFileExist(path) and path or THEME:GetPathG(
 
 local SongOrCourse
 
+local bannerWheelX = _screen.cx + (IsUsingWideScreen() and WideScale(-65, -170) or -130)
+local bannerSongX = _screen.cx + (IsUsingWideScreen() and WideScale(-55,-122) or -70)
+
 local t = Def.ActorFrame{
 	OnCommand=function(self)
 		if IsUsingWideScreen() then
 			self:zoom(0.7655)
-			self:xy(_screen.cx - 170, 112)
+			self:xy(bannerWheelX, 111)
 		else
 			self:zoom(0.75)
-			self:xy(_screen.cx - 166, 112)
+			self:xy(bannerWheelX, 112)
 		end
 	end,
 	SwitchFocusToSingleSongMessageCommand=function(self)
-		self:finishtweening():linear(0.3):xy(_screen.cx - 122, _screen.cy - 130/1.6):rotationy(360):sleep(.1):rotationy(0)
+		self:finishtweening():linear(0.3):xy(bannerSongX, _screen.cy - 130/1.6):rotationy(360):sleep(.1):rotationy(0)
 	end,
 	SwitchFocusToSongsMessageCommand=function(self)
-		if self:GetDiffuseAlpha() == 0 then self:linear(.3):diffusealpha(1)
+		if self:GetDiffuseAlpha() == 0 then
+			self:linear(.3):diffusealpha(1)
 		else
-			if IsUsingWideScreen() then
-				--self:zoom(0.7655)
-				self:finishtweening():linear(.3):xy(_screen.cx - 170, 112):rotationy(360):sleep(.1):rotationy(0)
-			else
-				--self:zoom(0.75)
-				self:finishtweening():linear(.3):xy(_screen.cx - 166, 112):rotationy(360):sleep(.1):rotationy(0)
-			end
+			self:finishtweening():linear(.3):xy(bannerWheelX, 112):rotationy(360):sleep(.1):rotationy(0)
 		end
 	end,
 	SwitchFocusToGroupsMessageCommand=function(self) self:linear(0.3):diffusealpha(0) end,
@@ -43,7 +41,11 @@ local t = Def.ActorFrame{
 			SongOrCourse = GAMESTATE:IsCourseMode() and GAMESTATE:GetCurrentCourse() or GAMESTATE:GetCurrentSong()
 			if SongOrCourse and SongOrCourse:HasBanner() then
 				self:GetChild("Banner"):visible(true)
-				self:GetChild("Banner"):LoadFromSong(GAMESTATE:GetCurrentSong())
+				if GAMESTATE:IsCourseMode() then
+					self:GetChild("Banner"):LoadFromCourse(GAMESTATE:GetCurrentCourse())
+				else
+					self:GetChild("Banner"):LoadFromSong(GAMESTATE:GetCurrentSong())
+				end
 				self:GetChild("Banner"):setsize(418,164)
 				if IsUsingWideScreen() then
 					self:GetChild("Banner"):stoptweening():zoom(.5):linear(.125):zoomto(418,164)
@@ -72,15 +74,25 @@ local t = Def.ActorFrame{
 			Name="FallbackBanner",
 			OnCommand=function(self) self:diffuseshift():effectperiod(6):effectcolor1(1,1,1,0):effectcolor2(1,1,1,1):setsize(418,164) end,
 		},
-		
+		-- a lightly styled png asset that is not so different than a Quad
+		LoadActor( THEME:GetPathG("FF","CardEdge.png") )..{
+			InitCommand=function(self)
+				self:diffuse(Color.White)
+				self:zoomto(458,180)
+				--self:visible(false)
+			end,
+		},
 		Def.Banner{
 			Name="Banner",
 			BeginCommand=function(self)
-				self:LoadFromSong( GAMESTATE:GetCurrentSong() )
+				if GAMESTATE:IsCourseMode() then
+					self:LoadFromCourse( GAMESTATE:GetCurrentCourse() )
+				else 
+					self:LoadFromSong( GAMESTATE:GetCurrentSong() )
+				end
 				self:setsize(418,164)
 			end,
 		},
-
 	},
 
 	-- the MusicRate Quad and text

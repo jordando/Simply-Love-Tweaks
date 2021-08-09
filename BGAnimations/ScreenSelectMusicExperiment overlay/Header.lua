@@ -28,10 +28,17 @@ local af = Def.ActorFrame{
 			end
 		end
 	end,
-
+	Def.Sprite{
+		Texture = THEME:GetPathG("FF","SkinnyCard.png"),
+		InitCommand=function(self) self:align(0,1):zoomto(_screen.w+105,275):xy(-45,_screen.h-230) end,
+		SwitchFocusToSongsMessageCommand=function(self, from)
+			if from[1] == "GroupWheel" then self:sleep(0.1):linear(0.1):y(_screen.h-230+32):sleep(.1):linear(.2):y(_screen.h-230) end
+		end,
+		SwitchFocusToGroupsMessageCommand=function(self) self:stoptweening():linear(.2):addy(32):sleep(.08):linear(0.1):addy(-32) end,
+	},
 	Def.Quad{
 		InitCommand=function(self)
-			self:diffuse(0.65,0.65,0.65,1)--diffuse(color("#000000dd"))
+			self:diffusebottomedge(color("#23279e")):diffusetopedge(Color.Black):cropbottom(.5)
 			self:zoomto(_screen.w, row.h*0.5):valign(0):xy( _screen.cx, 0 )
 		end,
 		SwitchFocusToSongsMessageCommand=function(self)
@@ -39,13 +46,12 @@ local af = Def.ActorFrame{
 		end,
 		SwitchFocusToGroupsMessageCommand=function(self) self:stoptweening():linear(.2):cropbottom(0):sleep(.08):linear(0.1):zoomtoheight(32) end,
 	},
-
 	--Show what sort type we're using when on groupwheel
 	Def.BitmapText{
 		Name="HeaderText",
-		Font="Wendy/_wendy small",
+		Font="Common normal",
 		InitCommand=function(self)
-			self:diffusealpha(1):zoom( WideScale(0.4,0.5)):xy(15, 15):halign(0)
+			self:diffusealpha(1):zoom( 1):xy(15, 15):halign(0)
 		end,
 		OffCommand=function(self) self:accelerate(0.33):diffusealpha(0) end,
 		SwitchFocusToSongsMessageCommand=function(self) self:linear(0.1):diffusealpha(0) end,
@@ -55,15 +61,11 @@ local af = Def.ActorFrame{
 
 	--Time in game or menu timer
 	Def.BitmapText{
-		Font=PREFSMAN:GetPreference("EventMode") and "Wendy/_wendy monospace numbers" or "Wendy/_wendy small",
+		Font=PREFSMAN:GetPreference("EventMode") and "FF/_enge" or "Wendy/_wendy small",
 		Name="Stage Number",
 		InitCommand=function(self)
 			bmt_actor = self
-			if PREFSMAN:GetPreference("EventMode") then
-				self:diffusealpha(0):zoom( WideScale(0.305,0.365) ):xy(_screen.cx, WideScale(10,9))
-			else
-				self:diffusealpha(0):zoom( WideScale(0.5,0.6) ):xy(_screen.cx, 15)
-			end
+			self:diffusealpha(0):zoom( 1.5 ):xy(_screen.cx, WideScale(10,15))
 		end,
 		OnCommand=function(self)
 			if not PREFSMAN:GetPreference("EventMode") then

@@ -6,28 +6,52 @@ local Input = args[3]
 local bg_color = {0,0,0,0.9}
 local divider_color = {1,1,1,0.75}
 
+local xOffset = WideScale(107,0)
+
 local af = Def.ActorFrame{
-	InitCommand=function(self) self:diffusealpha(0) end,
+	InitCommand=function(self) self:diffusealpha(0):x(WideScale(-50,0)) end,
 	SwitchFocusToSongsMessageCommand=function(self) self:linear(0.1):diffusealpha(0) end,
 	SwitchFocusToGroupsMessageCommand=function(self) self:linear(0.1):diffusealpha(0) end,
 	SwitchFocusToSingleSongMessageCommand=function(self) self:sleep(0.3):linear(0.1):diffusealpha(1) end,
 
+
+	-- frame for banner and title
+	LoadActor( THEME:GetPathG("FF","CardEdge.png") )..{
+		InitCommand=function(self)
+			self:diffuse(Color.White)
+			self:zoomto(625,150):xy(427,160)
+			self:MaskDest()
+		end,
+	},
+	-- frame for options
+	LoadActor( THEME:GetPathG("FF","CardEdge.png") )..{
+		InitCommand=function(self)
+			self:diffuse(Color.White)
+			self:zoomto(625,215):xy(427,327)
+			self:MaskDest()
+		end,
+	},
 	Def.Quad{
 		Name="SongInfoBG",
-		InitCommand=function(self) self:diffuse(bg_color):zoomto(_screen.w/WideScale(1.15,1.5), row.h) end,
-		OnCommand=function(self) self:xy(_screen.cx, _screen.cy - row.h/1.6 ) end,
+		InitCommand=function(self)
+			self:diffuse(bg_color):zoomto(_screen.w/WideScale(1.15,1.5), row.h+2)
+			self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
+		end,
+		OnCommand=function(self) self:xy(_screen.cx + xOffset, _screen.cy - row.h/1.6 -1) end,
 	},
-
 	Def.Quad{
 		Name="PlayerOptionsBG",
-		InitCommand=function(self) self:diffuse(bg_color):zoomto(_screen.w/WideScale(1.15,1.5), row.h*1.5) end,
-		OnCommand=function(self) self:xy(_screen.cx, _screen.cy + row.h/1.5 ) end,
+		InitCommand=function(self) 
+			self:diffuse(bg_color):zoomto(_screen.w/WideScale(1.15,1.5), row.h*1.5)
+			self:diffusetopedge(color("#23279e")):diffusebottomedge(Color.Black)
+		end,
+		OnCommand=function(self) self:xy(_screen.cx + xOffset, _screen.cy + row.h/1.5 ) end,
 	},
 
 	Def.Quad{
 		Name="PlayerOptionsDivider",
 		InitCommand=function(self) self:diffuse(divider_color):zoomto(2, row.h*1.25) end,
-		OnCommand=function(self) self:xy(_screen.cx, _screen.cy + row.h/1.5 ) end,
+		OnCommand=function(self) self:xy(_screen.cx + xOffset, _screen.cy + row.h/1.5 ) end,
 	},
 }
 local position = GAMESTATE:GetMasterPlayerNumber() == PLAYER_1 and 17 or 440
@@ -44,7 +68,7 @@ extraControl["rate"] = LoadFont("Common Normal")..{
 }
 
 extraControl["scroll"] = LoadFont("Common Normal")..{
-	InitCommand=function(self) 
+	InitCommand=function(self)
 		self:xy(SL_WideScale(position +_screen.cx / 5, position +_screen.cx / 2.5), _screen.cy + 155 ):zoom(1):diffuse(.6,.6,.6,1):valign(0):maxwidth(315) 
 		self:halign(GAMESTATE:GetMasterPlayerNumber() == PLAYER_1 and 0 or 1)
 	end,

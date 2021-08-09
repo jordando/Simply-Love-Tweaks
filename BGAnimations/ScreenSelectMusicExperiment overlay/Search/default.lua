@@ -162,19 +162,8 @@ local t = Def.ActorFrame {
 	end,
 	WhatMessageCommand=function(self) self:runcommandsonleaves(function(subself) if subself.distort then subself:distort(0.5) end end):sleep(4):queuecommand("Undistort") end,
 	UndistortCommand=function(self) self:runcommandsonleaves(function(subself) if subself.distort then subself:distort(0) end end) end,
+	
 	-- sounds
-	LoadActor( THEME:GetPathS("Common", "start") )..{
-		StartButtonMessageCommand=function(self) self:play() end
-	},
-	LoadActor( THEME:GetPathS("ScreenSelectMusic", "select down") )..{
-		BackButtonMessageCommand=function(self) self:play() end
-	},
-	LoadActor( THEME:GetPathS("ScreenSelectMaster", "change") )..{
-		DirectionButtonMessageCommand=function(self)
-			self:play()
-			if invalid_count then invalid_count = 0 end
-		end
-	},
 	LoadActor( THEME:GetPathS("Common", "invalid") )..{
 		InvalidChoiceMessageCommand=function(self)
 			self:play()

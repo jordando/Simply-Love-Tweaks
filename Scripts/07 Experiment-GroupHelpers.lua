@@ -43,7 +43,8 @@ local SortGroups = {
 		"Grade_Failed","No_Grade",
 	},
 	Group = {},
-	Tag = {"No Tags Set"}
+	Tag = {"No Tags Set"},
+	Courses = {"Courses"},
 }
 SortGroups.Artist = SortGroups.Title
 
@@ -304,6 +305,7 @@ end
 --- (or the last song seen if we're on "CloseThisFolder" or the groupwheel).
 --- For grade group it uses the MasterPlayer's scores (and completely ignores the other player)
 function GetCurrentGroup(song)
+	if SL.Global.GroupType == "Courses" then return "Courses" end
 	local mpn = GAMESTATE:GetMasterPlayerNumber()
 	--no song if we're on Close This Folder so use the last seen song
 	local current_song = song and song or GAMESTATE:GetCurrentSong() or SL.Global.LastSeenSong
@@ -606,6 +608,17 @@ local CreateGroup = Def.ActorFrame{
 		
 		return songs
 	end,
+
+	--------------------------------------------------------------------------------------
+	--provided a group title as a string, make a list of songs that fit that group
+	--returns an indexed table of song objects
+	Courses = function(group)
+		local courses = {}
+		for course in ivalues(SONGMAN:GetAllCourses(false)) do
+			if next(course:GetAllTrails()) then courses[#courses+1] = course end
+		end
+		return courses
+	end,
 }
 
 ----------------------------------------------------------------------------------------------
@@ -698,7 +711,8 @@ end
 --- that were created when ScreenSelectMusicExperiment first runs
 function GetSongList(group_name, group_type)
 	local group_type = group_type or SL.Global.GroupType
-	local songList = PreloadedGroups[group_type][tostring(group_name)]
+	local songList = DeepCopy(PreloadedGroups[group_type][tostring(group_name)])
+	if SL.Global.GroupType == "Courses" then return songList end -- TODO: for now no sorting with course mode
 	table.sort(songList, GetSortFunction())
 	return songList
 end

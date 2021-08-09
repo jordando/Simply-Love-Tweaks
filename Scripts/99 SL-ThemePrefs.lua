@@ -14,7 +14,15 @@ if type(ThemePrefs) ~= "table" or type(ThemePrefs.Get) ~= "function" then
 	}
 end
 
-
+local getChar =function()
+	LoadActor(THEME:GetPathB("", "_modules/Characters.lua"))
+	local characters = GetAllCharacters()
+	local temp = {}
+	for _,v in pairs(characters) do
+		temp[#temp+1] = v.name
+	end
+	return temp
+end
 
 SL_CustomPrefs.Get = function()
 	return {
@@ -25,7 +33,7 @@ SL_CustomPrefs.Get = function()
 			Values 	= { true, false }
 		},
 		ShowExtraSongInfo = {
-			Default = false,
+			Default = true,
 			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values 	= { true, false }
 		},
@@ -51,6 +59,12 @@ SL_CustomPrefs.Get = function()
 			Values 	= { true, false }
 		},
 		BlackBackground =
+		{
+			Default = false,
+			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
+			Values 	= { true, false }
+		},
+		HideIans =
 		{
 			Default = false,
 			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
@@ -89,6 +103,12 @@ SL_CustomPrefs.Get = function()
 				THEME:GetString("ThemePrefs","Scroll")
 			},
 			Values 	= { "none", "rate", "scroll"}
+		},
+		MenuSoundVolume =
+		{
+			Default = .8,
+			Choices = { 0,10,20,30,40,50,60,70,80,90,100 },
+			Values = { 0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1 }
 		},
 		---------------------------------------------------------------------------------
 		AllowFailingOutOfSet =
@@ -223,6 +243,12 @@ SL_CustomPrefs.Get = function()
 			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
 			Values 	= { true, false }
 		},
+		AllowScreenSelectCharacter =
+		{
+			Default = true,
+			Choices = { THEME:GetString("ThemePrefs","Yes"), THEME:GetString("ThemePrefs", "No") },
+			Values 	= { true, false }
+		},
 		AllowScreenEvalSummary =
 		{
 			Default = true,
@@ -272,6 +298,12 @@ SL_CustomPrefs.Get = function()
 			Default = 0,
 			Choices = range(0, 22, 1),
 			Values = range(0, 22, 1),
+		},
+		-- - - - - - - - - - - - - - - - - - - -
+		-- Character
+		Character = {
+			Default = "Quina",
+			Values = getChar(),
 		},
 	}
 end

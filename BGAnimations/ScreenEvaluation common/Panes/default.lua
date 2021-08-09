@@ -1,6 +1,7 @@
 local args = ...
 local NumPanes = args.NumPanes
 local hash = args.hash
+local altPanes = args.AltPanes
 
 local players = GAMESTATE:GetHumanPlayers()
 
@@ -54,9 +55,17 @@ elseif #players == 1 then
 	local ComputedData = {}
 	local mpn = GAMESTATE:GetMasterPlayerNumber()
 
+	for i=1, #altPanes do
+		af[#af+1] = LoadActor(altPanes[i], {player = mpn, hash = hash})..{
+			Name=altPanes[i],
+			InitCommand=function(self) self:x(offset[mpn]) end,
+		}
+	end
+	local noteAnalysis = LoadActor(THEME:GetPathB("","_modules/NoteAnalysis.lua"))
+
 	for i=1, NumPanes do
 		if SL.Global.GameMode == "Experiment" and GetStepsType() ~= "StepsType_Dance_Double" then
-			af[#af+1] = LoadActor("./ExperimentPane"..i, {player = mpn, hash = hash})..{
+			af[#af+1] = LoadActor("./ExperimentPane"..i, {player = mpn, hash = hash, noteAnalysis=noteAnalysis})..{
 				Name="Pane"..i.."_".."Side"..ToEnumShortString(mpn),
 				InitCommand=function(self) self:x(offset[mpn]) end,
 			}
